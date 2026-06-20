@@ -9,8 +9,9 @@ Thumbs.db
 paper_workspace/
 
 # Local-only demo build artifacts (not shipped to remote)
-# - the PPTX build script and its PPTX output stay local; the PDF export is the shipped copy
+# - build scripts and the PPTX output stay local; the PDF export is the shipped copy
 # - pandas tutorial is a generic, off-topic teaching notebook
 build_pptx.py
+build_notebook.py
 社科实证论文工作流.pptx
 pandas_30_core_features.ipynb
