@@ -4,8 +4,10 @@
 > 「阶段执行协议」跑：**横幅 → in_progress → plan → execute → review → revise → 快照 → done →
 > 阶段闸门**。本手册给出每阶段「调哪个 skill / 派哪种 subagent / 产出什么 / 失败怎么回退」。
 >
-> 所有路径里的 `67/` = `skills/67-econfin-workflow-toolkit/`；调用某 skill 即用 `Skill` 工具
-> 加载它的 `SKILL.md` 并按它自己的工作流跑到完成，再回主线。
+> 所有路径里的 `67/` = `skills/67-econfin-workflow-toolkit/`。**调用某 skill 一律按
+> [`skill-map.md`](skill-map.md) §0 的调用协议**：优先 `Skill(<注册名>)`，报 not found 就退回
+> `Read <folder>/SKILL.md` 内联执行，绝不凭记忆脑补。可直接复制的 subagent 派发模板见
+> [`subagent-templates.md`](subagent-templates.md)。
 
 ---
 
@@ -18,15 +20,19 @@
 - 若用户已给方向，直接用；否则 `AskUserQuestion` 问方向 + 想要的候选标题数 N（缺省 5）。
 - 读 `67/econfin-idea-finder/SKILL.md`，按其漏斗逻辑运行。
 
-**execute（并行 subagent，强制调用子 skill）**
+**execute（并行 subagent，强制调用子 skill）** — 直接套用
+[`subagent-templates.md`](subagent-templates.md) §S1：
 - 用 `Agent` 派 N 路并行 subagent（每批 ≤5），**每个 subagent 的 prompt 必须强制它**：
-  1. `Skill` 调用 `67/econfin-proposal` 生成该候选的计划书；
-  2. `Skill` 调用 `67/novelty-check` 查新打分；
-  3. 只有 novelty ≥ 9（顶刊层次）才把「proposal + 查新」合并 md **写入**
-     `01_proposal/candidates/<短名>-<分数>.md`，否则内部丢弃、不写盘、不回传全文；
+  1. `Skill(skill="Econfin-Proposal")`（注册名大写，见 skill-map §0.1）生成计划书；not found 则
+     `Read 67/econfin-proposal/SKILL.md` 执行；
+  2. `Skill(skill="novelty-check")` 查新打分；not found 则 `Read 67/novelty-check/SKILL.md`；
+  3. 只有 novelty ≥ 9（顶刊层次）才把「proposal + 查新」合并 md **写入工作区**
+     `01_proposal/candidates/<短名>-<分数>.md`——**这是对 `econfin-idea-finder` 硬编码
+     `F:\Dropbox\CC\选题大全\` 输出根的强制覆盖**（见 skill-map §0.2）；否则内部丢弃、不写盘、不回传全文；
   4. 只向主代理回传 ≤8 行摘要（标题、分数、是否保留、一句话贡献）。
-- 主代理再 `Skill` 调用 `67/significance-search` 给保留下来的候选补「学术 + 现实」重要性证据，
-  `67/journal-digest` 扫目标期刊近年口味，辅助定刊。
+- 主代理再 `Skill(skill="Significance-Search")`（注册名大写）给保留候选补「学术 + 现实」重要性证据；
+  `Skill(skill="journal-digest")` 扫目标期刊近年口味——**调用时显式要求它把摘要写到
+  `01_proposal/journal_digest.md`**（同样覆盖其 Dropbox 硬编码输出）。
 
 **review（独立 critic subagent）**
 - 派一个「资深 AE」critic subagent，拿 Edmans (2024) "1000 Rejections" 红线对每个保留候选挑刺
@@ -90,9 +96,10 @@
 **execute**
 - `Skill` 调用选定的估计 skill，按其工作流跑基准回归（用 `64-tmonk-mcp-stata` / `mcp__stata-*`
   跑 Stata，或 Python statsmodels/linearmodels/pyfixest=`40-py-econometrics-pyfixest`）。
-- **稳健性矩阵并行化**：把"安慰剂、替换样本、替换度量、加/减控制变量、改聚类层级、子样本异质性、
-  机制中介"等彼此独立的检验，一次性派多个 subagent 并行跑，**每个 subagent 自己把系数/SE/图
-  写盘**到 `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。
+- **稳健性矩阵并行化**（套用 [`subagent-templates.md`](subagent-templates.md) §S3）：把"安慰剂、
+  替换样本、替换度量、加/减控制变量、改聚类层级、子样本异质性、机制中介"等彼此独立的检验，一次性
+  派多个 subagent 并行跑，**每个 subagent 自己把系数/SE/图写盘**到
+  `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。
 - 所有代码留在 `03_analysis/`（`.py`/`.do`/`.R`），结果存 `03_analysis/results/`。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
@@ -178,6 +185,31 @@
 **review**：critic 抽查——是否仍有"首先/其次/综上所述/值得注意的是"等套话、是否破坏了术语准确性。
 
 **revise / 交付**：定稿到 `07_dehumanize/main.tex`，回灌主稿。
+
+---
+
+## 🏁 里程碑 · 初稿质量门（Draft Quality Gate）—— Stage 7 之后、Stage 8 之前强制执行
+
+**目的**：兑现「**高质量**初稿」承诺。不靠主代理自评，而是**派一个独立「顶刊 AE」critic subagent**，
+按 [`quality-rubric.md`](quality-rubric.md) 的 7 维评分卡量化打分，决定「放行进投稿」还是「回炉重做」。
+
+**execute**（套用 [`subagent-templates.md`](subagent-templates.md) §QG，**只派 1 个**）
+- critic 必读 `references/quality-rubric.md`，读初稿（`07_dehumanize/main.tex` + `04_results/` 表图 +
+  `05_draft/ref.bib`）+ 对照 `01_proposal/proposal.md`（贡献承诺）与 `03_analysis/results/summary.md`
+  （真实结果），**逐维打分写入 `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
+- 7 维：① 贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 解读克制度 ⑤ 写作与结构 ⑥ 引用真实性 ⑦ 可复现性。
+
+**达标判定（三条同时满足才 `pass`）**：每维 ≥ 7 **且** 总分 ≥ 56/70 **且** ②③⑥ 无任何致命红旗。
+
+**revise / 回退**
+- `pass` → `workflow_state.json` 置 `quality_gate=pass`、`draft_milestone=done`；进入可选 Stage 8–9。
+- `not pass` → 按评分卡的「短板 → 回退阶段」映射退回对应阶段重做（识别→Stage 3、贡献→Stage 1、
+  写作→Stage 5/6、引用→reference-verify、复现→Stage 2/3）。**同一维最多回退 2 轮**；2 轮后仍卡，
+  在闸门**显著标红**告知用户「已知短板 + 当前分」，由用户裁决是否带病进入投稿（绝不静默放行）。
+- 每次回退记入 `logs/quality_gate.md` 与 `workflow_state.json` 的 `decisions`。
+
+> 质量门 ≠ Stage 6 打磨（改语言）≠ Stage 8 评审（挑学术硬伤）；它只做一件事——**按统一 rubric
+> 量化「这份初稿够不够格」并决定放行/回炉**。它是「可投稿级初稿」这一核心交付里程碑的验收闸门。
 
 ---
 

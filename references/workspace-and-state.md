@@ -19,9 +19,11 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── README.md                      # init 脚本自动写入的占位说明
 ├── 00_meta/
 │   ├── workflow_state.json        # ★唯一权威进度文件（断点续跑依据）
+│   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
 ├── 01_proposal/
-│   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md）
+│   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
+│   ├── journal_digest.md          # journal-digest 目标期刊口味扫描（输出已重定向到此）
 │   ├── critique.md                # critic subagent 的选题审阅
 │   └── proposal.md                # ★定稿计划书：后续所有阶段的"合同"
 ├── 02_data/
@@ -58,7 +60,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── cover_letter.md
 │   └── ref_verify_final.xlsx
 ├── logs/
-│   └── stage_<N>.md               # 每阶段审计轨迹：调了哪些 skill / 派了哪些 agent / 关键决策
+│   ├── stage_<N>.md               # 每阶段审计轨迹：调了哪些 skill / 派了哪些 agent / 关键决策
+│   └── quality_gate.md            # 初稿质量门历轮打分与回退记录（分数随修订上升的轨迹）
 ├── backups/
 │   └── after_stage<N>/            # 每阶段末关键产物快照（回滚路径）
 └── FINAL_REPORT.md                # ★收尾产出：复盘表 + 交付清单 + 复现说明
@@ -75,7 +78,7 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `1`） |
+| `schema_version` | 模板版本号（当前 `2`；v2 起新增 `quality_gate` 块） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -83,6 +86,12 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 | `project.target_journal` | 目标期刊（未定则填 `"TBD-by-stage1"`） |
 | `project.language` | `en` / `zh` / `bilingual`（决定 Stage 7 分流） |
 | `stages` | 10 个阶段键（`0_intake_setup` … `9_submission`）各自的状态 |
+| `quality_gate.draft_milestone` | `pending` / `done`——「可投稿级初稿」核心里程碑是否达成（质量门 `pass` 时置 `done`） |
+| `quality_gate.status` | `pending` / `pass` / `not_pass`——最近一轮质量门判定 |
+| `quality_gate.rounds` | 已执行的质量门轮次（含回退；上限 2） |
+| `quality_gate.last_total_score` | 最近一轮总分（满分 70） |
+| `quality_gate.last_dimension_scores` | 最近一轮 7 维分数映射（如 `{"identification": 7, ...}`） |
+| `quality_gate.scorecard` | 评分卡文件相对路径（`00_meta/quality_scorecard.md`） |
 | `artifacts` | **名称→工作区相对路径** 的映射（= 交付物清单，对应布局里的 ★ 文件） |
 | `decisions` | 数组，记录影响后续阶段的人类/自动决策：选刊、识别策略变更、失败回退分支 |
 | `last_updated_beijing` | 每次写入时刷新的北京时间 |
@@ -100,7 +109,9 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
   "proposal": "01_proposal/proposal.md",
   "clean_data": "02_data/clean.parquet",
   "main_results": "03_analysis/results/main_results.json",
-  "draft": "05_draft/main.tex"
+  "draft": "05_draft/main.tex",
+  "submission_grade_draft": "07_dehumanize/main.tex",
+  "quality_scorecard": "00_meta/quality_scorecard.md"
 }
 ```
 
