@@ -6,6 +6,8 @@
 >
 > 调用一个 skill = 让它的 `SKILL.md` 正文驱动这一步，按它自己的工作流跑到完成。**能调用就
 > 不要重写。** 但「怎么调用」有讲究——见下面的「调用机制」，它决定了本编排器是否真的跑得通。
+> 现代因果推断/应用计量的最低证据包见 [`research-grade-methods.md`](research-grade-methods.md)；
+> Stage 3 的方法选择必须同时满足该文件的 Method Gate。
 
 ---
 
@@ -82,14 +84,14 @@ playbook 指定的工作区子目录落盘即可。
 | 1 | 目标期刊口味扫描 | **`67/journal-digest`** | `09-meleantonio-awesome-econ-ai-stuff` |
 | 2 | 取数 | **`67/data-fetcher`** | `57-dgunning-edgartools`(SEC/EDGAR)、`58-charlescoverdale-econstack`、`mcp__fred-mcp-server`、FRED/WRDS |
 | 2 | 清洗 | **`67/data-cleaning`** | `66/codebook-pass` |
-| 3 | DiD | **`67/did-analysis`** | `10-Jill0099-causal-inference-mixtape`、`13-scunning1975-MixtapeTools`、StatsPAI `auto_did`/`callaway_santanna`/`sun_abraham` |
+| 3 | DiD | **`67/did-analysis`** | `10-Jill0099-causal-inference-mixtape`、`13-scunning1975-MixtapeTools`、StatsPAI `auto_did`/`callaway_santanna`/`sun_abraham`、methods pack 的交错 DiD 证据包 |
 | 3 | IV/2SLS | **`67/iv-estimation`** | StatsPAI `auto_iv`/`ivreg`/`anderson_rubin_ci` |
-| 3 | RDD | **`67/rdd-analysis`** | StatsPAI `rdrobust`/`rdbwselect`/`rddensity` |
-| 3 | 合成控制 | **`67/synthetic-control`** | `51-pymc-labs-CausalPy`、StatsPAI `synth`/`sdid`/`scpi` |
-| 3 | 面板 | **`67/panel-data`** | `40-py-econometrics-pyfixest`、StatsPAI `feols`/`hdfe_ols` |
+| 3 | RDD | **`67/rdd-analysis`** | StatsPAI `rdrobust`/`rdbwselect`/`rddensity`、`rdrobust` 官方包 |
+| 3 | 合成控制 | **`67/synthetic-control`** | `51-pymc-labs-CausalPy`、StatsPAI `synth`/`sdid`/`scpi`、Synthetic DiD |
+| 3 | 面板 | **`67/panel-data`** | `40-py-econometrics-pyfixest`、StatsPAI `feols`/`hdfe_ols`、PyFixest/fixest route |
 | 3 | OLS / 基础 | **`67/ols-regression`** | `20-wenddymacro-python-econ-skill` |
 | 3 | 时间序列 | **`67/time-series`** | StatsPAI `var`/`irf`/`arima`/`johansen` |
-| 3 | ML 因果 / 异质效应 | **`67/ml-causal`** | `51-pymc-labs-CausalPy`、StatsPAI `causal_forest`/`dml` |
+| 3 | ML 因果 / 异质效应 | **`67/ml-causal`** | `51-pymc-labs-CausalPy`、StatsPAI `causal_forest`/`dml`、DoubleML、EconML、GRF、DoWhy refuters |
 | 3 | Stata 执行 | **`67/stata`** | `64-tmonk-mcp-stata`、`32-dylantmoore-stata-skill`、`18-jusi-aalto-stata-accounting-research`、`mcp__stata-code`/`mcp__stata-mcp` |
 | 3 | 通用统计 | **`67/stats`** | `00-Full-empirical-analysis-skill_*`（StatsPAI/Python/Stata/R 四语言变体） |
 | 4 | 回归表（LaTeX 三线） | **`67/table`** | `66/latex-table` |
@@ -106,11 +108,11 @@ playbook 指定的工作区子目录落盘即可。
 | 7 | 中文去翻译腔/混排 | **`67/fix-chinese`** + `67/chinese-quote-converter` | `48-copaper-ai-chinese-de-aigc`、`49-voidborne-d-humanize-chinese` |
 | 8 | 模拟审稿 | **`67/referee-report`** | `66/grillme`、`66/econ-reviewer`、`66/did-reviewer`、`21-claesbackman-AI-research-feedback` |
 | 8 | 按审稿意见修订 | **`67/paper-referee-revise`** | `67/paper-self-revise`（内部自评时） |
-| 8 | 计量自检 | `41-sticerd-eee-sewage-econometrics-check` | StatsPAI `audit_result`/`sensitivity_from_result` |
-| 9 | 选刊 / 投稿评估 | **`67/paper-submission`** | `60-regisely-superpapers` |
+| 8 | 计量自检 | `41-sticerd-eee-sewage-econometrics-check` | StatsPAI `audit_result`/`sensitivity_from_result`、`03_analysis/method_gate.md` 复审 |
+| 9 | 选刊 / 投稿评估 | **`67/paper-submission`** | `60-regisely-superpapers`、AEA replication/data-code policy pack |
 | 9 | 硕士论文评阅（学位场景） | `67/master-thesis-review` | `66-zheng-siyao-empirical-research-skills`(整套) |
 | — | 转 Word / 格式转换 | `67/md-to-docx`、`67/markitdown` | `08-ndpvt-web-latex-document-skill` |
-| — | 做汇报 PPT | `67/marp-slides-creator`+`67/marp-export`、`67/chinese-ppt` | 演示物料见 `../Paper-WorkFlow/` |
+| — | 做汇报 PPT | `67/marp-slides-creator`+`67/marp-export`、`67/chinese-ppt` | 演示物料见本仓库根目录 |
 
 ---
 
@@ -122,11 +124,30 @@ playbook 指定的工作区子目录落盘即可。
 | arXiv / NBER / 预印本 | `67/arxiv`、`68-research-productivity-skills/nber-working-papers-api`、`68/.../academic-paper-search`、`68/.../unpaywall-api` |
 | 文献库管理 / 引用入库 | Zotero MCP（`zotero_*`、`scite_*`）、`59-shiquda-openalex-skill` |
 | 因果推断 MCP（agent-native） | **StatsPAI MCP**：`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex` |
+| 方法增强包 | `69-Paper-WorkFlow/references/research-grade-methods.md`：design register、method gate、最低证据包 |
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |
 | 笔记 / 知识库 | Obsidian MCP（`create-note`/`search-vault`） |
 | 多代理执行范式 | **`67/do-agent`** / `68/.../do-agent`（本编排器的设计母本） |
 | 新建 / 改 skill | `67/skill-creator`、`67/command-development` |
+
+---
+
+## B.1 外部方法 route（可用则调用，不可用则复刻最低证据包）
+
+| route | 来源 / 软件 | workflow 用法 |
+|---|---|---|
+| modern-did | Callaway-Sant'Anna、Sun-Abraham、StatsPAI `auto_did` | 交错处理或动态事件研究时替代 naive TWFE；输出 group-time ATT 与事件研究诊断 |
+| rdd-diagnostics | `rdrobust` / StatsPAI `rdrobust` | RDD 分支的 bandwidth、RBC CI、density/covariate continuity、donut/placebo cutoff |
+| sdid-synth | Synthetic DiD / CausalPy / StatsPAI `sdid` | donor pool 与长前期场景；输出 weights、pre-fit RMSPE、placebo、leave-one-out |
+| hdfed-regression | PyFixest / fixest / StatsPAI `feols` | 高维固定效应、IV/Poisson、聚类稳健与小 cluster 推断 |
+| doubleml-runner | DoubleML / EconML / StatsPAI `dml` | 高维 controls 的 orthogonal score、cross-fitting、nuisance diagnostics |
+| hte-forest | GRF / EconML causal forest | HTE/CATE、honesty split、ATE 校准、heterogeneity test、policy subgroup stability |
+| dag-refuter | DoWhy / PyWhy | DAG/estimand/refuter：placebo treatment、random common cause、subset/refit |
+| replication-pack | AEA Data Editor guidance / `aer-replication` 类 skill | Stage 2 起记录 data provenance，收尾生成 replication README 与一键重跑命令 |
+
+不要把这些 route 当成“必装依赖”。它们是方法标准与实现入口：本机有包/MCP 就调，没有就用已有 Stata/R/Python
+脚本实现同等 artifact；实现不了就让 `method_gate.md` 明确 `NOT PASS`。
 
 ---
 
@@ -146,6 +167,8 @@ playbook 指定的工作区子目录落盘即可。
 3. **语言分流**（Stage 7）：英文走 `readability` + 44/45/46/47；中文走 `fix-chinese` +
    `chinese-quote-converter` + 48/49。
 4. **能用 MCP 验证就别凭记忆**：引用真实性、计量稳健性、宏观数据都有对应 MCP/skill 兜底。
+5. **方法闸门优先于写作推进**：Stage 3 的 `method_gate.md` 没过，Stage 4–7 不应继续把结果包装成
+   主发现；先回退补证据或降级因果 claim。
 
 ---
 

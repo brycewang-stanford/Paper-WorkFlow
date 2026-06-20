@@ -5,7 +5,7 @@
 > [`subagent-templates.md`](subagent-templates.md) §QG），结果写入 `00_meta/quality_scorecard.md`。
 >
 > **打分纪律**：① 只依据稿件与工作区里的**真实产物**（`main.tex`、表图、`results/summary.md`、
-> `proposal.md`、`ref.bib`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
+> `proposal.md`、`design_register.md`、`method_gate.md`、`ref.bib`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
 > 具体依据**；③ 命中「致命红旗」直接把该维封顶到 ≤ 4 分，无论其它方面多好；④ 宁可严格，不可放水
 > ——质量门的意义就是拦住「跑完了但不够格」的稿子。
 
@@ -59,6 +59,12 @@
 - **5–6**：策略合理但关键诊断缺失或偏弱（如只给平均处理效应、没给事件研究）。
 - **≤4**：命中致命红旗。
 
+**方法闸门联动**
+- 找不到 `03_analysis/design_register.md`：本维封顶 6。
+- 找不到 `03_analysis/method_gate.md`：本维封顶 6。
+- `method_gate.md` 为 `NOT PASS`：本维封顶 4。
+- 方法标签缺 [`research-grade-methods.md`](research-grade-methods.md) 对应最低证据包：本维最高 6。
+
 **致命红旗（命中即 ≤4）**
 - **平行趋势证据缺失或明显违背**，却仍按 DiD 解读因果。
 - **弱工具**：第一阶段 F 远低于经验阈值（如 < 10 甚至更激进的近期标准），或排他性叙事不成立。
@@ -80,6 +86,11 @@
 - **7–8**：覆盖主要威胁，主结果稳定，少数次要检验可补。
 - **5–6**：只有零星稳健性，关键威胁（如遗漏变量/选择性样本）未应对。
 - **≤4**：命中致命红旗。
+
+**方法闸门联动**
+- `method_gate.md` 缺失：本维封顶 6。
+- `method_gate.md` 列出缺失必需 artifact 但正文仍说稳健：本维封顶 5。
+- 稳健性矩阵没有对应 `03_analysis/robustness/` 真实文件：本维封顶 5。
 
 **致命红旗（命中即 ≤4）**
 - **稳健性结果与主表数字对不上 / 疑似挑样本拼出来的**（p-hacking 嫌疑）。
@@ -142,11 +153,14 @@
 **测什么**：从原始数据到表图能否被第三方一键复跑；数据来源/版权交代是否清楚。
 
 **评分锚点**
-- **9–10**：清洗 + 估计 + 建表脚本齐全、`codebook.md` 完整、`FINAL_REPORT.md` 有一键重跑命令，
-  不可分发数据只留拉取脚本与说明。
+- **9–10**：清洗 + 估计 + 建表脚本齐全、`codebook.md` 完整、`design_register.md` 与 `method_gate.md`
+  能解释每个方法 artifact，`FINAL_REPORT.md` 有一键重跑命令；不可分发数据只留拉取脚本与说明。
 - **7–8**：脚本基本齐全，少量手工步骤未脚本化。
 - **5–6**：有代码但缺 codebook 或重跑路径断裂。
 - **≤4**：结果无法从工作区代码复现，或数据来源/版权完全未交代。
+
+**AEA/AEJ/AER 场景加严**：若目标期刊属于 AEA 体系但没有 data availability statement、data provenance、
+访问成本/权限说明、运行时间说明，本维最高 7；若完全没有 replication README，本维最高 6。
 
 **回退**：→ Stage 2（补 codebook / 清洗脚本）/ Stage 3（补估计脚本）/ 收尾（补一键重跑命令）。
 
