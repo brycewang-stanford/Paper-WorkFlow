@@ -11,9 +11,12 @@
 
 ## 0. 调用机制（先读这个——决定编排器能否真的跑通）
 
-本仓库的子 skill 是**仓库内的文件夹**，不一定在用户的运行时里**注册**为可被 `Skill` 工具直接
-触发的 skill（仓库根目录没有统一的 marketplace/plugin 清单）。因此调用子 skill 有**两条路径**，
-编排器按下面的优先级择一：
+被编排的子 skill（`67/` 工具箱、`66/` reviewer 等）**不在本编排器仓库内**——本目录
+`69-Paper-WorkFlow` 是母仓库 [`Auto-Empirical-Research-Skills`](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)
+的一个 **submodule**，子 skill 都在母仓库的 `skills/` 下。它们是**仓库内的文件夹**，不一定在用户运行时
+里**注册**为可被 `Skill` 工具直接触发的 skill（母仓库根目录没有统一的 marketplace/plugin 清单）。
+**因此运行本编排器前提是母仓库已 checkout**（`67/`、`66/` 等可达）；下文 `Read` 回退路径都相对母仓库
+根目录。调用子 skill 有**两条路径**，编排器按下面的优先级择一：
 
 1. **`Skill` 工具（快路径，仅当该 skill 已注册时可用）**：`Skill(skill="<注册名>", args=...)`。
    注册名是该 skill `SKILL.md` 前言里的 `name:` 字段，**不一定等于文件夹名**（见下表的大小写/改名
