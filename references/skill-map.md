@@ -144,7 +144,7 @@ playbook 指定的工作区子目录落盘即可。
 | doubleml-runner | DoubleML / EconML / StatsPAI `dml` | 高维 controls 的 orthogonal score、cross-fitting、nuisance diagnostics |
 | hte-forest | GRF / EconML causal forest | HTE/CATE、honesty split、ATE 校准、heterogeneity test、policy subgroup stability |
 | dag-refuter | DoWhy / PyWhy | DAG/estimand/refuter：placebo treatment、random common cause、subset/refit |
-| replication-pack | AEA Data Editor guidance / `aer-replication` 类 skill | Stage 2 起记录 data provenance，收尾生成 replication README 与一键重跑命令 |
+| replication-pack | SSDE README / AEA Data Editor guidance / `aer-replication` 类 skill | Stage 2 起记录 data provenance，收尾生成 `REPLICATION.md`、DAS、master script，并更新 `replication_pack` |
 
 不要把这些 route 当成“必装依赖”。它们是方法标准与实现入口：本机有包/MCP 就调，没有就用已有 Stata/R/Python
 脚本实现同等 artifact；实现不了就让 `method_gate.md` 明确 `NOT PASS`。

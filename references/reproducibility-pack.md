@@ -29,9 +29,11 @@
 
 | 标准 | 入口 | 在 workflow 的用法 |
 |---|---|---|
-| 社科复现包 README 模板（**首选**） | Social Science Data Editors, Template README v1.1: https://social-science-data-editors.github.io/template_README/ | 收尾时生成复现包 README 的骨架 |
-| AEA 数据与代码政策 | AEA Data & Code Availability Policy: https://www.aeaweb.org/journals/data/data-code-policy | 目标为 AEA 体系期刊时的强制要求 |
-| AEA Data Editor 操作指引 | https://aeadataeditor.github.io/aea-de-guidance/ | 投稿前自检 deposit 是否合规 |
+| 社科复现包 README 模板（**首选**） | Social Science Data Editors, Template README: https://social-science-data-editors.github.io/template_README/ | 收尾时生成复现包 README 的骨架；联网时取最新 release / release-candidate |
+| AEA 数据与代码政策 | AEA Data & Code Availability Policy（2026-02 版）: https://www.aeaweb.org/journals/data/data-code-policy | 目标为 AEA 体系期刊时的强制要求；deposit、license、unzip、version-of-record 都按此核 |
+| AEA Data Editor 操作指引 | https://aeadataeditor.github.io/aea-de-guidance/ | 投稿前自检 deposit 是否合规；Prepare 步骤可在投稿前就开始 |
+| AEA FAQ / verification | https://www.aeaweb.org/journals/data/faq | 预期 Data Editor 会在合理资源内运行代码，核软件、数据、代码清晰度、资源与耗时 |
+| Management Science code/data disclosure | https://pubsonline.informs.org/page/mnsc/code-and-data-disclosure-policy | 目标为 MS/INFORMS 时，Stage 9 同步准备 AsCollected disclosure 与 submission-time disclosure plan |
 | 模板 README 仓库（可下载） | https://github.com/social-science-data-editors/template_README | 取最新 `template-README.md` 填空 |
 | 透明与可复现总则 | BITSS（Berkeley Initiative for Transparency in the Social Sciences）: https://www.bitss.org/ | 一般性 reproducibility 培训与清单 |
 | 教学型复现协议 | Project TIER Protocol: https://www.projecttier.org/tier-protocol/ | 学位论文 / 教学场景的目录规范 |
@@ -39,6 +41,11 @@
 
 > 这些是标准锚点，不是硬依赖。目标期刊属 AEA 体系 → 直接套模板 README + DAS；否则用社科模板的
 > 通用结构。本机不能联网时，subagent 按本文件 §3 的结构离线生成 README，**不要省略 DAS**。
+
+**政策刷新纪律（运行时）**：Stage 9 或收尾前若要面向具体期刊投稿，必须打开目标期刊官网的最新
+Author Guidelines / Data & Code policy 核一次，不得只依赖本文件。政策页若要求 AsCollected、Data
+and Code Availability Form、特定仓库或匿名化格式，把要求写进 `09_submission/submission_checklist.md`
+与 `workflow_state.json.decisions`。
 
 ---
 
@@ -59,6 +66,8 @@
 
 **纪律**：① 不可分发的原始数据**不入库**，只留 `02_data/<fetch>.py|.do` 拉取脚本 + 说明；
 ② 每个派生变量在 codebook 里写清「由哪些原始字段、怎么算出来」；③ 取数脚本固定随机性（见 §4）。
+④ Dropbox / OneDrive / 个人网站 / GitHub 仓库本身通常不是长期可信 archive；若用于开发协作，收尾仍需
+写清正式 archive plan（AEA Data and Code Repository、OSF、Zenodo、Dataverse 或目标刊认可的 trusted repository）。
 
 ---
 
@@ -103,6 +112,23 @@
 `FINAL_REPORT.md` 的「一键重跑命令」就是调用这个 master script。**复现的验收标准 = 删掉所有派生产物后，
 只跑 master script，能重建 `04_results/` 的全部表图，且数字与论文一致。**
 
+同时更新 `00_meta/workflow_state.json.replication_pack`：
+
+```json
+{
+  "status": "ready",
+  "readme": "REPLICATION.md",
+  "master_script": "run_all.sh",
+  "data_availability_statement": "09_submission/DAS.md",
+  "archive_plan": "AEA Data and Code Repository draft deposit / OSF / Zenodo / Dataverse / other trusted repository",
+  "runtime_minutes": 42,
+  "last_rebuild_check": "2026-06-20 18:30 Beijing: rebuilt all tables and figures from clean workspace"
+}
+```
+
+无法真实重跑时，`status` 只能写 `not_ready`，并在 `last_rebuild_check` 说明阻断原因；不得用空泛的
+"should reproduce" 替代重跑证据。
+
 ---
 
 ## 4. Controlled Randomness（可复现的随机性）
@@ -143,7 +169,8 @@
 | **Stage 3 估计** | 登记所有随机种子（§4）；脚本留在 `03_analysis/` | README 第 9/11 节原料 |
 | **Stage 4 表图** | `exhibits_index.md` 充当 README 第 14 节「表图↔脚本行号」映射 | `04_results/exhibits_index.md` |
 | **Stage 9 投稿** | 目标 AEA 体系 → 生成 DAS（§5）随投稿；其它期刊按其 data policy | `09_submission/DAS.md`（如需） |
-| **收尾** | 生成 `REPLICATION.md`（§3 的 15 节）+ master script + 一键重跑命令 | 工作区根 `REPLICATION.md` |
+| **Stage 9 投稿** | 目标 Management Science / INFORMS → 准备 AsCollected URL / disclosure plan | `09_submission/ascollected.md` 或 checklist |
+| **收尾** | 生成 `REPLICATION.md`（§3 的 15 节）+ master script + 一键重跑命令 + `replication_pack` 状态 | 工作区根 `REPLICATION.md` |
 | **质量门维度⑦** | 按真实文件核验：codebook 全否、脚本齐否、一键重跑通否、AEA 场景 DAS 在否 | `00_meta/quality_scorecard.md` |
 
 **与 [`quality-rubric.md`](quality-rubric.md) 维度⑦的硬挂钩**（把模糊的「可复现」变成可核验闸门）：

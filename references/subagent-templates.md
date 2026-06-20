@@ -164,6 +164,8 @@
 - 真实结果（对照表中数字）：{{WS}}/03_analysis/results/summary.md + main_results.json
 - 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
+- 复现证据：{{WS}}/00_meta/workflow_state.json 的 replication_pack、{{WS}}/REPLICATION.md、
+  {{WS}}/09_submission/DAS.md（若目标刊要求）
 
 # 输出
 按 quality-rubric.md 末尾的「评分卡输出格式」把 7 维评分 + 达标判定 + 最关键 3 条短板 +

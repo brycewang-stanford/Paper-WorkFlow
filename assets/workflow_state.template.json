@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -37,6 +37,15 @@
     "last_total_score": null,
     "last_dimension_scores": {},
     "scorecard": "00_meta/quality_scorecard.md"
+  },
+  "replication_pack": {
+    "status": "pending",
+    "readme": "REPLICATION.md",
+    "master_script": "",
+    "data_availability_statement": "09_submission/DAS.md",
+    "archive_plan": "",
+    "runtime_minutes": null,
+    "last_rebuild_check": ""
   },
   "artifacts": {},
   "decisions": [],

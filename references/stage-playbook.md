@@ -267,5 +267,9 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ## 收尾（编排器本体，不调子 skill）
 
-汇总所有阶段日志与产出，写 `FINAL_REPORT.md`（见 SKILL.md「收尾」节的清单），打包并告知用户
-交付物路径与一键重跑命令。
+汇总所有阶段日志与产出，写 `FINAL_REPORT.md`（见 SKILL.md「收尾」节的清单），并按
+[`reproducibility-pack.md`](reproducibility-pack.md) 生成 `REPLICATION.md`、DAS（如需）与
+master script。能真实重跑就删派生产物后跑一次；不能重跑就把阻断原因写进
+`workflow_state.json.replication_pack.last_rebuild_check`，且 `status` 只能是 `not_ready`。
+
+最终打包并告知用户交付物路径、一键重跑命令、复现包状态、投稿前仍需人工确认的事项。

@@ -183,18 +183,20 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 04_results/*.tex + *.pdf        出版级三线表与图
 ├── 05_draft/main.tex + ref.bib     ★结构完整的初稿
 ├── 06_polish/  07_dehumanize/  08_review/  09_submission/
+├── REPLICATION.md + run_all.sh      ★复现包 README + 一键重跑入口
 ├── logs/  backups/                 审计轨迹 + 每阶段快照（回滚路径）
 └── FINAL_REPORT.md                 ★复盘表 + 交付清单 + 一键重跑命令
 ```
 
 📋 含计划书、清洗后数据 + codebook、识别设计注册、方法闸门报告、分析代码、出版级表图、
-`main.tex` + `ref.bib`、response letter、期刊清单 + cover letter，以及一份 `FINAL_REPORT.md` 全程复盘。
+`main.tex` + `ref.bib`、response letter、期刊清单 + cover letter、复现包 README / DAS，以及一份
+`FINAL_REPORT.md` 全程复盘。
 
 ---
 
 ## 🎬 配套演示物料（讲清楚 + 跑给你看）
 
-仓库内附一套**开箱即用的教学 / 汇报物料**：用 30 页讲义把整条工作流讲清楚，再用两个 Notebook 把其中
+仓库内附一套**开箱即用的教学 / 汇报物料**：用 30 页讲义把整条工作流讲清楚，再用一个 Notebook 把其中
 「计量估计」这一步真正**跑给观众看**。
 
 | 物料 | 内容 | 打开 |
@@ -229,7 +231,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 
 ---
 
-## 🛡️ 八条设计纪律（为什么值得信任）
+## 🛡️ 九条设计纪律（为什么值得信任）
 
 1. **能调用就不要重写** —— 编排器只在对的时点把对的 skill 喂对的输入，绝不复制其逻辑。
 2. **上下文保护优先** —— 任何要灌大段文本回主代理的操作，一律改成「子代理写盘 + 回传摘要」。
@@ -244,6 +246,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 8. **「高质量」是可验收的闸门，不是口号** —— Stage 7 后强制过初稿质量门：独立 critic 按 7 维 rubric
    打分，达标（每维 ≥7、总分 ≥56/70、识别·稳健·引用无致命红旗）才放行，不达标按映射自动回炉。
    让「高质量初稿」有阈值、可回退、可审计。（评分卡见 [quality-rubric.md](references/quality-rubric.md)。）
+9. **复现包从第一天开始** —— Stage 2 起记录 data provenance、访问限制、随机种子与重跑成本；收尾必须有
+   `REPLICATION.md`、DAS（如需）和 master script，状态写进 `replication_pack`。
 
 ---
 
@@ -253,6 +257,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 Paper-WorkFlow/
 ├── SKILL.md                          # 总编排器（入口 · 完整执行协议）
 ├── README.md                         # 本文件（流程理念海报）
+├── validate_skill.py                  # 本目录自检：模板、链接、workspace init、Notebook 结构
 ├── references/
 │   ├── stage-playbook.md             # 10 阶段逐阶段操作手册
 │   ├── skill-map.md                  # 「任务 → 用哪个 skill」全量路由表
@@ -265,7 +270,7 @@ Paper-WorkFlow/
 │   └── workspace-and-state.md        # 工作区布局 + 状态字段 + 子代理 I/O 约定
 ├── assets/
 │   ├── init_workspace.sh             # 一键铺出工作区骨架（拒绝覆盖已存在路径）
-│   ├── workflow_state.template.json  # 进度状态文件模板（v3：含 method_gate + quality_gate）
+│   ├── workflow_state.template.json  # 进度状态文件模板（v4：含 method_gate + quality_gate + replication_pack）
 │   ├── workflow.svg                  # 全流程流水线示意图
 │   ├── did_table.tex                 # 演示 · DiD 基准回归表（OLS / TWFE）
 │   └── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
@@ -285,6 +290,17 @@ Paper-WorkFlow/
 > [质量门评分卡](references/quality-rubric.md) ｜
 > [subagent 模板](references/subagent-templates.md) ｜
 > [工作区与状态](references/workspace-and-state.md)
+
+### 本地自检
+
+维护或改造本 skill 后，先在本目录运行：
+
+```bash
+python3 validate_skill.py
+```
+
+它会检查本地 Markdown 链接、`workflow_state` schema、`init_workspace.sh` 的拒绝覆盖行为、核心资产与
+DiD Notebook 结构。母仓库发布前再从仓库根目录跑 `make check`。
 
 ---
 

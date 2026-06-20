@@ -11,12 +11,15 @@
 
 Setup 阶段用 `init_workspace.sh <workspace-dir>` 铺出下列骨架。工作区根目录名建议为
 `paper_workspace/<研究短名>_<YYYYMMDD-HHMM>/`（北京时间）。脚本**拒绝覆盖已存在路径**——
-撞名就另选一个新的时间戳目录（`do-agent` 纪律）。脚本只建目录骨架；带 ★ 的具体文件由各阶段
-在运行中写入。
+撞名就另选一个新的时间戳目录（`do-agent` 纪律）。脚本会自动复制
+`assets/workflow_state.template.json` 到 `00_meta/workflow_state.json`，并写一个
+`00_meta/intake.md` 占位；带 ★ 的具体研究产物由各阶段在运行中写入。
 
 ```text
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── README.md                      # init 脚本自动写入的占位说明
+├── REPLICATION.md                 # ★收尾生成的复现包 README（SSDE/AEA 风格）
+├── run_all.sh / master.do / Makefile # ★一键重跑入口（至少三选一）
 ├── 00_meta/
 │   ├── workflow_state.json        # ★唯一权威进度文件（断点续跑依据）
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
@@ -75,12 +78,13 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 
 ## 2. `workflow_state.json` 字段含义
 
-Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state.template.json) 复制到
-`00_meta/workflow_state.json` 并填写。字段（**与模板一一对应，勿自创字段名**）：
+Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动把
+[`../assets/workflow_state.template.json`](../assets/workflow_state.template.json) 复制到
+`00_meta/workflow_state.json`；主代理随后只填值、不改字段名。字段（**与模板一一对应，勿自创字段名**）：
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `3`；v2 新增 `quality_gate`，v3 新增 `method_gate`） |
+| `schema_version` | 模板版本号（当前 `4`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -102,6 +106,13 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 | `quality_gate.last_total_score` | 最近一轮总分（满分 70） |
 | `quality_gate.last_dimension_scores` | 最近一轮 7 维分数映射（如 `{"identification": 7, ...}`） |
 | `quality_gate.scorecard` | 评分卡文件相对路径（`00_meta/quality_scorecard.md`） |
+| `replication_pack.status` | `pending` / `ready` / `not_ready`——收尾复现包是否达到可移交标准 |
+| `replication_pack.readme` | 复现包 README 路径（默认 `REPLICATION.md`） |
+| `replication_pack.master_script` | 一键重跑入口（如 `run_all.sh` / `master.do` / `Makefile` target） |
+| `replication_pack.data_availability_statement` | DAS 路径（默认 `09_submission/DAS.md`） |
+| `replication_pack.archive_plan` | 存档位置/计划：AEA Data and Code Repository、trusted repository、OSF/Zenodo/Dataverse 等 |
+| `replication_pack.runtime_minutes` | 最近一次端到端重跑耗时；未知则 `null`，不得虚填 |
+| `replication_pack.last_rebuild_check` | 最近一次“删派生产物后重跑”或等价检查的时间/摘要 |
 | `artifacts` | **名称→工作区相对路径** 的映射（= 交付物清单，对应布局里的 ★ 文件） |
 | `decisions` | 数组，记录影响后续阶段的人类/自动决策：选刊、识别策略变更、失败回退分支 |
 | `last_updated_beijing` | 每次写入时刷新的北京时间 |
@@ -123,7 +134,10 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
   "method_gate": "03_analysis/method_gate.md",
   "draft": "05_draft/main.tex",
   "submission_grade_draft": "07_dehumanize/main.tex",
-  "quality_scorecard": "00_meta/quality_scorecard.md"
+  "quality_scorecard": "00_meta/quality_scorecard.md",
+  "replication_readme": "REPLICATION.md",
+  "master_script": "run_all.sh",
+  "data_availability_statement": "09_submission/DAS.md"
 }
 ```
 
@@ -162,8 +176,11 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 ## 4. 复现与交付
 
 - 所有脚本（清洗、估计、画图、建表）留在工作区内对应阶段目录，配 `FINAL_REPORT.md` 里的
-  "一键重跑命令"，确保第三方能从 `02_data/raw/` 复跑到 `04_results/`。
+  "一键重跑命令"，并同步写入 `workflow_state.json.replication_pack.master_script`，确保第三方能从
+  `02_data/raw/` 复跑到 `04_results/`。
 - 数据版权 / 来源在 `02_data/codebook.md` 与 `FINAL_REPORT.md` 注明；不可分发的数据只留拉取脚本
   与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA data/code policy 记录 provenance、
   访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
+- 收尾时写 `REPLICATION.md`、DAS（如需）、archive plan 与最近一次重跑耗时；若任何一项缺失，
+  `replication_pack.status` 只能是 `not_ready`，质量门维度⑦不得放水。
 - 打包交付时以工作区根目录为单位；`backups/` 与 `logs/` 可选保留作审计。

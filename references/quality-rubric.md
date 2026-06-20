@@ -161,6 +161,13 @@
 
 **AEA/AEJ/AER 场景加严**：若目标期刊属于 AEA 体系但没有 data availability statement、data provenance、
 访问成本/权限说明、运行时间说明，本维最高 7；若完全没有 replication README，本维最高 6。
+若目标为 Management Science / INFORMS 且缺 AsCollected disclosure 或等价 code/data disclosure plan，
+本维最高 7。
+
+**状态文件联动**
+- `workflow_state.json.replication_pack.status` 缺失或为 `pending`：本维封顶 7。
+- `replication_pack.status = not_ready`：本维封顶 6；若阻断原因涉及无法重建主表图，本维 ≤4。
+- 没有 `replication_pack.master_script` 或 `last_rebuild_check` 为空：本维封顶 7。
 
 **回退**：→ Stage 2（补 codebook / 清洗脚本）/ Stage 3（补估计脚本）/ 收尾（补一键重跑命令）。
 
