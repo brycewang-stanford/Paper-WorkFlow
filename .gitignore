@@ -1,0 +1,9 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Generated workspaces (this is an orchestrator, not a project)
+paper_workspace/
