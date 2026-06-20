@@ -7,3 +7,9 @@ Thumbs.db
 
 # Generated workspaces (this is an orchestrator, not a project)
 paper_workspace/
+
+# Local-only demo build artifacts (not shipped to remote)
+# - PPTX is regenerable via build_pptx.py; the PDF export is the shipped copy
+# - pandas tutorial is a generic, off-topic teaching notebook
+社科实证论文工作流.pptx
+pandas_30_core_features.ipynb
