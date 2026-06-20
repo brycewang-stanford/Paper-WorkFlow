@@ -23,6 +23,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/
 │   ├── workflow_state.json        # ★唯一权威进度文件（断点续跑依据）
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
+│   ├── data_governance.md         # ★数据分级、PII、IRB/DUA、公开包边界
 │   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
 ├── 01_proposal/
 │   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
@@ -63,6 +64,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 09_submission/
 │   ├── journal_shortlist.md       # ~20 本目标期刊 + 1主2备
 │   ├── cover_letter.md
+│   ├── DAS.md                     # 数据可得性声明（如需；受限数据时必填）
+│   ├── submission_checklist.md    # 目标刊政策刷新与投稿文件清单
 │   └── ref_verify_final.xlsx
 ├── logs/
 │   ├── stage_<N>.md               # 每阶段审计轨迹：调了哪些 skill / 派了哪些 agent / 关键决策
@@ -135,6 +138,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
   "draft": "05_draft/main.tex",
   "submission_grade_draft": "07_dehumanize/main.tex",
   "quality_scorecard": "00_meta/quality_scorecard.md",
+  "data_governance": "00_meta/data_governance.md",
   "replication_readme": "REPLICATION.md",
   "master_script": "run_all.sh",
   "data_availability_statement": "09_submission/DAS.md"
@@ -178,9 +182,12 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 - 所有脚本（清洗、估计、画图、建表）留在工作区内对应阶段目录，配 `FINAL_REPORT.md` 里的
   "一键重跑命令"，并同步写入 `workflow_state.json.replication_pack.master_script`，确保第三方能从
   `02_data/raw/` 复跑到 `04_results/`。
-- 数据版权 / 来源在 `02_data/codebook.md` 与 `FINAL_REPORT.md` 注明；不可分发的数据只留拉取脚本
-  与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA data/code policy 记录 provenance、
-  访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
+- 数据版权 / 来源在 `02_data/codebook.md`、`00_meta/data_governance.md` 与 `FINAL_REPORT.md` 注明；
+  不可分发的数据只留拉取脚本与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA
+  data/code policy 记录 provenance、访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
+- `templates/` 下的 design register、method gate、quality scorecard、data governance、DAS、REPLICATION、
+  submission checklist、FINAL_REPORT、run_all 可作为工作区 artifact 的起始模板；实例化后仍以工作区文件
+  为准，模板本身不代表研究已通过闸门。
 - 收尾时写 `REPLICATION.md`、DAS（如需）、archive plan 与最近一次重跑耗时；若任何一项缺失，
   `replication_pack.status` 只能是 `not_ready`，质量门维度⑦不得放水。
 - 打包交付时以工作区根目录为单位；`backups/` 与 `logs/` 可选保留作审计。

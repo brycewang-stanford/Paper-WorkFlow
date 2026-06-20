@@ -6,7 +6,9 @@
 >
 > **分工**：[`research-grade-methods.md`](research-grade-methods.md) 的 Method Gate 管「方法 artifact
 > 是否齐」（识别诊断、稳健性矩阵）；本文件管「整个项目能不能被第三方一键复跑、数据来源是否交代
-> 清楚」。前者是科学性，后者是可复现性——AEA/AEJ/AER 等期刊已把后者列为**强制**。
+> 清楚」。[`data-governance.md`](data-governance.md) 进一步管 public/restricted/confidential/PII、
+> IRB/DUA 与公开 archive boundary。前者是科学性，后者是可复现性与合规边界——AEA/AEJ/AER 等期刊
+> 已把后者列为**强制**。
 
 ---
 
@@ -18,7 +20,10 @@
 2. **复现包有标准结构**：原始数据 / 清洗 / 估计 / 表图 一条龙脚本化，最少手工干预。
 3. **README 是合同**：第三方照着 README 就能从 `raw/` 跑到 `04_results/` 的每张表图。
 4. **数据可得性声明（DAS）说真话**：受限/付费/审批数据如实写访问条件，不可分发的只留拉取脚本。
-5. **质量门维度⑦按真实文件打分**：有没有 codebook、有没有一键重跑命令、AEA 场景有没有 DAS。
+5. **治理边界先行**：PII、IRB/DUA、许可证、保密环境、不可公开原始数据先登记到
+   `00_meta/data_governance.md`，再决定公开包包含什么。
+6. **质量门维度⑦按真实文件打分**：有没有 codebook、有没有一键重跑命令、AEA 场景有没有 DAS、
+   有没有治理登记。
 
 > 本层是**打包标准**，落地实现仍调用既有能力（清洗 `data-cleaning`、估计各 skill、转换 `md-to-docx`，
 > 见 [`skill-map.md`](skill-map.md)）。本文件规定「打包成什么样才算可复现」。
@@ -52,6 +57,9 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 ## 2. Data Provenance：从 Stage 2 就开始记（不要等接收后补）
 
 每引入一个数据源，立即在 `02_data/codebook.md` 追加一条 provenance 记录（也是 DAS 的原料）：
+同时在 `00_meta/data_governance.md`（模板：
+[`../templates/data_governance.md`](../templates/data_governance.md)）记录数据分级、PII、IRB/DUA、
+再分发边界与公开包动作。
 
 ```markdown
 ## 数据源：<名称>
@@ -68,6 +76,8 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 ② 每个派生变量在 codebook 里写清「由哪些原始字段、怎么算出来」；③ 取数脚本固定随机性（见 §4）。
 ④ Dropbox / OneDrive / 个人网站 / GitHub 仓库本身通常不是长期可信 archive；若用于开发协作，收尾仍需
 写清正式 archive plan（AEA Data and Code Repository、OSF、Zenodo、Dataverse 或目标刊认可的 trusted repository）。
+⑤ PII、签名 URL、API key、cookie、DUA/IRB 限制材料不得进入公开包、日志或 git；受限数据只能通过
+脚本、变量字典、申请流程和 DAS 说明支持复现。
 
 ---
 
@@ -166,6 +176,7 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 | 接入点 | 本层做什么 | 落盘/判定 |
 |---|---|---|
 | **Stage 2 取数/清洗** | 每个数据源记 provenance（§2）；不可分发数据只留拉取脚本 | `02_data/codebook.md` |
+| **Stage 2 数据治理** | public/restricted/confidential/PII 分级，记录 DUA/IRB/许可证与公开包动作 | `00_meta/data_governance.md` |
 | **Stage 3 估计** | 登记所有随机种子（§4）；脚本留在 `03_analysis/` | README 第 9/11 节原料 |
 | **Stage 4 表图** | `exhibits_index.md` 充当 README 第 14 节「表图↔脚本行号」映射 | `04_results/exhibits_index.md` |
 | **Stage 9 投稿** | 目标 AEA 体系 → 生成 DAS（§5）随投稿；其它期刊按其 data policy | `09_submission/DAS.md`（如需） |
@@ -176,6 +187,9 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 **与 [`quality-rubric.md`](quality-rubric.md) 维度⑦的硬挂钩**（把模糊的「可复现」变成可核验闸门）：
 
 - 无 `02_data/codebook.md` 或重跑路径断裂 → 维度⑦封顶 6。
+- 无 `00_meta/data_governance.md`，或受限/保密/PII 数据未登记公开包边界 → 维度⑦封顶 7；IRB/DUA/许可
+  状态未知时 `replication_pack.status` 只能是 `not_ready`。
+- 公共包、日志或示例中出现 PII、token、签名 URL、受限原始数据 → 维度⑦最高 4，且不得提交公开 archive。
 - 结果无法从工作区代码复现，或数据来源/版权完全未交代 → 维度⑦ ≤ 4。
 - 目标 AEA 体系但缺 DAS / data provenance / 访问成本说明 / 运行时间说明 → 维度⑦最高 7；
   完全没有 replication README → 最高 6。

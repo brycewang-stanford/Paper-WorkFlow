@@ -128,6 +128,9 @@ playbook 指定的工作区子目录落盘即可。
 | 识别威胁 / 审稿异议预案 | `69-Paper-WorkFlow/references/threats-to-validity.md`：威胁×诊断×预防×回应对照表（坏控制、预趋势功效、弱工具…，Stage 3/5/8） |
 | 设计透明度 / 预分析 | `69-Paper-WorkFlow/references/design-transparency.md`：PAP/预注册、功效与 MDE、预趋势功效 + HonestDiD、设定曲线、研究者自由度披露（Stage 3） |
 | 文献检索与贡献定位 | `69-Paper-WorkFlow/references/literature-and-positioning.md`：滚雪球 + 引用图工具、文献矩阵、定位句式、引用真实性（Stage 1/5） |
+| 数据治理 / IRB / DUA | `69-Paper-WorkFlow/references/data-governance.md`：public/restricted/confidential/PII 分级、DAS、IRB/DUA、公开复现包边界（Stage 2/9/收尾） |
+| 运行时退化路径 | `69-Paper-WorkFlow/references/runtime-fallbacks.md`：Skill/Agent/网络/MCP/Stata/R/Python/Zotero 缺失时的 fallback、日志与质量封顶 |
+| 关键 artifact 模板 | `69-Paper-WorkFlow/templates/`：design register、method gate、quality scorecard、data governance、DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all |
 | 端到端示例 trace | `69-Paper-WorkFlow/references/worked-example.md`：黄金路径逐阶段产物 + 两道闸门触发 + 回退循环（编排器填空范本） |
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |
@@ -148,7 +151,7 @@ playbook 指定的工作区子目录落盘即可。
 | doubleml-runner | DoubleML / EconML / StatsPAI `dml` | 高维 controls 的 orthogonal score、cross-fitting、nuisance diagnostics |
 | hte-forest | GRF / EconML causal forest | HTE/CATE、honesty split、ATE 校准、heterogeneity test、policy subgroup stability |
 | dag-refuter | DoWhy / PyWhy | DAG/estimand/refuter：placebo treatment、random common cause、subset/refit |
-| replication-pack | SSDE README / AEA Data Editor guidance / `aer-replication` 类 skill | Stage 2 起记录 data provenance，收尾生成 `REPLICATION.md`、DAS、master script，并更新 `replication_pack` |
+| replication-pack | SSDE README / AEA Data Editor guidance / `aer-replication` 类 skill | Stage 2 起记录 data provenance 和 data governance，收尾生成 `REPLICATION.md`、DAS、master script，并更新 `replication_pack` |
 
 不要把这些 route 当成“必装依赖”。它们是方法标准与实现入口：本机有包/MCP 就调，没有就用已有 Stata/R/Python
 脚本实现同等 artifact；实现不了就让 `method_gate.md` 明确 `NOT PASS`。

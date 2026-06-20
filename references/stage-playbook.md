@@ -11,6 +11,8 @@
 > [`research-grade-methods.md`](research-grade-methods.md)，用它定义现代因果推断/应用计量的最低证据包。
 > **想先看一条完整跑通的 trace**（每阶段产物 + 两道闸门如何触发 + NOT PASS→回退→PASS 循环），见
 > [`worked-example.md`](worked-example.md)——它就是下面这套协议的填空范本。
+> 工具、网络、MCP 或统计软件不可用时按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 退化执行；
+> 涉及受限数据、PII、IRB/DUA 或 archive boundary 时按 [`data-governance.md`](data-governance.md) 先登记再推进。
 
 ---
 
@@ -61,6 +63,9 @@
 **目的**：依 proposal 的变量与样本，拿到**分析就绪**的数据集 + codebook。
 
 **plan**：从 `proposal.md` 抽出需要的变量、频率、地域、时间窗、合并键，列一张「变量→数据源」需求表。
+加载 [`data-governance.md`](data-governance.md)，先从 `templates/data_governance.md` 生成
+`00_meta/data_governance.md`，把每个数据源标为 public / restricted / confidential / PII，并写清
+DUA、IRB/ethics、许可证、再分发边界。
 
 **execute**
 - `Skill` 调用 `67/data-fetcher` 取数（FRED / World Bank / BLS / OECD / Yahoo Finance；A 股/中国
@@ -68,9 +73,12 @@
   等集合，见 skill-map）。多个独立数据源可并行 subagent 各取一段、各自写盘到 `02_data/raw/`。
 - `Skill` 调用 `67/data-cleaning` 做清洗、对齐、合并、构造变量，产出 `02_data/clean.parquet`
   （或 `.dta/.csv`）与 `02_data/codebook.md`（每个变量的定义、来源、单位、缺失处理）。
+- 受限数据只保留 fetch/clean 脚本、变量字典和访问说明；不得把原始数据、PII、token、签名 URL 或
+  DUA/IRB 限制材料放进公开包、日志或仓库。
 
 **review**：critic subagent 核对——合并键唯一性、面板是否平衡、极端值/缺失处理是否记录在 codebook、
-处理与对照如何界定（若是 DiD/SC）。意见写 `02_data/data_audit.md`。
+处理与对照如何界定（若是 DiD/SC）、数据治理登记是否与 codebook/DAS 原料一致。意见写
+`02_data/data_audit.md`。
 
 **revise / 交付**：据审计修清洗脚本，重跑到干净。**清洗脚本必须留在 `02_data/`**，保证可复现。
 
@@ -91,6 +99,9 @@
   回应」，并按 §3 给控制集标注前处理/混淆/中介/对撞、剔除坏控制）与
   [`design-transparency.md`](design-transparency.md)（估计前写预分析计划锁定设计；空结果报 MDE；DiD 跑
   预趋势功效 + HonestDiD、设定曲线，登记随机种子）。
+- 若估计工具、StatsPAI MCP、Stata/R/Python 包或网络不可用，按
+  [`runtime-fallbacks.md`](runtime-fallbacks.md) 选择等价 route；若无法生成最低证据包，`method_gate.md`
+  必须 `NOT PASS`，不得把 fallback 当作完整验证。
 - 从 `proposal.md` 读识别策略，按下表择一主 skill（决策树细节见 skill-map 的「方法路由」）：
 
   | 设计 | 主 skill（`67/`） | 配套 |
@@ -120,7 +131,8 @@
   `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。
 - 所有代码留在 `03_analysis/`（`.py`/`.do`/`.R`），结果存 `03_analysis/results/`。
 - 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
-  有路径；缺失项标 `no`，不得用空话替代。
+  有路径；缺失项标 `no`，不得用空话替代。方法闸门还要检查 `00_meta/data_governance.md`：合法访问、
+  公开包边界、PII/小样本披露、IRB/DUA 状态若阻断主结果，列入 hard flags。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
 `econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑、methods
@@ -273,9 +285,13 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - **终审引用**：再 `Skill` 调用一次 `67/reference-verify`（投稿前最后一次，确保此前所有修订没动坏
   引用），落 `09_submission/ref_verify_final.xlsx`。
 - 生成 cover letter / highlights / 作者贡献声明等投稿材料到 `09_submission/`。
+- 从 `templates/submission_checklist.md` 生成 `09_submission/submission_checklist.md`，并按目标刊官网实时刷新：
+  author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
+  若政策页无法访问，按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 标 blocked，投稿包不得标 ready。
 - 需要排版成 Word / 提交版 PDF 时用 `67/md-to-docx`、`67/markitdown`、`08-ndpvt-web-latex-document-skill`。
 
-**review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明）。
+**review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明、
+IRB/DUA 与公开复现包边界）。
 
 **revise / 交付**：定稿投稿包到 `09_submission/`。
 
@@ -283,9 +299,11 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ## 收尾（编排器本体，不调子 skill）
 
-汇总所有阶段日志与产出，写 `FINAL_REPORT.md`（见 SKILL.md「收尾」节的清单），并按
-[`reproducibility-pack.md`](reproducibility-pack.md) 生成 `REPLICATION.md`、DAS（如需）与
-master script。能真实重跑就删派生产物后跑一次；不能重跑就把阻断原因写进
+汇总所有阶段日志与产出，优先用 `templates/FINAL_REPORT.md` 写 `FINAL_REPORT.md`（见 SKILL.md「收尾」
+节的清单），并按 [`reproducibility-pack.md`](reproducibility-pack.md) 与
+[`data-governance.md`](data-governance.md) 生成 `REPLICATION.md`、DAS（如需）、data governance register
+与 master script（模板见 `templates/REPLICATION.md`、`templates/DAS.md`、`templates/run_all.sh`）。
+能真实重跑就删派生产物后跑一次；不能重跑就把阻断原因写进
 `workflow_state.json.replication_pack.last_rebuild_check`，且 `status` 只能是 `not_ready`。
 
 最终打包并告知用户交付物路径、一键重跑命令、复现包状态、投稿前仍需人工确认的事项。

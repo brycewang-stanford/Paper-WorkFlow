@@ -5,7 +5,7 @@
 > [`subagent-templates.md`](subagent-templates.md) §QG），结果写入 `00_meta/quality_scorecard.md`。
 >
 > **打分纪律**：① 只依据稿件与工作区里的**真实产物**（`main.tex`、表图、`results/summary.md`、
-> `proposal.md`、`design_register.md`、`method_gate.md`、`ref.bib`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
+> `proposal.md`、`design_register.md`、`method_gate.md`、`ref.bib`、`data_governance.md`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
 > 具体依据**；③ 命中「致命红旗」直接把该维封顶到 ≤ 4 分，无论其它方面多好；④ 宁可严格，不可放水
 > ——质量门的意义就是拦住「跑完了但不够格」的稿子。
 
@@ -64,6 +64,9 @@
 - 找不到 `03_analysis/method_gate.md`：本维封顶 6。
 - `method_gate.md` 为 `NOT PASS`：本维封顶 4。
 - 方法标签缺 [`research-grade-methods.md`](research-grade-methods.md) 对应最低证据包：本维最高 6。
+- 方法闸门记录了 runtime fallback，但缺 [`runtime-fallbacks.md`](runtime-fallbacks.md) 要求的等价 artifact：
+  本维最高 6；若 fallback 影响主因果 claim 却未披露，本维最高 4。
+- 关键数据的合法访问、IRB/DUA 或公开包边界未知，且影响 estimand 或样本选择：本维最高 6。
 
 **致命红旗（命中即 ≤4）**
 - **平行趋势证据缺失或明显违背**，却仍按 DiD 解读因果。
@@ -148,13 +151,15 @@
 
 ---
 
-## 维度 ⑦ 可复现性（Reproducibility）
+## 维度 ⑦ 可复现性与治理（Reproducibility & Governance）
 
-**测什么**：从原始数据到表图能否被第三方一键复跑；数据来源/版权交代是否清楚。
+**测什么**：从原始数据到表图能否被第三方一键复跑；数据来源、版权、受限访问、PII、IRB/DUA 与
+公开 archive boundary 是否交代清楚。
 
 **评分锚点**
 - **9–10**：清洗 + 估计 + 建表脚本齐全、`codebook.md` 完整、`design_register.md` 与 `method_gate.md`
-  能解释每个方法 artifact，`FINAL_REPORT.md` 有一键重跑命令；不可分发数据只留拉取脚本与说明。
+  能解释每个方法 artifact，`FINAL_REPORT.md` 有一键重跑命令；`00_meta/data_governance.md` 与 DAS 清楚说明
+  public/restricted/confidential 数据边界，不可分发数据只留拉取脚本与说明。
 - **7–8**：脚本基本齐全，少量手工步骤未脚本化。
 - **5–6**：有代码但缺 codebook 或重跑路径断裂。
 - **≤4**：结果无法从工作区代码复现，或数据来源/版权完全未交代。
@@ -163,6 +168,20 @@
 访问成本/权限说明、运行时间说明，本维最高 7；若完全没有 replication README，本维最高 6。
 若目标为 Management Science / INFORMS 且缺 AsCollected disclosure 或等价 code/data disclosure plan，
 本维最高 7。
+
+**数据治理加严**
+- 找不到 `00_meta/data_governance.md`：本维最高 7。
+- 使用 restricted/confidential/PII 数据但没有访问边界、DUA/IRB/ethics、再分发说明：本维最高 6。
+- 公共复现包、日志、表格或示例中出现 PII、token、签名 URL、受限原始数据：本维最高 4，且投稿包不得
+  标 ready。
+- IRB/DUA/许可证状态未知，或目标刊政策页未刷新：`workflow_state.json.replication_pack.status` 只能是
+  `not_ready`。
+
+**运行时 fallback 加严**
+- 无法执行 master script，也没有逐步复现命令：本维最高 6。
+- 只能用合成/样例数据验证代码结构，不能访问真实数据：本维最高 6。
+- 网络/政策/引用核验工具不可用且未按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 记录：本维最高 7；
+  若影响主结论却未披露，本维最高 4。
 
 **状态文件联动**
 - `workflow_state.json.replication_pack.status` 缺失或为 `pending`：本维封顶 7。
@@ -187,7 +206,7 @@
 | ④ 结果与解读克制度 | 8 | 系数均给经济量级（§5 Table 3 下方） | 否 |
 | ⑤ 写作与结构 | 8 | 引言四段式到位；§4 衔接略生硬 | 否 |
 | ⑥ 引用真实性与文献定位 | 9 | reference-verify 全绿，定位见 §2 | 否 |
-| ⑦ 可复现性 | 8 | 脚本齐、codebook 全、待补一键重跑命令 | 否 |
+| ⑦ 可复现性与治理 | 8 | 脚本齐、codebook 全、待补一键重跑命令 | 否 |
 | **总分** | **54 / 70** | — | — |
 
 ## 达标判定
@@ -218,7 +237,7 @@
 | ④ 解读 | Stage 5/6 | 重写结果与结论段，克制因果语气 |
 | ⑤ 写作 | Stage 5/6（表图问题→Stage 4） | 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
 | ⑥ 引用 | `reference-verify` + Stage 5 | 终审核验 / 补结构化文献综述 |
-| ⑦ 复现 | Stage 2/3 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 |
+| ⑦ 复现与治理 | Stage 2/3/9 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 / DAS / 数据治理登记 |
 
 **回退上限**：同一维最多回退 **2 轮**。2 轮后仍不达标 → 在 `logs/quality_gate.md` 记「已知短板」，
 质量门摘要卡里**显著标红**告知用户，由用户裁决是否带病进入 Stage 8/9（绝不静默放行）。

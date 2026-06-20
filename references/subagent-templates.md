@@ -7,6 +7,8 @@
 > 2. **强制调用子 skill**：写明用 `Skill(<注册名>)`；并给出 `Read` 回退路径（注册名见
 >    [`skill-map.md`](skill-map.md) §0.1）——subagent 必须真的加载子 skill，不许凭记忆脑补。
 > 3. **绝对路径**：所有输入/输出文件、要 `Read` 的 SKILL.md，一律写**仓库内 / 工作区内完整路径**。
+> 4. **退化与治理**：环境缺工具时按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 记录 fallback；
+>    涉及受限数据/PII/IRB/DUA 时按 [`data-governance.md`](data-governance.md) 先检查 archive boundary。
 >
 > 用法：把 `{{...}}` 占位符替换为真实值后，作为 `Agent` 工具的 `prompt`。`{{REPO}}` =
 > `skills/67-econfin-workflow-toolkit`，`{{REPO_69}}` = `skills/69-Paper-WorkFlow`，`{{WS}}` =
@@ -94,10 +96,13 @@
 
 # 必读
 - 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
+- 数据治理与运行时 fallback：{{REPO_69}}/references/data-governance.md、
+  {{REPO_69}}/references/runtime-fallbacks.md
 - skill 路由：{{REPO_69}}/references/skill-map.md
 
 # 输入
 - proposal 合同：{{WS}}/01_proposal/proposal.md
+- 数据治理：{{WS}}/00_meta/data_governance.md（若缺失，列为 hard flag）
 - 设计注册：{{WS}}/03_analysis/design_register.md
 - 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
 - 稳健性目录：{{WS}}/03_analysis/robustness/
@@ -107,7 +112,7 @@
 按 research-grade-methods.md §3 的格式写 {{WS}}/03_analysis/method_gate.md：
 - Primary design / estimator
 - Required artifact table（每项路径 + present yes/no）
-- Hard flags
+- Hard flags（含治理、PII/IRB/DUA、runtime fallback 是否影响最低证据包）
 - PASS / NOT PASS
 - Next Action（若 NOT PASS，明确回退到 Stage 1/2/3 的哪一步）
 
@@ -165,7 +170,7 @@
 - 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
 - 复现证据：{{WS}}/00_meta/workflow_state.json 的 replication_pack、{{WS}}/REPLICATION.md、
-  {{WS}}/09_submission/DAS.md（若目标刊要求）
+  {{WS}}/09_submission/DAS.md、{{WS}}/00_meta/data_governance.md（若目标刊或数据限制要求）
 
 # 输出
 按 quality-rubric.md 末尾的「评分卡输出格式」把 7 维评分 + 达标判定 + 最关键 3 条短板 +
