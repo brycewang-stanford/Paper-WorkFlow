@@ -43,6 +43,17 @@ EXPECTED_WORKSPACE_DIRS = [
     "backups",
 ]
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]+\]\(([^)]+)\)")
+REQUIRED_TEMPLATES = {
+    "templates/design_register.md": ["Target estimand", "Bad-control screen", "Fallback Plan"],
+    "templates/method_gate.md": ["Required Artifact Table", "Decision: PASS / NOT PASS", "Hard Flags"],
+    "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance"],
+    "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
+    "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
+    "templates/submission_checklist.md": ["Journal Policy Refresh", "Final Gates"],
+    "templates/data_governance.md": ["Data Classification", "Public replication package must not include", "IRB"],
+    "templates/DAS.md": ["Restricted or Confidential Data", "Rights and Ethics"],
+    "templates/run_all.sh": ["set -euo pipefail", "build tables and figures"],
+}
 
 
 def fail(message: str) -> None:
@@ -53,7 +64,7 @@ def fail(message: str) -> None:
 def tracked_files() -> list[Path]:
     try:
         result = subprocess.run(
-            ["git", "ls-files"],
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
             cwd=ROOT,
             text=True,
             capture_output=True,
@@ -139,6 +150,7 @@ def check_assets() -> None:
     required = [
         "SKILL.md",
         "README.md",
+        "README.en.md",
         "LICENSE",
         "did_demo.ipynb",
         "assets/did_table.tex",
@@ -160,7 +172,11 @@ def check_assets() -> None:
         "references/design-transparency.md",
         "references/literature-and-positioning.md",
         "references/worked-example.md",
+        "references/data-governance.md",
+        "references/runtime-fallbacks.md",
+        "scripts/smoke_workspace.py",
     ]
+    required.extend(REQUIRED_TEMPLATES)
     for rel in required:
         path = ROOT / rel
         if not path.exists():
@@ -169,6 +185,16 @@ def check_assets() -> None:
             fail(f"required file is empty: {rel}")
     if not os.access(ROOT / "assets" / "init_workspace.sh", os.X_OK):
         fail("assets/init_workspace.sh must be executable")
+
+
+def check_template_contracts() -> None:
+    for rel, markers in REQUIRED_TEMPLATES.items():
+        path = ROOT / rel
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                fail(f"{rel} missing required marker: {marker}")
+    subprocess.run(["bash", "-n", str(ROOT / "templates" / "run_all.sh")], check=True)
 
 
 def check_notebook() -> None:
@@ -210,9 +236,13 @@ def check_init_workspace(template: dict) -> None:
 
 
 def check_python_compile() -> None:
-    files = [ROOT / "validate_skill.py"]
+    files = [ROOT / "validate_skill.py", ROOT / "scripts" / "smoke_workspace.py"]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
+
+
+def check_smoke_workspace() -> None:
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
 
 
 def main() -> None:
@@ -220,10 +250,12 @@ def main() -> None:
     template = load_template()
     files = tracked_files()
     check_assets()
+    check_template_contracts()
     check_markdown_links(files)
     check_notebook()
     check_init_workspace(template)
     check_python_compile()
+    check_smoke_workspace()
     print("OK: Paper-WorkFlow skill checks passed")
 
 
