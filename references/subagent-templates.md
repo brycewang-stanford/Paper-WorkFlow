@@ -9,7 +9,8 @@
 > 3. **绝对路径**：所有输入/输出文件、要 `Read` 的 SKILL.md，一律写**仓库内 / 工作区内完整路径**。
 >
 > 用法：把 `{{...}}` 占位符替换为真实值后，作为 `Agent` 工具的 `prompt`。`{{REPO}}` =
-> `skills/67-econfin-workflow-toolkit`，`{{WS}}` = 本次工作区根（如 `paper_workspace/绿色信贷_20260619-1430`）。
+> `skills/67-econfin-workflow-toolkit`，`{{REPO_69}}` = `skills/69-Paper-WorkFlow`，`{{WS}}` =
+> 本次工作区根（如 `paper_workspace/绿色信贷_20260619-1430`）。
 > 并行批次 ≤10 个/批（`do-agent` 上限；选题漏斗沿用 `idea-finder` 的 5/批）。
 
 ---
@@ -64,6 +65,7 @@
 
 # 输入
 - 清洗后数据：{{WS}}/02_data/clean.parquet（codebook: {{WS}}/02_data/codebook.md）
+- 设计注册：{{WS}}/03_analysis/design_register.md（若不存在，先按 {{REPO_69}}/references/research-grade-methods.md 模板补写草稿）
 - 主设定与基准结果：{{WS}}/03_analysis/results/main_results.json
 - 估计脚本范式（照其风格）：{{WS}}/03_analysis/（已有 .py/.do/.R）
 - 本检验：{{CHECK_NAME}}（如「替换聚类到省级」/「剔除危机年份子样本」/「安慰剂：随机分配处理时点」）
@@ -72,9 +74,45 @@
 - 复用主设定，只改本检验对应的那一处；用 {{ESTIMATOR_SKILL}}（优先 `Skill`，not found 则
   `Read {{REPO}}/{{ESTIMATOR_FOLDER}}/SKILL.md` 按其流程）跑。可选 StatsPAI MCP 链路做交叉验证。
 - 把系数/SE/p/样本量/必要图写盘到 {{WS}}/03_analysis/robustness/{{CHECK_NAME}}.json（图同名 .png）。
+- 若本检验属于 research-grade-methods.md 的最低证据包，把 artifact 路径追加到
+  {{WS}}/03_analysis/method_gate.md 的对应行。
 
 # 回传（≤6 行）
 做了什么 / 写到哪个文件 / 核心系数与 SE / 相对基准是否稳健（稳/不稳）/ 一句话判断。
+```
+
+---
+
+## §MG · Stage 3 方法闸门审计（Stage 3 末强制派 1 个）
+
+> 这个 subagent 不改模型、不写论文，只检查 Stage 3 是否具备现代实证方法的最低证据包。它读
+> `research-grade-methods.md` 后输出 `method_gate.md`，给 PASS / NOT PASS 与回退指令。
+
+```text
+你是应用计量方法审计员。任务是审计 Stage 3 的方法证据包是否足够支撑论文的因果 claim。
+只依据工作区真实文件，不补跑模型、不编造缺失数字。
+
+# 必读
+- 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
+- skill 路由：{{REPO_69}}/references/skill-map.md
+
+# 输入
+- proposal 合同：{{WS}}/01_proposal/proposal.md
+- 设计注册：{{WS}}/03_analysis/design_register.md
+- 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
+- 稳健性目录：{{WS}}/03_analysis/robustness/
+- 估计脚本：{{WS}}/03_analysis/
+
+# 输出
+按 research-grade-methods.md §3 的格式写 {{WS}}/03_analysis/method_gate.md：
+- Primary design / estimator
+- Required artifact table（每项路径 + present yes/no）
+- Hard flags
+- PASS / NOT PASS
+- Next Action（若 NOT PASS，明确回退到 Stage 1/2/3 的哪一步）
+
+# 回传（≤8 行）
+主设计 / 主估计量 / PASS 或 NOT PASS / 缺失 artifact 数量 / 最严重 blocker / 建议回退阶段。
 ```
 
 ---
@@ -124,6 +162,7 @@
 - 初稿正文 + 表图 + 参考文献：{{WS}}/07_dehumanize/main.tex、{{WS}}/04_results/、{{WS}}/05_draft/ref.bib
 - 贡献承诺（对照）：{{WS}}/01_proposal/proposal.md
 - 真实结果（对照表中数字）：{{WS}}/03_analysis/results/summary.md + main_results.json
+- 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
 
 # 输出

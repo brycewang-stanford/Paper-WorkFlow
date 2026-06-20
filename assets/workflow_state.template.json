@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -19,6 +19,16 @@
     "7_language_dehumanize": "pending",
     "8_review_revision": "pending",
     "9_submission": "pending"
+  },
+  "method_gate": {
+    "status": "pending",
+    "primary_design": "",
+    "primary_estimator": "",
+    "design_register": "03_analysis/design_register.md",
+    "method_gate_report": "03_analysis/method_gate.md",
+    "required_artifacts": [],
+    "missing_artifacts": [],
+    "last_audit": ""
   },
   "quality_gate": {
     "draft_milestone": "pending",

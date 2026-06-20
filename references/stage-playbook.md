@@ -7,7 +7,8 @@
 > 所有路径里的 `67/` = `skills/67-econfin-workflow-toolkit/`。**调用某 skill 一律按
 > [`skill-map.md`](skill-map.md) §0 的调用协议**：优先 `Skill(<注册名>)`，报 not found 就退回
 > `Read <folder>/SKILL.md` 内联执行，绝不凭记忆脑补。可直接复制的 subagent 派发模板见
-> [`subagent-templates.md`](subagent-templates.md)。
+> [`subagent-templates.md`](subagent-templates.md)。进入 Stage 3 前还必须加载
+> [`research-grade-methods.md`](research-grade-methods.md)，用它定义现代因果推断/应用计量的最低证据包。
 
 ---
 
@@ -42,6 +43,8 @@
 - 主代理据 critique 让用户（或在全自动档位下自行）选定 1 个标题，把最终计划书定稿为
   `01_proposal/proposal.md`，并在其中**显式写死**：被解释变量 Y、核心解释变量 X、机制 M、
   识别策略（DiD/IV/RDD/SC/...）、样本与政策冲击、目标期刊。这份 `proposal.md` 是后续所有阶段的合同。
+- 若已经能判断识别路线，顺手写一版 `03_analysis/design_register.md` 草稿；Stage 3 开始时再按
+  [`research-grade-methods.md`](research-grade-methods.md) 补齐 estimand、诊断证据与回退方案。
 
 **失败回退**：N 个候选全 < 9 分 → 扩大方向或换角度重跑一轮；查新发现已被做过 → 标红，回到 plan
 另寻差异化切口。
@@ -70,28 +73,34 @@
 
 ---
 
-## Stage 3 · 计量识别与估计
+## Stage 3 · 计量识别、估计与方法闸门
 
-**目的**：按 proposal 的识别策略，跑出基准 + 机制 + 异质性 + 稳健性的**真实**结果。
+**目的**：按 proposal 的识别策略，先注册设计，再跑出基准 + 机制 + 异质性 + 稳健性的**真实**结果，
+最后用方法闸门确认最低证据包齐全。
 
-**plan（先定方法）**
+**plan（先定设计，再定方法）**
+- 必读 [`research-grade-methods.md`](research-grade-methods.md)，把 proposal 的识别路线翻译成
+  `03_analysis/design_register.md`：estimand、treatment、comparison group、识别假设、主估计量、
+  必需诊断、替代估计量、失败回退。
 - 从 `proposal.md` 读识别策略，按下表择一主 skill（决策树细节见 skill-map 的「方法路由」）：
 
   | 设计 | 主 skill（`67/`） | 配套 |
   |---|---|---|
-  | 政策评估 / 自然实验 / 双重差分 | `did-analysis` | 平行趋势、事件研究、交错估计量 CS/SA/BJS |
+  | 政策评估 / 自然实验 / 双重差分 | `did-analysis` | 平行趋势、事件研究、交错估计量 CS/SA/BJS、TWFE 风险对照 |
   | 内生性 / 工具变量 | `iv-estimation` | 弱工具检验、过度识别 |
-  | 断点 | `rdd-analysis` | 带宽、操纵检验、密度检验 |
-  | 单一处理单位 / 政策试点 | `synthetic-control` | 安慰剂、RMSPE |
-  | 一般面板 | `panel-data` | FE/RE、聚类稳健 SE |
+  | 断点 | `rdd-analysis` | 带宽、robust bias-corrected CI、操纵/密度检验、协变量连续性 |
+  | 单一处理单位 / 政策试点 | `synthetic-control` | donor weights、pre-fit RMSPE、安慰剂、SDID 备选 |
+  | 一般面板 | `panel-data` | FE/RE、聚类稳健 SE、wild cluster/bootstrap（小 cluster） |
   | 截面 / 基础回归 | `ols-regression` | 稳健 SE |
   | 时间序列 / 宏观 | `time-series` | 单位根、协整、VAR/IRF |
-  | 异质处理效应 / 高维 | `ml-causal` | 因果森林、DML |
+  | 异质处理效应 / 高维 | `ml-causal` | DML、EconML/DoubleML、因果森林/GRF、overlap 与 cross-fitting |
 
 - **可选增强**：用 StatsPAI MCP 链路做 agent-native 因果推断与稳健性自检：
   `detect_design → preflight → recommend → 用 as_handle=true 拟合得 result_id →
   audit_result(result_id) 列出缺的稳健性 → 逐个调它建议的函数 →
   honest_did_from_result / sensitivity_from_result → bibtex(keys) 取可信引用`。
+  若使用外部 Python/R 方法包（DoubleML、EconML、DoWhy、GRF、PyFixest、rdrobust、CausalPy），按
+  methods pack §1 的官方入口核对 API，并把包版本、seed、关键参数写入估计脚本或 `method_gate.md`。
 
 **execute**
 - `Skill` 调用选定的估计 skill，按其工作流跑基准回归（用 `64-tmonk-mcp-stata` / `mcp__stata-*`
@@ -101,13 +110,17 @@
   派多个 subagent 并行跑，**每个 subagent 自己把系数/SE/图写盘**到
   `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。
 - 所有代码留在 `03_analysis/`（`.py`/`.do`/`.R`），结果存 `03_analysis/results/`。
+- 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
+  有路径；缺失项标 `no`，不得用空话替代。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
-`econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑。
-意见写 `03_analysis/results_audit.md`。
+`econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑、methods
+pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit.md`，方法闸门判定写
+`03_analysis/method_gate.md`。
 
 **revise / 交付**：据审阅补检验、修设定，定稿 `03_analysis/results/main_results.json` 与一份
-`03_analysis/results/summary.md`（人话版结论）。
+`03_analysis/results/summary.md`（人话版结论）。只有 `method_gate.md` 为 `PASS` 时，Stage 3 才能置
+`done` 并进入 Stage 4；否则按 `method_gate.md` 的 Next Action 回退。
 
 **失败回退（关键）**：平行趋势不过 / IV 弱工具 / 系数不显著 / 机制不成立 → **不要硬写成功**。
 按 `China-CF-study` 纪律自动切备选：换识别策略、换工具变量、换对照组、改窗口；连续失败则在闸门
@@ -196,7 +209,8 @@
 **execute**（套用 [`subagent-templates.md`](subagent-templates.md) §QG，**只派 1 个**）
 - critic 必读 `references/quality-rubric.md`，读初稿（`07_dehumanize/main.tex` + `04_results/` 表图 +
   `05_draft/ref.bib`）+ 对照 `01_proposal/proposal.md`（贡献承诺）与 `03_analysis/results/summary.md`
-  （真实结果），**逐维打分写入 `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
+  （真实结果）+ `03_analysis/design_register.md` / `03_analysis/method_gate.md`（方法证据），**逐维打分写入
+  `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
 - 7 维：① 贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 解读克制度 ⑤ 写作与结构 ⑥ 引用真实性 ⑦ 可复现性。
 
 **达标判定（三条同时满足才 `pass`）**：每维 ≥ 7 **且** 总分 ≥ 56/70 **且** ②③⑥ 无任何致命红旗。

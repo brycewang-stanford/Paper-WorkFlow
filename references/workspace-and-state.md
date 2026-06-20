@@ -33,6 +33,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── <cleaning>.py|.do|.R       # 清洗脚本（保证可复现）
 │   └── data_audit.md
 ├── 03_analysis/
+│   ├── design_register.md         # ★方法合同：estimand、识别假设、估计量、诊断证据、回退
+│   ├── method_gate.md             # ★方法闸门：最低证据包是否齐全、是否 PASS
 │   ├── <estimation>.py|.do|.R     # 估计代码
 │   ├── results/                   # ★main_results.json + summary.md
 │   ├── robustness/                # 每个稳健性检验一份 json/png（subagent 各自写盘）
@@ -78,7 +80,7 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `2`；v2 起新增 `quality_gate` 块） |
+| `schema_version` | 模板版本号（当前 `3`；v2 新增 `quality_gate`，v3 新增 `method_gate`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -86,6 +88,14 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 | `project.target_journal` | 目标期刊（未定则填 `"TBD-by-stage1"`） |
 | `project.language` | `en` / `zh` / `bilingual`（决定 Stage 7 分流） |
 | `stages` | 10 个阶段键（`0_intake_setup` … `9_submission`）各自的状态 |
+| `method_gate.status` | `pending` / `pass` / `not_pass`——Stage 3 方法闸门判定 |
+| `method_gate.primary_design` | 主识别设计（如 staggered_did / iv / rdd / sdid / dml） |
+| `method_gate.primary_estimator` | 主估计量或实现 route（如 Callaway-Santanna / rdrobust / DoubleML PLR） |
+| `method_gate.design_register` | 设计注册文件路径（`03_analysis/design_register.md`） |
+| `method_gate.method_gate_report` | 方法闸门报告路径（`03_analysis/method_gate.md`） |
+| `method_gate.required_artifacts` | 本设计要求的最低证据包 artifact 列表 |
+| `method_gate.missing_artifacts` | 最近一次方法闸门仍缺失的 artifact |
+| `method_gate.last_audit` | 最近一次方法闸门审计时间/摘要 |
 | `quality_gate.draft_milestone` | `pending` / `done`——「可投稿级初稿」核心里程碑是否达成（质量门 `pass` 时置 `done`） |
 | `quality_gate.status` | `pending` / `pass` / `not_pass`——最近一轮质量门判定 |
 | `quality_gate.rounds` | 已执行的质量门轮次（含回退；上限 2） |
@@ -109,6 +119,8 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
   "proposal": "01_proposal/proposal.md",
   "clean_data": "02_data/clean.parquet",
   "main_results": "03_analysis/results/main_results.json",
+  "design_register": "03_analysis/design_register.md",
+  "method_gate": "03_analysis/method_gate.md",
   "draft": "05_draft/main.tex",
   "submission_grade_draft": "07_dehumanize/main.tex",
   "quality_scorecard": "00_meta/quality_scorecard.md"
@@ -152,5 +164,6 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 - 所有脚本（清洗、估计、画图、建表）留在工作区内对应阶段目录，配 `FINAL_REPORT.md` 里的
   "一键重跑命令"，确保第三方能从 `02_data/raw/` 复跑到 `04_results/`。
 - 数据版权 / 来源在 `02_data/codebook.md` 与 `FINAL_REPORT.md` 注明；不可分发的数据只留拉取脚本
-  与说明，不入库原始文件。
+  与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA data/code policy 记录 provenance、
+  访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
 - 打包交付时以工作区根目录为单位；`backups/` 与 `logs/` 可选保留作审计。
