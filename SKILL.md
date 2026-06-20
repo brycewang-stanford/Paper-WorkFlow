@@ -304,6 +304,15 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   上下文保护契约与输出路径重定向。
 - [`references/workspace-and-state.md`](references/workspace-and-state.md) — 工作区目录布局、
   `workflow_state.json` 字段含义、subagent 输入/输出文件约定。
+- [`references/worked-example.md`](references/worked-example.md) — 一条端到端「黄金路径」trace
+  （绿色信贷→企业创新）：逐阶段产物、两道闸门如何触发、`NOT PASS → 回退 → PASS` 的完整循环（数字均为
+  **示意**，真实运行由真实估计填充）。新人理解整条流水线、编排器照着填空都从这里看起。
+- **研究深化层（按阶段加载）**：[`references/threats-to-validity.md`](references/threats-to-validity.md)
+  （识别威胁 × 审稿异议预案 · Stage 3/5/8）、
+  [`references/design-transparency.md`](references/design-transparency.md)（预分析 · 功效/MDE · 预趋势功效 ·
+  设定曲线 · 研究者自由度 · Stage 3）、
+  [`references/literature-and-positioning.md`](references/literature-and-positioning.md)（结构化检索 ·
+  文献矩阵 · 贡献定位句式 · Stage 1/5）。它们与方法/写作/复现/评审四道标准合流到两道闸门打分。
 - [`validate_skill.py`](validate_skill.py) — 本 skill 的本地自检：模板 schema、工作区初始化、Markdown
   本地链接、核心资产与 DiD Notebook 结构。
 - 演示物料（可选教学用）：本仓库根目录有一份 30 页流程 PDF 讲义

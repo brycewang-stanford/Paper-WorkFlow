@@ -9,6 +9,8 @@
 > `Read <folder>/SKILL.md` 内联执行，绝不凭记忆脑补。可直接复制的 subagent 派发模板见
 > [`subagent-templates.md`](subagent-templates.md)。进入 Stage 3 前还必须加载
 > [`research-grade-methods.md`](research-grade-methods.md)，用它定义现代因果推断/应用计量的最低证据包。
+> **想先看一条完整跑通的 trace**（每阶段产物 + 两道闸门如何触发 + NOT PASS→回退→PASS 循环），见
+> [`worked-example.md`](worked-example.md)——它就是下面这套协议的填空范本。
 
 ---
 
@@ -20,6 +22,9 @@
 **plan**
 - 若用户已给方向，直接用；否则 `AskUserQuestion` 问方向 + 想要的候选标题数 N（缺省 5）。
 - 读 `67/econfin-idea-finder/SKILL.md`，按其漏斗逻辑运行。
+- 加载 [`literature-and-positioning.md`](literature-and-positioning.md)：用滚雪球 + 引用图工具把相关文献
+  找全，建 `01_proposal/lit_matrix.md` 让贡献白space可见；贡献句按 [`writing-craft.md`](writing-craft.md)
+  §3 三槽 + 该文件 §4 定位句式锻造，命中 Edmans 红线就回炉。
 
 **execute（并行 subagent，强制调用子 skill）** — 直接套用
 [`subagent-templates.md`](subagent-templates.md) §S1：
@@ -82,6 +87,10 @@
 - 必读 [`research-grade-methods.md`](research-grade-methods.md)，把 proposal 的识别路线翻译成
   `03_analysis/design_register.md`：estimand、treatment、comparison group、识别假设、主估计量、
   必需诊断、替代估计量、失败回退。
+- 同时加载 [`threats-to-validity.md`](threats-to-validity.md)（把稳健性矩阵设计成「针对每个识别威胁的
+  回应」，并按 §3 给控制集标注前处理/混淆/中介/对撞、剔除坏控制）与
+  [`design-transparency.md`](design-transparency.md)（估计前写预分析计划锁定设计；空结果报 MDE；DiD 跑
+  预趋势功效 + HonestDiD、设定曲线，登记随机种子）。
 - 从 `proposal.md` 读识别策略，按下表择一主 skill（决策树细节见 skill-map 的「方法路由」）：
 
   | 设计 | 主 skill（`67/`） | 配套 |
@@ -157,6 +166,10 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   `05_draft/main.tex` 与 `05_draft/ref.bib`。
 - 文献综述薄弱时，配合 `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、
   `59-shiquda-openalex-skill` 补做结构化综述；引用入库可配 Zotero MCP。
+- **写作标尺**：按 [`writing-craft.md`](writing-craft.md)（引言五段公式、解剖结构、量级纪律）写；识别段按
+  [`threats-to-validity.md`](threats-to-validity.md) §5 加一段「Threats to Identification」先发制人、把每个
+  威胁指到 `robustness/` 真实 artifact；related-work 段按
+  [`literature-and-positioning.md`](literature-and-positioning.md) §4 点名最接近的 3–5 篇、说清本文前进在哪。
 
 **review**：critic 通读——贡献句是否锋利、识别策略段是否说服力够、结果段是否克制（不过度解读）。
 意见写 `05_draft/draft_audit.md`。
@@ -232,6 +245,9 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **目的**：在投稿前先自做一轮"审稿—回应—修订"，把硬伤暴露在自己手里。
 
 **execute**
+- 加载 [`peer-review-and-submission.md`](peer-review-and-submission.md)（五维审稿 + Essential/Desirable
+  分级、逐条可追溯的 response letter 模板）与 [`threats-to-validity.md`](threats-to-validity.md)（审稿命中
+  识别威胁时，按其 §2 末列「被问到怎么回应」逐条回应、指向具体修改位置）。
 - `Skill` 调用 `67/referee-report` 生成审稿报告（可设 normal/high-level 档与意见条数；
   推荐先按 Major Revision 口吻拿到建设性意见），落 `08_review/referee_report.md`。
 - `Skill` 调用 `67/paper-referee-revise`，按审稿意见**逐条**修订 `main.tex`，并生成 response letter

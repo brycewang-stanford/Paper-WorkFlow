@@ -125,6 +125,10 @@ playbook 指定的工作区子目录落盘即可。
 | 文献库管理 / 引用入库 | Zotero MCP（`zotero_*`、`scite_*`）、`59-shiquda-openalex-skill` |
 | 因果推断 MCP（agent-native） | **StatsPAI MCP**：`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex` |
 | 方法增强包 | `69-Paper-WorkFlow/references/research-grade-methods.md`：design register、method gate、最低证据包 |
+| 识别威胁 / 审稿异议预案 | `69-Paper-WorkFlow/references/threats-to-validity.md`：威胁×诊断×预防×回应对照表（坏控制、预趋势功效、弱工具…，Stage 3/5/8） |
+| 设计透明度 / 预分析 | `69-Paper-WorkFlow/references/design-transparency.md`：PAP/预注册、功效与 MDE、预趋势功效 + HonestDiD、设定曲线、研究者自由度披露（Stage 3） |
+| 文献检索与贡献定位 | `69-Paper-WorkFlow/references/literature-and-positioning.md`：滚雪球 + 引用图工具、文献矩阵、定位句式、引用真实性（Stage 1/5） |
+| 端到端示例 trace | `69-Paper-WorkFlow/references/worked-example.md`：黄金路径逐阶段产物 + 两道闸门触发 + 回退循环（编排器填空范本） |
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |
 | 笔记 / 知识库 | Obsidian MCP（`create-note`/`search-vault`） |

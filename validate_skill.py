@@ -156,6 +156,10 @@ def check_assets() -> None:
         "references/quality-rubric.md",
         "references/subagent-templates.md",
         "references/workspace-and-state.md",
+        "references/threats-to-validity.md",
+        "references/design-transparency.md",
+        "references/literature-and-positioning.md",
+        "references/worked-example.md",
     ]
     for rel in required:
         path = ROOT / rel
