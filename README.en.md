@@ -49,8 +49,8 @@ The lecture version presented eight teaching stages. The current skill keeps tha
 |---|---|---|---|
 | 1. Ideation | Stage 1 | Is the question novel, important, and identifiable? | `econfin-idea-finder`, `novelty-check`, `significance-search` -> topic card |
 | 2. Design | Stage 1 | Are the causal question, counterfactual, variation, and target journal clear? | `econfin-proposal`, `journal-digest` -> `proposal.md` |
-| 3. Data | Stage 2 | Are sources, keys, frequency, and cleaning rules reproducible? | `data-fetcher`, `data-cleaning` -> `clean.parquet`, `codebook.md`, data log |
-| 4. Estimation | Stage 3 | Where does the counterfactual come from, and is the evidence bundle complete? | **Backend router**: Python/StatsPAI by default, or Stata `.do`, or R/fixest/Quarto + design-specific skills -> `analysis_backend.md`, `design_register.md`, `method_gate.md` |
+| 3. Data | Stage 2 | Are sources, keys, frequency, cleaning rules, and the estimation sample reproducible? | `data-fetcher`, `data-cleaning` -> `clean.parquet`, `codebook.md`, `sample_audit.md`, data log |
+| 4. Estimation | Stage 3 | Where does the counterfactual come from, and are the sample/estimand and evidence bundle complete? | **Backend router**: Python/StatsPAI by default, or Stata `.do`, or R/fixest/Quarto + design-specific skills -> `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md` |
 | 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | Backend-native Word/Excel/LaTeX tables and PDF/PNG figures: StatsPAI, Stata `esttab`/`outreg2`, or R `modelsummary`/Quarto |
 | 6. Writing | Stage 5-7 | Is the draft complete, restrained, citation-faithful, and free of AI residue? | `paper-writer`, `paper-pipeline`, `readability` / `fix-chinese` -> `main.tex`, quality scorecard |
 | 7. Review | Stage 8 | What would a reviewer attack before submission? | `referee-report`, `paper-referee-revise` -> referee report, response letter, revised draft |
@@ -63,10 +63,12 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 | Layer | Responsibility | Key artifacts |
 |---|---|---|
 | Orchestration | Entry routing, resumability, subagent dispatch, stage gates | `workflow_state.json`, `logs/stage_<N>.md` |
-| Evidence | Data, identification design, analysis backend, estimation, robustness, method evidence | `analysis_backend.md`, `design_register.md`, `method_gate.md`, `main_results.json`, `robustness/` |
+| Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `main_results.json`, `robustness/` |
 | Manuscript | Exhibits, draft, polish, de-slop, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `response_letter.md`, `journal_shortlist.md` |
 
 The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules.
+
+[empirical-audit.md](references/empirical-audit.md) makes the Stage 2-3 sample contract explicit: raw-to-clean-to-estimation sample attrition, treated/control counts, treatment timing, missingness/balance/overlap, and cluster/weight choices must be recorded in `sample_audit.md` before the Method Gate can pass.
 
 Stages 3-4 now start with the backend router in [analysis-backends.md](references/analysis-backends.md): **Python/StatsPAI** is the default, **Stata** uses `00.2-Full-empirical-analysis-skill_Stata` for `.do` files and `reghdfe`/`ivreg2`/`csdid`/`esttab`/`outreg2`, and **R** uses `00.3-Full-empirical-analysis-skill_R` for tidyverse, `fixest`, `did`, `grf`, `modelsummary`, and Quarto. The default StatsPAI route is documented in [statspai-analysis.md](references/statspai-analysis.md): MCP handles design adjudication, fitting, diagnostics, robustness self-checks, and citations; the package handles publication-grade bundles. All three backends share the same Method Gate.
 
@@ -91,6 +93,7 @@ Finishing stages is not enough. The workflow enforces four standards that review
 
 | Standard | What it governs | Where it applies | Reference |
 |---|---|---|---|
+| Sample and estimand audit | Sample attrition, variable construction, missingness/balance/overlap, cluster/weights | Stage 2-3 Method Gate | [empirical-audit.md](references/empirical-audit.md) |
 | Method evidence | Identification registry, method-specific diagnostics, robustness matrix, reproducible scripts | Stage 3 Method Gate | [research-grade-methods.md](references/research-grade-methods.md) |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
@@ -153,7 +156,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
 ├── 01_proposal/proposal.md
-├── 02_data/clean.parquet + codebook.md
+├── 02_data/clean.parquet + codebook.md + sample_audit.md
 ├── 03_analysis/design_register.md + method_gate.md
 ├── 03_analysis/results/ + robustness/
 ├── 04_results/*.{tex,docx,xlsx} + *.pdf + *.png
@@ -215,6 +218,7 @@ Paper-WorkFlow/
 ├── templates/
 │   ├── design_register.md
 │   ├── analysis_backend.md
+│   ├── sample_audit.md
 │   ├── method_gate.md
 │   ├── quality_scorecard.md
 │   ├── data_governance.md
@@ -228,6 +232,7 @@ Paper-WorkFlow/
 │   ├── skill-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
+│   ├── empirical-audit.md
 │   ├── analysis-backends.md
 │   ├── statspai-analysis.md
 │   ├── threats-to-validity.md
@@ -258,6 +263,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
+- [references/empirical-audit.md](references/empirical-audit.md): sample, construct, and estimand audit requirements.
 - [references/analysis-backends.md](references/analysis-backends.md): Python/StatsPAI, Stata, and R backend routing for Stages 3-4.
 - [references/statspai-analysis.md](references/statspai-analysis.md): StatsPAI estimation + publication-grade export engine for Stages 3-4 (MCP + package, three domain modes, estimator routing, seven-block robustness gauntlet).
 - [references/writing-craft.md](references/writing-craft.md): scholarly writing standards.
