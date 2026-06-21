@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 TEMPLATE_OUTPUTS = {
     "templates/analysis_backend.md": "00_meta/analysis_backend.md",
+    "templates/sample_audit.md": "02_data/sample_audit.md",
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
     "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
@@ -30,6 +31,7 @@ TEMPLATE_OUTPUTS = {
 
 ARTIFACTS = {
     "analysis_backend": "00_meta/analysis_backend.md",
+    "sample_audit": "02_data/sample_audit.md",
     "design_register": "03_analysis/design_register.md",
     "method_gate": "03_analysis/method_gate.md",
     "evidence_ledger": "00_meta/evidence_ledger.md",
@@ -104,6 +106,17 @@ def build_workspace(tmp_root: Path) -> Path:
             "version_report": "00_meta/analysis_backend.md",
         }
     )
+    state["empirical_audit"].update(
+        {
+            "status": "pending",
+            "sample_audit": "02_data/sample_audit.md",
+            "estimand_alignment": "pending",
+            "missingness_balance": "pending",
+            "construct_validity": "pending",
+            "blocking_issues": [],
+            "last_audit": "smoke fixture only; no real data audited",
+        }
+    )
     state["stages"]["0_intake_setup"] = "done"
     state["method_gate"].update(
         {
@@ -135,12 +148,14 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 5:
-        fail("smoke state schema_version must remain 5")
+    if state.get("schema_version") != 6:
+        fail("smoke state schema_version must remain 6")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
         fail("smoke state analysis backend was not populated")
+    if state["empirical_audit"]["sample_audit"] != "02_data/sample_audit.md":
+        fail("smoke state empirical audit was not populated")
     if state["replication_pack"]["status"] != "not_ready":
         fail("smoke fixture must not pretend replication is ready")
     for name, rel in ARTIFACTS.items():
@@ -164,6 +179,10 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Backend Choice", "Environment Check", "Output Contract"]:
         if marker not in backend:
             fail(f"analysis backend template missing marker: {marker}")
+    sample_audit = (workspace / "02_data" / "sample_audit.md").read_text(encoding="utf-8")
+    for marker in ["Estimand Alignment", "Sample Construction Flow", "Missingness, Balance, and Overlap"]:
+        if marker not in sample_audit:
+            fail(f"sample audit template missing marker: {marker}")
     run_all = workspace / "run_all.sh"
     subprocess.run(["bash", "-n", str(run_all)], check=True)
 

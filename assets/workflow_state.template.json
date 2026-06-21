@@ -1,5 +1,5 @@
 {
-  "schema_version": 5,
+  "schema_version": 6,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -15,6 +15,15 @@
     "child_skill": "",
     "environment_status": "pending",
     "version_report": "00_meta/analysis_backend.md"
+  },
+  "empirical_audit": {
+    "status": "pending",
+    "sample_audit": "02_data/sample_audit.md",
+    "estimand_alignment": "pending",
+    "missingness_balance": "pending",
+    "construct_validity": "pending",
+    "blocking_issues": [],
+    "last_audit": ""
   },
   "stages": {
     "0_intake_setup": "pending",

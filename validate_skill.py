@@ -47,6 +47,7 @@ REQUIRED_TEMPLATES = {
     "templates/analysis_backend.md": ["Backend Choice", "Environment Check", "Fallback"],
     "templates/design_register.md": ["Target estimand", "Bad-control screen", "Fallback Plan"],
     "templates/method_gate.md": ["Required Artifact Table", "Decision: PASS / NOT PASS", "Hard Flags"],
+    "templates/sample_audit.md": ["Estimand Alignment", "Sample Construction Flow", "Inference-Level Check"],
     "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance"],
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
     "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
@@ -89,13 +90,14 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 5:
-        fail("workflow_state.template.json schema_version must be 5")
+    if data.get("schema_version") != 6:
+        fail("workflow_state.template.json schema_version must be 6")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
         "project",
         "analysis_backend",
+        "empirical_audit",
         "method_gate",
         "quality_gate",
         "replication_pack",
@@ -116,6 +118,18 @@ def load_template() -> dict:
     ]:
         if key not in backend:
             fail(f"analysis_backend missing key: {key}")
+    audit = data["empirical_audit"]
+    for key in [
+        "status",
+        "sample_audit",
+        "estimand_alignment",
+        "missingness_balance",
+        "construct_validity",
+        "blocking_issues",
+        "last_audit",
+    ]:
+        if key not in audit:
+            fail(f"empirical_audit missing key: {key}")
     gate = data["replication_pack"]
     for key in [
         "status",
@@ -176,6 +190,7 @@ def check_assets() -> None:
         "references/stage-playbook.md",
         "references/skill-map.md",
         "references/research-grade-methods.md",
+        "references/empirical-audit.md",
         "references/statspai-analysis.md",
         "references/analysis-backends.md",
         "references/writing-craft.md",
