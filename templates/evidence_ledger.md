@@ -23,6 +23,8 @@ Strength rules:
 
 ## 2. Data and Sample Provenance
 
+Primary sample audit: `02_data/sample_audit.md`
+
 | Sample step | Input | Output | N / units | Exclusion or transform | Script and line | Notes |
 |---|---|---|---:|---|---|---|
 | Raw import | 02_data/raw/<file> | 02_data/<intermediate> |  |  | 02_data/<script>:<line> |  |
@@ -33,6 +35,7 @@ Required checks:
 - Merge keys are unique at the declared unit and frequency.
 - Sample restrictions and attrition are recorded before estimation.
 - Treatment, control, and outcome construction match `02_data/codebook.md`.
+- Final estimation sample N, treated/control counts, cluster level, and weights match `03_analysis/results/main_results.json`.
 - Restricted data, PII, and archive boundaries match `00_meta/data_governance.md`.
 
 ## 3. Variable and Construct Crosswalk

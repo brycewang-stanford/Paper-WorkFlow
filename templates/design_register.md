@@ -12,8 +12,10 @@ Last updated (Beijing): <YYYY-MM-DD HH:MM>
 - Treatment / exposure:
 - Outcome:
 - Unit of observation:
+- Estimation sample:
 - Sample window:
 - Primary comparison group:
+- Sample audit: 02_data/sample_audit.md
 - Target journal / audience:
 
 ## 2. Identification Design
@@ -50,6 +52,7 @@ Bad-control screen:
 
 | Artifact | Required? | Path | Status |
 |---|---:|---|---|
+| Sample / estimand audit | yes | 02_data/sample_audit.md | missing / present |
 | Main estimation script | yes | 03_analysis/<script> | missing / present |
 | Analysis backend report | yes | 00_meta/analysis_backend.md | missing / present |
 | Main results JSON | yes | 03_analysis/results/main_results.json | missing / present |

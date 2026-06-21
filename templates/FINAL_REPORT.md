@@ -10,7 +10,7 @@ Workspace: <paper_workspace/...>
 |---|---|---|---|
 | 0. Intake & setup |  | 00_meta/workflow_state.json |  |
 | 1. Topic & design |  | 01_proposal/proposal.md |  |
-| 2. Data |  | 02_data/clean.parquet, 02_data/codebook.md |  |
+| 2. Data |  | 02_data/clean.parquet, 02_data/codebook.md, 02_data/sample_audit.md |  |
 | 3. Identification & estimation |  | 03_analysis/design_register.md, 03_analysis/method_gate.md |  |
 | 4. Tables & figures |  | 04_results/ |  |
 | 5. Draft |  | 05_draft/main.tex |  |
@@ -23,6 +23,7 @@ Workspace: <paper_workspace/...>
 
 - Method gate: PASS / NOT PASS
 - Analysis backend: python-statspai / stata / r
+- Sample / estimand audit: PASS / NOT PASS
 - Draft quality gate: PASS / NOT PASS
 - Replication pack: ready / not_ready
 - Data governance: clear / restricted / blocked
@@ -35,6 +36,7 @@ Workspace: <paper_workspace/...>
 | Proposal | 01_proposal/proposal.md | no |
 | Analysis backend report | 00_meta/analysis_backend.md | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
+| Sample / estimand audit | 02_data/sample_audit.md | no |
 | Main results | 03_analysis/results/main_results.json | no |
 | Evidence ledger | 00_meta/evidence_ledger.md | no |
 | Tables and figures | 04_results/ | no |
@@ -54,6 +56,7 @@ Last rebuild check:
 ## 5. Residual Risks
 
 - Identification:
+- Sample / estimand alignment:
 - Robustness:
 - Evidence-to-claim alignment:
 - Citation:

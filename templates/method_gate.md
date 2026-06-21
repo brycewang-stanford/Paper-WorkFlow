@@ -12,6 +12,7 @@ Auditor: method-gate critic subagent
 - Analysis backend: python-statspai / stata / r
 - Backend version report: 00_meta/analysis_backend.md
 - Target estimand:
+- Sample audit: 02_data/sample_audit.md
 - Design register: 03_analysis/design_register.md
 - Main result: 03_analysis/results/main_results.json
 
@@ -19,6 +20,7 @@ Auditor: method-gate critic subagent
 
 | Requirement | Path | Present? | Pass? | Notes |
 |---|---|---:|---:|---|
+| Sample / estimand audit | 02_data/sample_audit.md | no | no |  |
 | Design register | 03_analysis/design_register.md | no | no |  |
 | Analysis backend report | 00_meta/analysis_backend.md | no | no |  |
 | Main estimation script | 03_analysis/<script> | no | no |  |
@@ -33,6 +35,9 @@ Auditor: method-gate critic subagent
 
 - Parallel trends / exclusion / continuity / overlap:
 - Bad-control risk:
+- Estimand / estimation-sample drift:
+- Missingness, balance, or overlap:
+- Inference level, weights, or clustering:
 - P-hacking or researcher degrees of freedom:
 - Data governance or access restriction:
 - Runtime fallback used:
