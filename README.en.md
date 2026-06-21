@@ -36,6 +36,7 @@ Paper-WorkFlow turns that system into:
 - `Stage 0-9`: setup, routing, data, identification, exhibits, drafting, polishing, de-slopping, review, and submission.
 - Two hard gates: a Method Gate after Stage 3 and a Draft Quality Gate after Stage 7.
 - A resumable workspace controlled by `00_meta/workflow_state.json`.
+- A first-class analysis backend choice for Python/StatsPAI, Stata, or R.
 - A replication contract tracked through `REPLICATION.md`, `DAS.md`, `run_all.sh`, and `workflow_state.json.replication_pack`.
 
 The core rule is simple: call existing skills instead of rewriting them. The orchestrator is valuable because it gives each skill the right input, at the right time, with the right context boundary.
@@ -49,8 +50,8 @@ The lecture version presented eight teaching stages. The current skill keeps tha
 | 1. Ideation | Stage 1 | Is the question novel, important, and identifiable? | `econfin-idea-finder`, `novelty-check`, `significance-search` -> topic card |
 | 2. Design | Stage 1 | Are the causal question, counterfactual, variation, and target journal clear? | `econfin-proposal`, `journal-digest` -> `proposal.md` |
 | 3. Data | Stage 2 | Are sources, keys, frequency, and cleaning rules reproducible? | `data-fetcher`, `data-cleaning` -> `clean.parquet`, `codebook.md`, data log |
-| 4. Estimation | Stage 3 | Where does the counterfactual come from, and is the evidence bundle complete? | **StatsPAI engine** (MCP-first design/fit/diagnostics) + `did-analysis`, `iv-estimation`, `rdd-analysis`, `synthetic-control`, etc. -> `design_register.md`, `method_gate.md` |
-| 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | **StatsPAI export stack** (Word/Excel/LaTeX in one shot) + `table`, `figure` -> regression tables, event-study plots, coefficient plots |
+| 4. Estimation | Stage 3 | Where does the counterfactual come from, and is the evidence bundle complete? | **Backend router**: Python/StatsPAI by default, or Stata `.do`, or R/fixest/Quarto + design-specific skills -> `analysis_backend.md`, `design_register.md`, `method_gate.md` |
+| 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | Backend-native Word/Excel/LaTeX tables and PDF/PNG figures: StatsPAI, Stata `esttab`/`outreg2`, or R `modelsummary`/Quarto |
 | 6. Writing | Stage 5-7 | Is the draft complete, restrained, citation-faithful, and free of AI residue? | `paper-writer`, `paper-pipeline`, `readability` / `fix-chinese` -> `main.tex`, quality scorecard |
 | 7. Review | Stage 8 | What would a reviewer attack before submission? | `referee-report`, `paper-referee-revise` -> referee report, response letter, revised draft |
 | 8. Submission | Stage 9 | Is the journal fit right, and is the package complete? | `paper-submission`, `reference-verify` -> journal shortlist, cover letter, submission package |
@@ -62,12 +63,12 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 | Layer | Responsibility | Key artifacts |
 |---|---|---|
 | Orchestration | Entry routing, resumability, subagent dispatch, stage gates | `workflow_state.json`, `logs/stage_<N>.md` |
-| Evidence | Data, identification design, estimation, robustness, method evidence | `design_register.md`, `method_gate.md`, `main_results.json`, `robustness/` |
+| Evidence | Data, identification design, analysis backend, estimation, robustness, method evidence | `analysis_backend.md`, `design_register.md`, `method_gate.md`, `main_results.json`, `robustness/` |
 | Manuscript | Exhibits, draft, polish, de-slop, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `response_letter.md`, `journal_shortlist.md` |
 
 The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules.
 
-The unified estimation and publication-grade export engine for Stages 3-4 is **StatsPAI** ([statspai-analysis.md](references/statspai-analysis.md)). By default the agent drives the already-connected StatsPAI MCP server (`detect_design -> preflight -> recommend -> fit(as_handle) -> audit_result -> sensitivity_from_result -> bibtex`) for agent-native design adjudication, fitting, diagnostics, robustness self-checks, and verified citations, with no Python written. When publication-grade three-format tables/figures (Word/Excel/LaTeX together) and an 8-section paper bundle are needed, it switches to the `statspai` package (`sp.regtable` / `sp.paper_tables` / `sp.collect`). It also extends the design router from applied econometrics into epidemiology (target-trial, IPTW, g-formula, TMLE, E-value) and ML causal inference (DML, meta-learners, causal forest, CATE, policy), and fills the Method Gate's minimum evidence bundle through a seven-block robustness gauntlet (placebo, alternative samples, spec curve, alternative SE, Oster bounds, HonestDiD, E-value).
+Stages 3-4 now start with the backend router in [analysis-backends.md](references/analysis-backends.md): **Python/StatsPAI** is the default, **Stata** uses `00.2-Full-empirical-analysis-skill_Stata` for `.do` files and `reghdfe`/`ivreg2`/`csdid`/`esttab`/`outreg2`, and **R** uses `00.3-Full-empirical-analysis-skill_R` for tidyverse, `fixest`, `did`, `grf`, `modelsummary`, and Quarto. The default StatsPAI route is documented in [statspai-analysis.md](references/statspai-analysis.md): MCP handles design adjudication, fitting, diagnostics, robustness self-checks, and citations; the package handles publication-grade bundles. All three backends share the same Method Gate.
 
 ## The 47-Skill Map
 
@@ -77,8 +78,8 @@ Paper-WorkFlow orchestrates the research action; the underlying action comes fro
 |---|---|---|
 | Ideation and design | `econfin-idea-finder`, `novelty-check`, `significance-search`, `journal-digest`, `econfin-proposal` | Turn an interest into an executable proposal |
 | Data | `data-fetcher`, `data-cleaning` | Build an auditable analysis table |
-| Estimation | **StatsPAI** (MCP + package), `ols-regression`, `panel-data`, `iv-estimation`, `did-analysis`, `rdd-analysis`, `synthetic-control`, `time-series`, `ml-causal`, `stata`, `stats` | Generate method-specific evidence |
-| Tables and figures | **StatsPAI export stack** (`regtable`/`paper_tables`/`collect`, three formats at once), `table`, `figure` | Produce publication-grade exhibits |
+| Estimation | **Python/StatsPAI, Stata, or R backends**, plus `ols-regression`, `panel-data`, `iv-estimation`, `did-analysis`, `rdd-analysis`, `synthetic-control`, `time-series`, `ml-causal` | Generate method-specific evidence |
+| Tables and figures | StatsPAI `regtable`/`collect`, Stata `esttab`/`outreg2`, R `modelsummary`/Quarto, `table`, `figure` | Produce publication-grade exhibits |
 | Writing and polishing | `paper-writer`, `paper-style`, `paper-polish`, `paper-self-revise`, `paper-pipeline`, `readability` | Move from draft to journal-specific manuscript |
 | Review and citations | `referee-report`, `paper-referee-revise`, `reference-verify` | Simulate review, revise, and verify references |
 | Submission | `paper-submission` | Prepare the journal shortlist, cover letter, and submission materials |
@@ -124,10 +125,12 @@ Use it from Claude Code with a research idea, proposal, dataset, results folder,
 /paper-workflow green credit policy and firm innovation, target: Management Science, language: en
 /paper-workflow ./proposal.md, run from data stage
 /paper-workflow data at ./panel.csv, design is DiD, estimate baseline and robustness first
+/paper-workflow data at ./panel.dta, use Stata for a complete do-file replication
+/paper-workflow data at ./panel.csv, use R/fixest and modelsummary
 /paper-workflow draft at ./paper/main.tex, polish and prepare submission package
 ```
 
-Before execution, the skill resolves the interaction mode, target journal, and manuscript language once:
+Before execution, the skill resolves the interaction mode, target journal, manuscript language, and analysis backend once:
 
 | Mode | Meaning |
 |---|---|
@@ -135,7 +138,9 @@ Before execution, the skill resolves the interaction mode, target journal, and m
 | `stage-confirm` | Recommended default; each stage ends with a summary card and waits for approval |
 | `interactive` | Lets each underlying skill use its native approval flow |
 
-If the user explicitly asks for autonomous execution, the skill infers conservative defaults, records assumptions in `00_meta/intake.md`, and continues without blocking on preferences.
+Backend choices are `python-statspai` (default), `stata`, and `r`. Backend choice controls Stage 3-4 scripts and export tools; it is separate from manuscript language.
+
+If the user explicitly asks for autonomous execution, the skill infers conservative defaults, records assumptions in `00_meta/intake.md` and `00_meta/analysis_backend.md`, and continues without blocking on preferences.
 
 ## Workspace Outputs
 
@@ -144,13 +149,14 @@ All outputs are written to a self-contained workspace:
 ```text
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/workflow_state.json
+├── 00_meta/analysis_backend.md
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md
 ├── 03_analysis/design_register.md + method_gate.md
 ├── 03_analysis/results/ + robustness/
-├── 04_results/*.tex + *.pdf + *.png
+├── 04_results/*.{tex,docx,xlsx} + *.pdf + *.png
 ├── 05_draft/main.tex + ref.bib
 ├── 06_polish/
 ├── 07_dehumanize/
@@ -208,6 +214,7 @@ Paper-WorkFlow/
 │   └── smoke_workspace.py
 ├── templates/
 │   ├── design_register.md
+│   ├── analysis_backend.md
 │   ├── method_gate.md
 │   ├── quality_scorecard.md
 │   ├── data_governance.md
@@ -221,6 +228,7 @@ Paper-WorkFlow/
 │   ├── skill-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
+│   ├── analysis-backends.md
 │   ├── statspai-analysis.md
 │   ├── threats-to-validity.md
 │   ├── design-transparency.md
@@ -250,6 +258,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
+- [references/analysis-backends.md](references/analysis-backends.md): Python/StatsPAI, Stata, and R backend routing for Stages 3-4.
 - [references/statspai-analysis.md](references/statspai-analysis.md): StatsPAI estimation + publication-grade export engine for Stages 3-4 (MCP + package, three domain modes, estimator routing, seven-block robustness gauntlet).
 - [references/writing-craft.md](references/writing-craft.md): scholarly writing standards.
 - [references/reproducibility-pack.md](references/reproducibility-pack.md): replication packaging standard.
