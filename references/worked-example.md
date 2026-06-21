@@ -22,8 +22,9 @@
 | **交互档位** | `阶段确认`（缺省推荐） |
 | **目标期刊** | 主：*Journal of Corporate Finance*；备：《经济研究》（双语候选池） |
 | **语言** | 中英双语（先英文稿，后出中文版） |
+| **分析后端** | `python-statspai`（缺省；Stata/R 可在 Stage 0 改选） |
 
-> 触发后 Stage 0 静默完成：取北京时间、判入口、`AskUserQuestion` 一次问清三件套、`init_workspace.sh`
+> 触发后 Stage 0 静默完成：取北京时间、判入口、`AskUserQuestion` 一次问清四件套、`init_workspace.sh`
 > 铺骨架、写 `00_meta/workflow_state.json`（`entry_stage=1, mode=stage-confirm`）。
 
 ---

@@ -68,13 +68,16 @@
 # 输入
 - 清洗后数据：{{WS}}/02_data/clean.parquet（codebook: {{WS}}/02_data/codebook.md）
 - 设计注册：{{WS}}/03_analysis/design_register.md（若不存在，先按 {{REPO_69}}/references/research-grade-methods.md 模板补写草稿）
+- 分析后端：{{WS}}/00_meta/analysis_backend.md 与 {{WS}}/00_meta/workflow_state.json 的 `analysis_backend`
 - 主设定与基准结果：{{WS}}/03_analysis/results/main_results.json
 - 估计脚本范式（照其风格）：{{WS}}/03_analysis/（已有 .py/.do/.R）
 - 本检验：{{CHECK_NAME}}（如「替换聚类到省级」/「剔除危机年份子样本」/「安慰剂：随机分配处理时点」）
 
 # 执行
-- 复用主设定，只改本检验对应的那一处；用 {{ESTIMATOR_SKILL}}（优先 `Skill`，not found 则
-  `Read {{REPO}}/{{ESTIMATOR_FOLDER}}/SKILL.md` 按其流程）跑。可选 StatsPAI MCP 链路做交叉验证。
+- 复用主设定和已选分析后端，只改本检验对应的那一处；用 {{ESTIMATOR_SKILL}}（优先 `Skill`，not found 则
+  `Read {{REPO}}/{{ESTIMATOR_FOLDER}}/SKILL.md` 按其流程）跑。若后端是 Stata/R，按
+  {{REPO_69}}/references/analysis-backends.md 调 `Full-empirical-analysis-skill-Stata` 或
+  `Full-empirical-analysis-skill-R`；可选 StatsPAI MCP 链路做交叉验证。
 - 把系数/SE/p/样本量/必要图写盘到 {{WS}}/03_analysis/robustness/{{CHECK_NAME}}.json（图同名 .png）。
 - 若本检验属于 research-grade-methods.md 的最低证据包，把 artifact 路径追加到
   {{WS}}/03_analysis/method_gate.md 的对应行。
@@ -96,6 +99,7 @@
 
 # 必读
 - 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
+- 分析后端路由与输出合同：{{REPO_69}}/references/analysis-backends.md
 - 数据治理与运行时 fallback：{{REPO_69}}/references/data-governance.md、
   {{REPO_69}}/references/runtime-fallbacks.md
 - skill 路由：{{REPO_69}}/references/skill-map.md
@@ -103,6 +107,7 @@
 # 输入
 - proposal 合同：{{WS}}/01_proposal/proposal.md
 - 数据治理：{{WS}}/00_meta/data_governance.md（若缺失，列为 hard flag）
+- 分析后端：{{WS}}/00_meta/analysis_backend.md（若缺失，列为 hard flag）
 - 设计注册：{{WS}}/03_analysis/design_register.md
 - 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
 - 稳健性目录：{{WS}}/03_analysis/robustness/

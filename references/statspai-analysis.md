@@ -1,7 +1,8 @@
 # StatsPAI 分析引擎 — Stage 3–4 的统一估计与出版级出表引擎
 
-> **这是 Paper-WorkFlow 的因果推断 / 应用计量主引擎手册。** Stage 3（识别与估计）与 Stage 4
-> （表与图）进入时按需加载本文。StatsPAI 把「拟合 → 诊断 → 稳健性 → 出表/出图 → 取引用」串成
+> **这是 Paper-WorkFlow 默认 `python-statspai` 后端的因果推断 / 应用计量主引擎手册。**
+> Stage 3（识别与估计）与 Stage 4（表与图）在选择 Python/StatsPAI 后端、或需要 StatsPAI 交叉验证时加载本文。
+> Stata 和 R 后端的同级路由见 [`analysis-backends.md`](analysis-backends.md)。StatsPAI 把「拟合 → 诊断 → 稳健性 → 出表/出图 → 取引用」串成
 > 一条 agent-native 链路，恰好覆盖现代实证论文的 8 个产出段，与本编排器的 Stage 2→4 + 收尾几乎
 > 1:1 对齐。
 >
@@ -14,7 +15,7 @@
 
 ## 0. 两条接入路径（先选路，再干活）
 
-StatsPAI 有两面，本编排器**默认 MCP 优先、包为重活路径**：
+StatsPAI 有两面。本编排器在 `analysis_backend.primary=python-statspai` 时**默认 MCP 优先、包为重活路径**：
 
 | 路径 | 是什么 | 何时用 | 入口 |
 |---|---|---|---|

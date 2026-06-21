@@ -22,6 +22,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── run_all.sh / master.do / Makefile # ★一键重跑入口（至少三选一）
 ├── 00_meta/
 │   ├── workflow_state.json        # ★唯一权威进度文件（断点续跑依据）
+│   ├── analysis_backend.md        # ★Python/StatsPAI、Stata、R 后端选择与环境检查
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   ├── data_governance.md         # ★数据分级、PII、IRB/DUA、公开包边界
 │   ├── evidence_ledger.md         # ★claim→data→estimate→exhibit→script 总账
@@ -88,13 +89,19 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `4`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`） |
+| `schema_version` | 模板版本号（当前 `5`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
 | `project.mode` | `auto` / `stage-confirm` / `interactive`（交互档位） |
 | `project.target_journal` | 目标期刊（未定则填 `"TBD-by-stage1"`） |
 | `project.language` | `en` / `zh` / `bilingual`（决定 Stage 7 分流） |
+| `analysis_backend.primary` | Stage 3–4 的主分析后端：`python-statspai` / `stata` / `r` |
+| `analysis_backend.secondary_validation` | 交叉验证后端；无则 `none` |
+| `analysis_backend.script_extension` | 主估计脚本扩展名：`.py` / `.do` / `.R` / `.qmd` |
+| `analysis_backend.child_skill` | 选定后端调用的 child skill 或 Read 回退路径 |
+| `analysis_backend.environment_status` | `pending` / `available` / `fallback` / `blocked` |
+| `analysis_backend.version_report` | 后端选择、版本检查和 fallback 记录路径（`00_meta/analysis_backend.md`） |
 | `stages` | 10 个阶段键（`0_intake_setup` … `9_submission`）各自的状态 |
 | `method_gate.status` | `pending` / `pass` / `not_pass`——Stage 3 方法闸门判定 |
 | `method_gate.primary_design` | 主识别设计（如 staggered_did / iv / rdd / sdid / dml） |
@@ -132,6 +139,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 ```json
 {
   "proposal": "01_proposal/proposal.md",
+  "analysis_backend": "00_meta/analysis_backend.md",
   "clean_data": "02_data/clean.parquet",
   "main_results": "03_analysis/results/main_results.json",
   "design_register": "03_analysis/design_register.md",

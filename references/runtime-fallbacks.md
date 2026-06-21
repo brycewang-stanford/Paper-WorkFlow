@@ -24,9 +24,10 @@
 | `Agent` 不可用 | 主代理串行执行，或缩小批次；大文件仍写盘只读摘要 | 哪些任务未并行 | 无，除非时间限制导致少做检验 |
 | 网络 / WebSearch / WebFetch 不可用 | 使用用户给定文件、本地文献库、已有 DOI/bib；把政策刷新标 `blocked` | 未能刷新的 URL | 引用/政策相关维度封顶，投稿前必须补 |
 | Zotero / 引用 MCP 不可用 | 跑 `reference-verify` 或手工 Crossref/OpenAlex 查验；保留核验报告 | 核验工具和覆盖率 | 引用维度按覆盖率评分 |
-| StatsPAI MCP 不可用 | 用 Stata/R/Python 包复刻同等 artifact；写明包版本 | 缺失 MCP、替代 route | 若最低证据包齐，方法门可过 |
-| Stata 不可用 | 优先 Python/R 等价实现；若结果依赖 Stata-only 命令，暂停或标缺失 | Stata 版本缺失、替代包 | 关键 artifact 缺失则 Method Gate `NOT PASS` |
-| R/Python 包缺失 | 建安装脚本；若不能安装，用同类包但保留差异说明 | 包名、版本、替代 | 数字不可复核时不得放行 |
+| 选定分析后端不可用 | 按 `analysis-backends.md` 切到能复刻同等 artifact 的另一后端；若用户硬性指定则暂停确认 | 原后端、替代后端、差异 | artifact parity 齐则可过；否则 Method Gate `NOT PASS` |
+| StatsPAI MCP 不可用 | 用 `statspai` 包或 Stata/R/Python 包复刻同等 artifact；写明包版本 | 缺失 MCP、替代 route | 若最低证据包齐，方法门可过 |
+| Stata 不可用 | 若 Stata 是用户指定主后端，先记录 blocked；可用 Python/R 等价实现做 fallback 或 secondary validation | Stata 版本缺失、替代包 | 关键 artifact 缺失则 Method Gate `NOT PASS` |
+| R/Python 包缺失 | 建安装脚本；若不能安装，用同类包或另一后端但保留差异说明 | 包名、版本、替代 | 数字不可复核时不得放行 |
 | LaTeX / PDF 工具缺失 | 生成 `.tex`、`.md`、`.docx` 替代；投稿前补 PDF render | 缺失命令 | 写作可继续，submission checklist 不可过 |
 | 受限数据不可访问 | 用公开样例/合成数据跑代码结构；真实估计标 blocked | 数据访问限制 | 主结果不可声称真实；复现 `not_ready` |
 | 目标期刊政策页不可访问 | 用本文件官方入口 + 已知模板先占位；投稿前刷新 | policy URL blocked | Stage 9 checklist 未完成 |
@@ -43,6 +44,7 @@
 - Missing dependency:
 - Tried:
 - Fallback used:
+- Analysis backend before / after:
 - Output files affected:
 - Research claim affected: no / yes, describe
 - Gate impact:
