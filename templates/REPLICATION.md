@@ -10,6 +10,8 @@ This package reproduces the tables and figures in <paper title>. Start from the
 master script listed below and follow the stage order in the program map.
 
 - Master script: run_all.sh / master.do / Makefile target
+- Analysis backend: python-statspai / stata / r
+- Backend version report: 00_meta/analysis_backend.md
 - Expected wall-clock time:
 - Expected disk use:
 - Operating system and hardware:
@@ -40,6 +42,7 @@ Legitimate access statement:
 
 - Software versions:
 - Package versions:
+- Stata/R/Python backend details:
 - Random seeds:
 - External services or credentials needed:
 - Steps that require restricted data access:

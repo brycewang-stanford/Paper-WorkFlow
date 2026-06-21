@@ -9,6 +9,8 @@ Auditor: method-gate critic subagent
 
 - Primary design:
 - Primary estimator:
+- Analysis backend: python-statspai / stata / r
+- Backend version report: 00_meta/analysis_backend.md
 - Target estimand:
 - Design register: 03_analysis/design_register.md
 - Main result: 03_analysis/results/main_results.json
@@ -18,6 +20,7 @@ Auditor: method-gate critic subagent
 | Requirement | Path | Present? | Pass? | Notes |
 |---|---|---:|---:|---|
 | Design register | 03_analysis/design_register.md | no | no |  |
+| Analysis backend report | 00_meta/analysis_backend.md | no | no |  |
 | Main estimation script | 03_analysis/<script> | no | no |  |
 | Main results summary | 03_analysis/results/summary.md | no | no |  |
 | Identification diagnostic | 03_analysis/results/<diagnostic> | no | no |  |
@@ -33,6 +36,7 @@ Auditor: method-gate critic subagent
 - P-hacking or researcher degrees of freedom:
 - Data governance or access restriction:
 - Runtime fallback used:
+- Backend parity / cross-validation:
 
 ## 4. Decision
 

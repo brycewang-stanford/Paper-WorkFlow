@@ -20,6 +20,8 @@ Last updated (Beijing): <YYYY-MM-DD HH:MM>
 
 - Primary design: DiD / IV / RDD / synthetic control / panel / DML / other
 - Primary estimator:
+- Analysis backend: python-statspai / stata / r
+- Backend version report: 00_meta/analysis_backend.md
 - Core identifying assumption:
 - Why this assumption is plausible here:
 - Main threats to validity:
@@ -49,6 +51,7 @@ Bad-control screen:
 | Artifact | Required? | Path | Status |
 |---|---:|---|---|
 | Main estimation script | yes | 03_analysis/<script> | missing / present |
+| Analysis backend report | yes | 00_meta/analysis_backend.md | missing / present |
 | Main results JSON | yes | 03_analysis/results/main_results.json | missing / present |
 | Diagnostic plot/table | yes | 03_analysis/results/<artifact> | missing / present |
 | Robustness matrix | yes | 03_analysis/robustness/ | missing / present |

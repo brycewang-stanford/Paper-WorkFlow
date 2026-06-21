@@ -43,9 +43,9 @@ Required checks:
 
 ## 4. Estimation Audit
 
-| Result ID | Claim ID | Design | Estimator | Script / MCP handle | Effect | SE / CI | N | FE / controls | Cluster / weights | Seed / version |
-|---|---|---|---|---|---:|---|---:|---|---|---|
-| R1 | C1 | <design> | <estimator> | 03_analysis/<script>:<line> or result_id=<id> |  |  |  |  |  |  |
+| Result ID | Claim ID | Design | Backend | Estimator | Script / MCP handle | Effect | SE / CI | N | FE / controls | Cluster / weights | Seed / version |
+|---|---|---|---|---|---|---:|---|---:|---|---|---|
+| R1 | C1 | <design> | python-statspai / stata / r | <estimator> | 03_analysis/<script>:<line> or result_id=<id> |  |  |  |  |  |  |
 
 ## 5. Robustness and Threat Matrix
 

@@ -22,6 +22,7 @@ Workspace: <paper_workspace/...>
 ## 2. Gate Results
 
 - Method gate: PASS / NOT PASS
+- Analysis backend: python-statspai / stata / r
 - Draft quality gate: PASS / NOT PASS
 - Replication pack: ready / not_ready
 - Data governance: clear / restricted / blocked
@@ -32,6 +33,7 @@ Workspace: <paper_workspace/...>
 | Deliverable | Path | Ready? |
 |---|---|---:|
 | Proposal | 01_proposal/proposal.md | no |
+| Analysis backend report | 00_meta/analysis_backend.md | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
 | Main results | 03_analysis/results/main_results.json | no |
 | Evidence ledger | 00_meta/evidence_ledger.md | no |
