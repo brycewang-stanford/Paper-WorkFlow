@@ -20,9 +20,11 @@
 2. **复现包有标准结构**：原始数据 / 清洗 / 估计 / 表图 一条龙脚本化，最少手工干预。
 3. **README 是合同**：第三方照着 README 就能从 `raw/` 跑到 `04_results/` 的每张表图。
 4. **数据可得性声明（DAS）说真话**：受限/付费/审批数据如实写访问条件，不可分发的只留拉取脚本。
-5. **治理边界先行**：PII、IRB/DUA、许可证、保密环境、不可公开原始数据先登记到
+5. **样本审计可复核**：`02_data/sample_audit.md` 记录 raw→clean→estimation sample 的流失、
+   treated/control 数、missingness/balance/overlap、cluster/weights，作为 README 和 Table 1 的原料。
+6. **治理边界先行**：PII、IRB/DUA、许可证、保密环境、不可公开原始数据先登记到
    `00_meta/data_governance.md`，再决定公开包包含什么。
-6. **质量门维度⑦按真实文件打分**：有没有 codebook、有没有一键重跑命令、AEA 场景有没有 DAS、
+7. **质量门维度⑦按真实文件打分**：有没有 codebook、sample audit、有没有一键重跑命令、AEA 场景有没有 DAS、
    有没有治理登记。
 
 > 本层是**打包标准**，落地实现仍调用既有能力（清洗 `data-cleaning`、估计各 skill、转换 `md-to-docx`，
@@ -56,7 +58,8 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 
 ## 2. Data Provenance：从 Stage 2 就开始记（不要等接收后补）
 
-每引入一个数据源，立即在 `02_data/codebook.md` 追加一条 provenance 记录（也是 DAS 的原料）：
+每引入一个数据源，立即在 `02_data/codebook.md` 追加一条 provenance 记录（也是 DAS 的原料），并在
+`02_data/sample_audit.md` 记录该源进入 clean/estimation sample 的流失路径：
 同时在 `00_meta/data_governance.md`（模板：
 [`../templates/data_governance.md`](../templates/data_governance.md)）记录数据分级、PII、IRB/DUA、
 再分发边界与公开包动作。

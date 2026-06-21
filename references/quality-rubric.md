@@ -5,7 +5,7 @@
 > [`subagent-templates.md`](subagent-templates.md) §QG），结果写入 `00_meta/quality_scorecard.md`。
 >
 > **打分纪律**：① 只依据稿件与工作区里的**真实产物**（`main.tex`、表图、`results/summary.md`、
-> `proposal.md`、`design_register.md`、`method_gate.md`、`ref.bib`、`data_governance.md`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
+> `proposal.md`、`sample_audit.md`、`design_register.md`、`method_gate.md`、`ref.bib`、`data_governance.md`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
 > 具体依据**；③ 命中「致命红旗」直接把该维封顶到 ≤ 4 分，无论其它方面多好；④ 宁可严格，不可放水
 > ——质量门的意义就是拦住「跑完了但不够格」的稿子。
 
@@ -61,12 +61,16 @@
 
 **方法闸门联动**
 - 找不到 `03_analysis/design_register.md`：本维封顶 6。
+- 找不到 `02_data/sample_audit.md`：本维封顶 6。
+- `sample_audit.md` 为 `NOT PASS` 或暴露 estimation sample 与 estimand 不一致但未改写 claim：本维封顶 4。
 - 找不到 `03_analysis/method_gate.md`：本维封顶 6。
 - `method_gate.md` 为 `NOT PASS`：本维封顶 4。
 - 方法标签缺 [`research-grade-methods.md`](research-grade-methods.md) 对应最低证据包：本维最高 6。
 - 方法闸门记录了 runtime fallback，但缺 [`runtime-fallbacks.md`](runtime-fallbacks.md) 要求的等价 artifact：
   本维最高 6；若 fallback 影响主因果 claim 却未披露，本维最高 4。
 - 关键数据的合法访问、IRB/DUA 或公开包边界未知，且影响 estimand 或样本选择：本维最高 6。
+- treatment timing、missingness/balance/overlap、cluster level 或 weights 未通过样本审计，且影响主结果：
+  本维最高 6。
 
 **致命红旗（命中即 ≤4）**
 - **平行趋势证据缺失或明显违背**，却仍按 DiD 解读因果。
@@ -94,6 +98,8 @@
 - `method_gate.md` 缺失：本维封顶 6。
 - `method_gate.md` 列出缺失必需 artifact 但正文仍说稳健：本维封顶 5。
 - 稳健性矩阵没有对应 `03_analysis/robustness/` 真实文件：本维封顶 5。
+- `sample_audit.md` 的 final estimation sample、N、treated/control 数或 cluster level 与主结果/表图不一致：
+  本维封顶 5。
 
 **致命红旗（命中即 ≤4）**
 - **稳健性结果与主表数字对不上 / 疑似挑样本拼出来的**（p-hacking 嫌疑）。
@@ -157,11 +163,11 @@
 公开 archive boundary 是否交代清楚。
 
 **评分锚点**
-- **9–10**：清洗 + 估计 + 建表脚本齐全、`codebook.md` 完整、`design_register.md` 与 `method_gate.md`
+- **9–10**：清洗 + 估计 + 建表脚本齐全、`codebook.md` 和 `sample_audit.md` 完整、`design_register.md` 与 `method_gate.md`
   能解释每个方法 artifact，`FINAL_REPORT.md` 有一键重跑命令；`00_meta/data_governance.md` 与 DAS 清楚说明
   public/restricted/confidential 数据边界，不可分发数据只留拉取脚本与说明。
 - **7–8**：脚本基本齐全，少量手工步骤未脚本化。
-- **5–6**：有代码但缺 codebook 或重跑路径断裂。
+- **5–6**：有代码但缺 codebook / sample audit 或重跑路径断裂。
 - **≤4**：结果无法从工作区代码复现，或数据来源/版权完全未交代。
 
 **AEA/AEJ/AER 场景加严**：若目标期刊属于 AEA 体系但没有 data availability statement、data provenance、

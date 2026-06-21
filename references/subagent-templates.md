@@ -67,6 +67,7 @@
 
 # 输入
 - 清洗后数据：{{WS}}/02_data/clean.parquet（codebook: {{WS}}/02_data/codebook.md）
+- 样本审计：{{WS}}/02_data/sample_audit.md（final estimation sample、treated/control、cluster level 必须与本检验对齐）
 - 设计注册：{{WS}}/03_analysis/design_register.md（若不存在，先按 {{REPO_69}}/references/research-grade-methods.md 模板补写草稿）
 - 分析后端：{{WS}}/00_meta/analysis_backend.md 与 {{WS}}/00_meta/workflow_state.json 的 `analysis_backend`
 - 主设定与基准结果：{{WS}}/03_analysis/results/main_results.json
@@ -91,7 +92,7 @@
 ## §MG · Stage 3 方法闸门审计（Stage 3 末强制派 1 个）
 
 > 这个 subagent 不改模型、不写论文，只检查 Stage 3 是否具备现代实证方法的最低证据包。它读
-> `research-grade-methods.md` 后输出 `method_gate.md`，给 PASS / NOT PASS 与回退指令。
+> `research-grade-methods.md` 与 `empirical-audit.md` 后输出 `method_gate.md`，给 PASS / NOT PASS 与回退指令。
 
 ```text
 你是应用计量方法审计员。任务是审计 Stage 3 的方法证据包是否足够支撑论文的因果 claim。
@@ -99,6 +100,7 @@
 
 # 必读
 - 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
+- 样本、变量与 estimand 对齐规则：{{REPO_69}}/references/empirical-audit.md
 - 分析后端路由与输出合同：{{REPO_69}}/references/analysis-backends.md
 - 数据治理与运行时 fallback：{{REPO_69}}/references/data-governance.md、
   {{REPO_69}}/references/runtime-fallbacks.md
@@ -107,6 +109,7 @@
 # 输入
 - proposal 合同：{{WS}}/01_proposal/proposal.md
 - 数据治理：{{WS}}/00_meta/data_governance.md（若缺失，列为 hard flag）
+- 样本审计：{{WS}}/02_data/sample_audit.md（若缺失或 NOT PASS，列为 hard flag）
 - 分析后端：{{WS}}/00_meta/analysis_backend.md（若缺失，列为 hard flag）
 - 设计注册：{{WS}}/03_analysis/design_register.md
 - 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
@@ -117,7 +120,8 @@
 按 research-grade-methods.md §3 的格式写 {{WS}}/03_analysis/method_gate.md：
 - Primary design / estimator
 - Required artifact table（每项路径 + present yes/no）
-- Hard flags（含治理、PII/IRB/DUA、runtime fallback 是否影响最低证据包）
+- Hard flags（含样本/estimand 漂移、bad controls、missingness/balance/overlap、cluster/weights、
+  治理、PII/IRB/DUA、runtime fallback 是否影响最低证据包）
 - PASS / NOT PASS
 - Next Action（若 NOT PASS，明确回退到 Stage 1/2/3 的哪一步）
 
@@ -172,6 +176,7 @@
 - 初稿正文 + 表图 + 参考文献：{{WS}}/07_dehumanize/main.tex、{{WS}}/04_results/、{{WS}}/05_draft/ref.bib
 - 贡献承诺（对照）：{{WS}}/01_proposal/proposal.md
 - 真实结果（对照表中数字）：{{WS}}/03_analysis/results/summary.md + main_results.json
+- 样本证据（对照 N、treated/control、cluster/weights）：{{WS}}/02_data/sample_audit.md
 - 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
 - 复现证据：{{WS}}/00_meta/workflow_state.json 的 replication_pack、{{WS}}/REPLICATION.md、

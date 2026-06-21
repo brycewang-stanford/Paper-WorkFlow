@@ -10,8 +10,9 @@
 
 Paper-WorkFlow 原本已经能把选题、数据、估计、表图、写作和投稿串成一条线。本增强层进一步要求：
 
-1. **先注册设计，再跑模型**：Stage 3 开始前写 `03_analysis/design_register.md`，明确 estimand、
-   treatment、comparison group、识别假设、主估计量、替代估计量和失败回退。
+1. **先审计样本与注册设计，再跑模型**：Stage 3 开始前写 `02_data/sample_audit.md` 与
+   `03_analysis/design_register.md`，明确 estimation sample 是否仍对应 target estimand、treatment、
+   comparison group、识别假设、主估计量、替代估计量和失败回退。
 2. **每种方法都有最低证据包**：例如交错 DiD 不能只给 TWFE；RDD 不能缺密度/操纵检验；DML 不能缺
    cross-fitting 与 nuisance diagnostics。
 3. **方法选择与软件选择分离**：先问研究设计需要什么估计量，再按
@@ -110,6 +111,7 @@ Status: PASS / NOT PASS
 
 | Required artifact | Path | Present? | Notes |
 |---|---|---|---|
+| Sample / estimand audit | 02_data/sample_audit.md | yes/no | |
 | Design register | 03_analysis/design_register.md | yes/no | |
 | Main estimate | 03_analysis/results/main_results.json | yes/no | |
 | Analysis backend report | 00_meta/analysis_backend.md | yes/no | |

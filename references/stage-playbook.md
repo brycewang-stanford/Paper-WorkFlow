@@ -9,6 +9,8 @@
 > `Read <folder>/SKILL.md` 内联执行，绝不凭记忆脑补。可直接复制的 subagent 派发模板见
 > [`subagent-templates.md`](subagent-templates.md)。进入 Stage 3 前还必须加载
 > [`research-grade-methods.md`](research-grade-methods.md)，用它定义现代因果推断/应用计量的最低证据包。
+> Stage 2 结束、Stage 3 开始前还要加载 [`empirical-audit.md`](empirical-audit.md)，确保样本构造、
+> 变量口径、missingness/balance/overlap 与目标 estimand 对齐。
 > Stage 3–4 的 Python/StatsPAI、Stata、R 三种分析后端按
 > [`analysis-backends.md`](analysis-backends.md) 选择；默认后端为 `python-statspai`。
 > **想先看一条完整跑通的 trace**（每阶段产物 + 两道闸门如何触发 + NOT PASS→回退→PASS 循环），见
@@ -65,9 +67,10 @@
 **目的**：依 proposal 的变量与样本，拿到**分析就绪**的数据集 + codebook。
 
 **plan**：从 `proposal.md` 抽出需要的变量、频率、地域、时间窗、合并键，列一张「变量→数据源」需求表。
-加载 [`data-governance.md`](data-governance.md)，先从 `templates/data_governance.md` 生成
-`00_meta/data_governance.md`，把每个数据源标为 public / restricted / confidential / PII，并写清
-DUA、IRB/ethics、许可证、再分发边界。
+加载 [`data-governance.md`](data-governance.md) 与 [`empirical-audit.md`](empirical-audit.md)，先从
+`templates/data_governance.md` 生成 `00_meta/data_governance.md`，从 `templates/sample_audit.md` 生成
+`02_data/sample_audit.md`。前者记录 public / restricted / confidential / PII、DUA、IRB/ethics、许可证、
+再分发边界；后者预留 raw→clean→estimation sample 的 N、单位数、treated/control 数、drop 原因和脚本行号。
 
 **execute**
 - `Skill` 调用 `67/data-fetcher` 取数（FRED / World Bank / BLS / OECD / Yahoo Finance；A 股/中国
@@ -75,14 +78,18 @@ DUA、IRB/ethics、许可证、再分发边界。
   等集合，见 skill-map）。多个独立数据源可并行 subagent 各取一段、各自写盘到 `02_data/raw/`。
 - `Skill` 调用 `67/data-cleaning` 做清洗、对齐、合并、构造变量，产出 `02_data/clean.parquet`
   （或 `.dta/.csv`）与 `02_data/codebook.md`（每个变量的定义、来源、单位、缺失处理）。
+- 同步填写 `02_data/sample_audit.md`：合并键唯一性、样本限制、缺失/attrition、baseline balance、
+  overlap/common support、treatment timing、cluster level/cluster count 与权重口径必须落到表格或图。
 - 受限数据只保留 fetch/clean 脚本、变量字典和访问说明；不得把原始数据、PII、token、签名 URL 或
   DUA/IRB 限制材料放进公开包、日志或仓库。
 
 **review**：critic subagent 核对——合并键唯一性、面板是否平衡、极端值/缺失处理是否记录在 codebook、
-处理与对照如何界定（若是 DiD/SC）、数据治理登记是否与 codebook/DAS 原料一致。意见写
-`02_data/data_audit.md`。
+处理与对照如何界定（若是 DiD/SC）、`sample_audit.md` 的样本流失/estimand 对齐/missingness-balance/overlap
+是否足以支撑下一阶段、数据治理登记是否与 codebook/DAS 原料一致。意见写 `02_data/data_audit.md`，
+并更新 `workflow_state.json.empirical_audit`。
 
 **revise / 交付**：据审计修清洗脚本，重跑到干净。**清洗脚本必须留在 `02_data/`**，保证可复现。
+`sample_audit.md` 若为 `NOT PASS`，Stage 3 只能做探索或修数据，不能把 Method Gate 标 `PASS`。
 
 **失败回退**：关键数据取不到 → 标红，给替代代理变量方案或缩小样本，必要时回 Stage 1 调整设计。
 
@@ -94,8 +101,10 @@ DUA、IRB/ethics、许可证、再分发边界。
 最后用方法闸门确认最低证据包齐全。
 
 **plan（先定设计，再定方法）**
-- 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`analysis-backends.md`](analysis-backends.md)。
-  先用 methods pack 定识别合同，再用 backend 文件选择 `python-statspai` / `stata` / `r`；若选
+- 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`empirical-audit.md`](empirical-audit.md) +
+  [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
+  missingness/balance/overlap 与 estimand 对齐，再用 methods pack 定识别合同，最后用 backend 文件选择
+  `python-statspai` / `stata` / `r`；若选
   `python-statspai` 或需要 StatsPAI 交叉验证，再读 [`statspai-analysis.md`](statspai-analysis.md)。StatsPAI 引擎（MCP 优先拍板/拟合/诊断，
   `statspai` 包做出版级出表）的 §1 8 段映射、§3 估计量路由、§6 七块稳健性闸门是本阶段的操作主线。
   把 proposal 的识别路线翻译成 `03_analysis/design_register.md`：
@@ -161,13 +170,15 @@ DUA、IRB/ethics、许可证、再分发边界。
 - 所有代码留在 `03_analysis/`（`.py`/`.do`/`.R`/`.qmd`），结果存 `03_analysis/results/`，并把后端选择、
   脚本扩展名、版本检查写入 `00_meta/analysis_backend.md` 与 `workflow_state.json.analysis_backend`。
 - 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
-  有路径；缺失项标 `no`，不得用空话替代。方法闸门还要检查 `00_meta/data_governance.md`：合法访问、
-  公开包边界、PII/小样本披露、IRB/DUA 状态若阻断主结果，列入 hard flags。
+  有路径；`02_data/sample_audit.md` 也必须作为必需 artifact 进入表格，且其 final estimation sample 的 N、
+  treated/control 数、cluster level 必须与 `main_results.json` 对上。缺失项标 `no`，不得用空话替代。
+  方法闸门还要检查 `00_meta/data_governance.md`：合法访问、公开包边界、PII/小样本披露、IRB/DUA 状态若阻断主结果，列入 hard flags。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
 `econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑、methods
 pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit.md`，方法闸门判定写
-`03_analysis/method_gate.md`。
+`03_analysis/method_gate.md`。若样本审计暴露 estimand 漂移、bad-control、overlap 或聚类层级问题，
+先回 Stage 2/3 修数据或设定，不得用更多稳健性表掩盖。
 
 **revise / 交付**：据审阅补检验、修设定，定稿 `03_analysis/results/main_results.json` 与一份
 `03_analysis/results/summary.md`（人话版结论）。只有 `method_gate.md` 为 `PASS` 时，Stage 3 才能置

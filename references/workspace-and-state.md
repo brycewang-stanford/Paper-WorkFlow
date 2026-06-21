@@ -36,6 +36,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── raw/                       # data-fetcher 取回的原始数据
 │   ├── clean.parquet              # ★分析就绪数据（或 .dta/.csv）
 │   ├── codebook.md                # 变量定义/来源/单位/缺失处理
+│   ├── sample_audit.md            # ★样本流失、estimand 对齐、missingness/balance/overlap 审计
 │   ├── <cleaning>.py|.do|.R       # 清洗脚本（保证可复现）
 │   └── data_audit.md
 ├── 03_analysis/
@@ -89,7 +90,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `5`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`） |
+| `schema_version` | 模板版本号（当前 `6`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -102,6 +103,13 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `analysis_backend.child_skill` | 选定后端调用的 child skill 或 Read 回退路径 |
 | `analysis_backend.environment_status` | `pending` / `available` / `fallback` / `blocked` |
 | `analysis_backend.version_report` | 后端选择、版本检查和 fallback 记录路径（`00_meta/analysis_backend.md`） |
+| `empirical_audit.status` | `pending` / `pass` / `not_pass`——样本、变量构造、missingness/balance/overlap 审计状态 |
+| `empirical_audit.sample_audit` | 样本审计报告路径（默认 `02_data/sample_audit.md`） |
+| `empirical_audit.estimand_alignment` | `pending` / `pass` / `not_pass`——估计样本是否仍对应目标 estimand |
+| `empirical_audit.missingness_balance` | `pending` / `pass` / `not_pass`——缺失、attrition、baseline balance、overlap 是否可接受 |
+| `empirical_audit.construct_validity` | `pending` / `pass` / `not_pass`——outcome/treatment/control 构造与 codebook、bad-control screen 是否一致 |
+| `empirical_audit.blocking_issues` | 仍阻断 Method Gate 的样本/变量/推断层级问题列表 |
+| `empirical_audit.last_audit` | 最近一次样本审计时间/摘要 |
 | `stages` | 10 个阶段键（`0_intake_setup` … `9_submission`）各自的状态 |
 | `method_gate.status` | `pending` / `pass` / `not_pass`——Stage 3 方法闸门判定 |
 | `method_gate.primary_design` | 主识别设计（如 staggered_did / iv / rdd / sdid / dml） |
@@ -141,6 +149,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
   "proposal": "01_proposal/proposal.md",
   "analysis_backend": "00_meta/analysis_backend.md",
   "clean_data": "02_data/clean.parquet",
+  "sample_audit": "02_data/sample_audit.md",
   "main_results": "03_analysis/results/main_results.json",
   "design_register": "03_analysis/design_register.md",
   "method_gate": "03_analysis/method_gate.md",
@@ -195,7 +204,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 - 数据版权 / 来源在 `02_data/codebook.md`、`00_meta/data_governance.md` 与 `FINAL_REPORT.md` 注明；
   不可分发的数据只留拉取脚本与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA
   data/code policy 记录 provenance、访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
-- `templates/` 下的 design register、method gate、evidence ledger、quality scorecard、data governance、
+- `templates/` 下的 sample audit、design register、method gate、evidence ledger、quality scorecard、data governance、
   DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all 可作为工作区 artifact 的起始模板；实例化后仍以工作区文件
   为准，模板本身不代表研究已通过闸门。
 - 收尾时写 `REPLICATION.md`、DAS（如需）、archive plan 与最近一次重跑耗时；若任何一项缺失，
