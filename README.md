@@ -16,7 +16,7 @@ A research-grade workflow for empirical papers: idea → design → evidence →
 ![Gates](https://img.shields.io/badge/gates-method%20%2B%20draft%20quality-F59E0B?style=flat-square)
 ![State](https://img.shields.io/badge/state-schema%20v7-64748B?style=flat-square)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-0EA5E9?style=flat-square)
-![Runs on](https://img.shields.io/badge/runs%20on-Claude%20Code-D97757?style=flat-square)
+![Runs on](https://img.shields.io/badge/runs%20on-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Cursor%20%C2%B7%20Gemini%20CLI-D97757?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-22C55E?style=flat-square)
 
 <br/>
