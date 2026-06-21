@@ -1,0 +1,385 @@
+#!/usr/bin/env python3
+"""Mechanical gate verifier for a Paper-WorkFlow run workspace.
+
+The two hard gates (Method Gate, Draft Quality Gate) and the replication pack are
+enforced at runtime by a critic subagent reading prose. Prose judgement cannot
+*guarantee* the cheap, decidable invariants:
+
+  - a gate is marked ``pass`` but its required evidence file does not exist on disk;
+  - a gate is marked ``pass`` while an upstream gate it depends on is not passed
+    (the orchestrator's rule "the quality gate may be stricter than the method
+    gate but never looser");
+  - the replication pack is ``ready`` with no master script or no rebuild check.
+
+This script makes those invariants testable. It reads
+``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is
+schema-tolerant: unknown keys are ignored and a missing optional block is a WARN,
+not a crash, so it keeps working as the state schema evolves.
+
+Usage:
+    python3 check_workspace_gates.py <workspace_dir>          # human report
+    python3 check_workspace_gates.py <workspace_dir> --json   # machine readable
+    python3 check_workspace_gates.py <workspace_dir> --reconcile  # + number check
+    python3 check_workspace_gates.py --selftest               # verify this checker
+
+Exit code is non-zero iff at least one HARD inconsistency is found (a gate claims
+``pass``/``ready`` but its evidence is missing or its ordering is violated).
+Gates still ``pending`` are reported as INFO, not failures — an unfinished run is
+not an inconsistent one.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import tempfile
+from pathlib import Path
+
+FAIL = "FAIL"   # hard inconsistency -> non-zero exit
+WARN = "WARN"   # worth surfacing, does not fail the run
+INFO = "INFO"   # informational (e.g. gate still pending)
+OKAY = "OK"     # invariant satisfied
+
+
+class Report:
+    def __init__(self) -> None:
+        self.rows: list[tuple[str, str, str]] = []  # (level, check, detail)
+
+    def add(self, level: str, check: str, detail: str) -> None:
+        self.rows.append((level, check, detail))
+
+    @property
+    def failures(self) -> list[tuple[str, str, str]]:
+        return [r for r in self.rows if r[0] == FAIL]
+
+    def to_dict(self) -> dict:
+        return {
+            "ok": not self.failures,
+            "checks": [
+                {"level": lvl, "check": chk, "detail": det} for lvl, chk, det in self.rows
+            ],
+        }
+
+    def render(self) -> str:
+        width = max((len(c) for _, c, _ in self.rows), default=4)
+        lines = ["", "Paper-WorkFlow gate card", "=" * 60]
+        for lvl, chk, det in self.rows:
+            lines.append(f"[{lvl:<4}] {chk:<{width}}  {det}")
+        lines.append("=" * 60)
+        if self.failures:
+            lines.append(f"RESULT: {len(self.failures)} hard inconsistency(ies) -> gates NOT verified")
+        else:
+            lines.append("RESULT: no hard inconsistencies -> declared gates are backed by evidence")
+        return "\n".join(lines)
+
+
+def _norm(value: object) -> str:
+    return str(value or "").strip().lower().replace(" ", "_")
+
+
+def _exists(workspace: Path, rel: str) -> bool:
+    rel = (rel or "").strip()
+    if not rel:
+        return False
+    # state files sometimes carry an anchor (path.md#section); strip it for the disk check
+    rel = rel.split("#", 1)[0]
+    return (workspace / rel).exists()
+
+
+def _passed(status: object) -> bool:
+    return _norm(status) in {"pass", "passed"}
+
+
+def _gate_artifact(block: dict, key: str, default: str) -> str:
+    val = block.get(key) if isinstance(block, dict) else None
+    return val if isinstance(val, str) and val.strip() else default
+
+
+def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
+    rep = Report()
+
+    # --- top-level shape (soft: schema may evolve) ---------------------------
+    for key in ("project", "stages", "method_gate", "quality_gate", "replication_pack"):
+        if key not in state:
+            rep.add(WARN, f"schema:{key}", "missing top-level block (schema drift?)")
+
+    empirical = state.get("empirical_audit", {}) if isinstance(state.get("empirical_audit"), dict) else {}
+    method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
+    quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
+    replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
+
+    # --- empirical (sample/estimand) audit -----------------------------------
+    if _passed(empirical.get("status")):
+        sample_audit = _gate_artifact(empirical, "sample_audit", "02_data/sample_audit.md")
+        if _exists(workspace, sample_audit):
+            rep.add(OKAY, "empirical_audit", f"pass, sample audit present: {sample_audit}")
+        else:
+            rep.add(FAIL, "empirical_audit", f"status=pass but missing {sample_audit}")
+    else:
+        rep.add(INFO, "empirical_audit", f"status={empirical.get('status', 'absent')}")
+
+    # --- method gate ---------------------------------------------------------
+    if _passed(method.get("status")):
+        required = {
+            "design_register": _gate_artifact(method, "design_register", "03_analysis/design_register.md"),
+            "method_gate_report": _gate_artifact(method, "method_gate_report", "03_analysis/method_gate.md"),
+            "sample_audit": _gate_artifact(empirical, "sample_audit", "02_data/sample_audit.md"),
+            "main_results": "03_analysis/results/main_results.json",
+        }
+        missing = [f"{name}={path}" for name, path in required.items() if not _exists(workspace, path)]
+        if missing:
+            rep.add(FAIL, "method_gate:evidence", "status=pass but missing: " + "; ".join(missing))
+        else:
+            rep.add(OKAY, "method_gate:evidence", "pass, all required artifacts present")
+
+        declared_missing = method.get("missing_artifacts")
+        if isinstance(declared_missing, list) and declared_missing:
+            rep.add(FAIL, "method_gate:self", f"status=pass but missing_artifacts not empty: {declared_missing}")
+
+        # ordering: a passed method gate requires a passed sample/estimand audit
+        if "empirical_audit" in state and not _passed(empirical.get("status")):
+            rep.add(
+                FAIL,
+                "method_gate:ordering",
+                f"status=pass but empirical_audit.status={empirical.get('status', 'absent')} "
+                "(sample/estimand audit must pass first)",
+            )
+
+        # inference layer companion (soft, this skill introduces it as method-gate kin)
+        if not _exists(workspace, "03_analysis/inference_report.md"):
+            rep.add(WARN, "method_gate:inference", "no 03_analysis/inference_report.md "
+                                                   "(clustering / few-cluster / multiple-testing rationale unrecorded)")
+    else:
+        rep.add(INFO, "method_gate", f"status={method.get('status', 'absent')}")
+
+    # --- draft quality gate --------------------------------------------------
+    if _passed(quality.get("status")):
+        scorecard = _gate_artifact(quality, "scorecard", "00_meta/quality_scorecard.md")
+        if not _exists(workspace, scorecard):
+            rep.add(FAIL, "quality_gate:evidence", f"status=pass but missing {scorecard}")
+        else:
+            rep.add(OKAY, "quality_gate:evidence", f"pass, scorecard present: {scorecard}")
+        # ordering: quality gate cannot be looser than the method gate
+        if not _passed(method.get("status")):
+            rep.add(
+                FAIL,
+                "quality_gate:ordering",
+                f"status=pass but method_gate.status={method.get('status', 'absent')} "
+                "(quality gate may be stricter than the method gate, never looser)",
+            )
+    else:
+        rep.add(INFO, "quality_gate", f"status={quality.get('status', 'absent')}")
+
+    # --- replication pack ----------------------------------------------------
+    rstatus = _norm(replication.get("status"))
+    if rstatus == "ready":
+        problems = []
+        master = _gate_artifact(replication, "master_script", "")
+        if not master:
+            problems.append("master_script unset")
+        elif not _exists(workspace, master):
+            problems.append(f"master_script missing on disk ({master})")
+        readme = _gate_artifact(replication, "readme", "REPLICATION.md")
+        if not _exists(workspace, readme):
+            problems.append(f"readme missing ({readme})")
+        if not str(replication.get("last_rebuild_check") or "").strip():
+            problems.append("last_rebuild_check empty")
+        if problems:
+            rep.add(FAIL, "replication_pack", "status=ready but " + "; ".join(problems))
+        else:
+            rep.add(OKAY, "replication_pack", f"ready, master script present: {master}")
+    else:
+        rep.add(INFO, "replication_pack", f"status={replication.get('status', 'absent')}")
+
+    # --- optional numbers reconciliation (heuristic, advisory) ---------------
+    if reconcile:
+        _reconcile_numbers(workspace, rep)
+
+    return rep
+
+
+_NUM_RE = re.compile(r"-?\d+\.\d+")
+
+
+def _collect_numbers(obj: object, out: list[float]) -> None:
+    if isinstance(obj, bool):
+        return
+    if isinstance(obj, float):
+        out.append(obj)
+    elif isinstance(obj, str):
+        for m in _NUM_RE.findall(obj):
+            try:
+                out.append(float(m))
+            except ValueError:
+                pass
+    elif isinstance(obj, dict):
+        for v in obj.values():
+            _collect_numbers(v, out)
+    elif isinstance(obj, list):
+        for v in obj:
+            _collect_numbers(v, out)
+
+
+def _reconcile_numbers(workspace: Path, rep: Report) -> None:
+    results = workspace / "03_analysis" / "results" / "main_results.json"
+    if not results.exists():
+        rep.add(INFO, "reconcile", "no main_results.json to reconcile")
+        return
+    exhibits = list((workspace / "04_results").glob("*.tex")) + list((workspace / "04_results").glob("*.md"))
+    if not exhibits:
+        rep.add(INFO, "reconcile", "no .tex/.md exhibits in 04_results to reconcile against")
+        return
+    try:
+        data = json.loads(results.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        rep.add(WARN, "reconcile", f"main_results.json not valid JSON: {exc}")
+        return
+    numbers: list[float] = []
+    _collect_numbers(data, numbers)
+    # keep coefficient-like values (a decimal point, magnitude not trivially tiny/huge)
+    coefs = {round(n, 3) for n in numbers if 0.001 <= abs(n) < 1e6}
+    if not coefs:
+        rep.add(INFO, "reconcile", "no coefficient-like numbers found in main_results.json")
+        return
+    blob = "\n".join(p.read_text(encoding="utf-8", errors="ignore") for p in exhibits)
+    found = 0
+    missing_samples: list[str] = []
+    for c in coefs:
+        variants = {f"{c:.3f}", f"{c:.2f}", f"{c:g}"}
+        if any(v in blob for v in variants):
+            found += 1
+        elif len(missing_samples) < 5:
+            missing_samples.append(f"{c:g}")
+    total = len(coefs)
+    if found == total:
+        rep.add(OKAY, "reconcile", f"all {total} coefficient-like values appear in exhibits")
+    else:
+        rep.add(
+            WARN,
+            "reconcile",
+            f"{found}/{total} result numbers found in exhibits; "
+            f"not located (sample): {', '.join(missing_samples)} "
+            "(heuristic — verify table↔results mapping in evidence ledger)",
+        )
+
+
+def run(workspace: Path, reconcile: bool) -> Report:
+    state_path = workspace / "00_meta" / "workflow_state.json"
+    rep = Report()
+    if not state_path.exists():
+        rep.add(FAIL, "workspace", f"no state file at {state_path}")
+        return rep
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        rep.add(FAIL, "workspace", f"workflow_state.json is not valid JSON: {exc}")
+        return rep
+    return check_state(workspace, state, reconcile)
+
+
+def _selftest() -> int:
+    """Build synthetic workspaces and assert the checker's invariants hold."""
+    with tempfile.TemporaryDirectory(prefix="gate-selftest-") as tmp:
+        root = Path(tmp)
+
+        def touch(ws: Path, rel: str) -> None:
+            p = ws / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("x", encoding="utf-8")
+
+        def write_state(ws: Path, state: dict) -> None:
+            (ws / "00_meta").mkdir(parents=True, exist_ok=True)
+            (ws / "00_meta" / "workflow_state.json").write_text(json.dumps(state), encoding="utf-8")
+
+        # --- good workspace: every declared gate is backed by evidence -------
+        good = root / "good"
+        for rel in (
+            "02_data/sample_audit.md",
+            "03_analysis/design_register.md",
+            "03_analysis/method_gate.md",
+            "03_analysis/results/main_results.json",
+            "03_analysis/inference_report.md",
+            "00_meta/quality_scorecard.md",
+            "REPLICATION.md",
+            "run_all.sh",
+        ):
+            touch(good, rel)
+        write_state(good, {
+            "project": {}, "stages": {}, "artifacts": {}, "decisions": [],
+            "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
+            "method_gate": {
+                "status": "pass",
+                "design_register": "03_analysis/design_register.md",
+                "method_gate_report": "03_analysis/method_gate.md",
+                "missing_artifacts": [],
+            },
+            "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
+            "replication_pack": {
+                "status": "ready", "readme": "REPLICATION.md",
+                "master_script": "run_all.sh", "last_rebuild_check": "rebuilt 2026-06-21",
+            },
+        })
+        rep = run(good, reconcile=False)
+        assert not rep.failures, f"good workspace should pass, got: {rep.failures}"
+
+        # --- bad workspace A: method gate claims pass without evidence -------
+        bad_a = root / "bad_a"
+        write_state(bad_a, {
+            "project": {}, "stages": {},
+            "empirical_audit": {"status": "not_pass", "sample_audit": "02_data/sample_audit.md"},
+            "method_gate": {"status": "pass", "missing_artifacts": ["main_results"]},
+            "replication_pack": {"status": "ready", "master_script": "", "last_rebuild_check": ""},
+        })
+        hit_a = {chk for lvl, chk, det in run(bad_a, reconcile=False).rows if lvl == FAIL}
+        expect_a = {
+            "method_gate:evidence",   # required artifacts missing
+            "method_gate:self",       # missing_artifacts non-empty while pass
+            "method_gate:ordering",   # empirical audit not passed
+            "replication_pack",       # ready but no master script / rebuild check
+        }
+        assert expect_a <= hit_a, f"bad_a should flag {expect_a - hit_a}; got {hit_a}"
+
+        # --- bad workspace B: quality gate looser than the method gate -------
+        bad_b = root / "bad_b"
+        touch(bad_b, "00_meta/quality_scorecard.md")
+        write_state(bad_b, {
+            "project": {}, "stages": {},
+            "method_gate": {"status": "not_pass"},
+            "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
+        })
+        hit_b = {chk for lvl, chk, det in run(bad_b, reconcile=False).rows if lvl == FAIL}
+        assert "quality_gate:ordering" in hit_b, f"bad_b should flag quality_gate:ordering; got {hit_b}"
+
+        # --- empty / missing state -------------------------------------------
+        rep = run(root / "does_not_exist", reconcile=False)
+        assert rep.failures, "missing workspace should fail"
+
+    print("selftest OK: gate verifier invariants hold")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Mechanical gate verifier for a Paper-WorkFlow workspace.")
+    parser.add_argument("workspace", nargs="?", help="path to the paper_workspace/<run> directory")
+    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    parser.add_argument("--reconcile", action="store_true", help="also heuristically check result numbers vs exhibits")
+    parser.add_argument("--selftest", action="store_true", help="verify this checker on synthetic workspaces")
+    args = parser.parse_args()
+
+    if args.selftest:
+        return _selftest()
+    if not args.workspace:
+        parser.error("workspace path is required (or pass --selftest)")
+
+    rep = run(Path(args.workspace).expanduser().resolve(), reconcile=args.reconcile)
+    if args.json:
+        print(json.dumps(rep.to_dict(), ensure_ascii=False, indent=2))
+    else:
+        print(rep.render())
+    return 1 if rep.failures else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
