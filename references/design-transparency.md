@@ -8,6 +8,10 @@
 > （是识别的**内容**）；本文件管「**何时**锁定决策、**预先**指定什么、**披露**了什么」（是过程的**时序与
 > 透明度**）。换句话说：method gate 问「证据对不对」，本层问「你是不是先定方案再看结果、有没有把研究者
 > 自由度摊在阳光下」。两者正交，互不重复。
+>
+> **不确定性配套**：本文件 §2 PAP 要求**预先指定多重检验校正方案**、§3 报 MDE；这些方案的**具体推断口径**
+> （family 怎么划、Romano-Wolf / sharpened q-value 怎么选、空结果的 MDE 与 few-cluster 推断怎么算）见
+> [`inference-and-uncertainty.md`](inference-and-uncertainty.md)。本层管「先承诺什么」，inference pack 管「承诺的口径怎么落地」。
 
 ---
 
