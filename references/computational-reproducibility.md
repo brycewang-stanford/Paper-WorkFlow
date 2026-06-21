@@ -44,7 +44,8 @@
 
 - **种子全登记**：bootstrap、cross-fitting fold、随机 placebo、ML nuisance、模拟——每个随机点显式设种子并登记
   （呼应 [`reproducibility-pack.md`](reproducibility-pack.md) §4 与 [`inference-and-uncertainty.md`](inference-and-uncertainty.md)）。
-- **hash 随机化**：设 `PYTHONHASHSEED=0`——否则 dict/set 迭代顺序、依赖它的抽样/分组在不同进程间不稳定。
+- **hash 随机化**：设 `PYTHONHASHSEED=0` 固定 `str`/`bytes`/`datetime` 的 hash——否则 **`set` 迭代顺序**及依赖该
+  hash 的分组在不同进程间不稳定（注意：CPython ≥3.7 的 `dict` 按**插入序**，本身不受该 seed 影响）。
 - **线程 / BLAS 非确定性**：多线程归约的浮点求和**顺序不定 → 末位漂移**。复现跑固定线程：
   `OMP_NUM_THREADS=1`、`OPENBLAS_NUM_THREADS=1`、`MKL_NUM_THREADS=1`、`VECLIB_MAXIMUM_THREADS=1`、`NUMEXPR_NUM_THREADS=1`。
 - **GPU 非确定性**：ML 用 GPU 时，cuDNN / atomic 归约默认非确定；设 deterministic 标志
@@ -118,6 +119,8 @@ master script（`run_all.sh` / `master.do`）除
 
 - ACM, "Artifact Review and Badging — Current"（Reproduced / Replicated 的术语定义）。
 - AEA Data Editor guidance（环境捕获与运行核验，入口见 [`reproducibility-pack.md`](reproducibility-pack.md) §1）。
-- NumPy / OpenBLAS 多线程归约导致的末位非确定性，是「同代码不同机器结果略不同」的常见根因；固定线程数即可消除。
+- NumPy / OpenBLAS 多线程归约导致的末位非确定性，是「同代码同机器多次结果略不同」的常见根因；固定线程数消除
+  **单实现内**的非确定，但**跨实现 / 跨平台**（OpenBLAS vs MKL vs Accelerate、FMA、架构差异）末位仍会差——所以
+  §3 仍要靠**容差**而非苛求 bit-identical。
 - R `sample()` 算法变更：R 3.6.0 release notes（`sample.kind`）。
 </content>
