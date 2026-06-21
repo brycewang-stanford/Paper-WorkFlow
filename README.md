@@ -25,6 +25,23 @@ A research-grade workflow for empirical papers: idea → design → evidence →
 > 从选题、数据、识别设计、估计诊断、表图、写作、打磨、去 AI 味、模拟评审，到投稿包，
 > 全部沉淀在一个可断点续跑的工作区里。
 
+<br/>
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="240" /></a>
+    </td>
+    <td width="56"></td>
+    <td align="center">
+      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP · Center on China's Economy and Institutions" width="340" /></a>
+    </td>
+  </tr>
+</table>
+
+<strong>Stanford REAP × CoPaper.AI</strong> · 面向实证研究的产学 AI 工具箱<br/>
+<sub>从数据清洗到顶刊投稿的完整流水线，Paper-WorkFlow 是其中的论文总编排器</sub>
+
 </div>
 
 ---
@@ -352,7 +369,8 @@ Paper-WorkFlow/
 │   ├── workflow_state.template.json  # 进度状态文件模板（v4：含 method_gate + quality_gate + replication_pack）
 │   ├── workflow.svg                  # 全流程流水线示意图
 │   ├── did_table.tex                 # 演示 · DiD 基准回归表（OLS / TWFE）
-│   └── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
+│   ├── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
+│   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg  # CoPaper.AI × Stanford REAP 品牌物料
 │
 │   —— 以下为配套演示物料 ——
 └── did_demo.ipynb                    # DiD 快速演示 Notebook
@@ -413,5 +431,39 @@ Paper-WorkFlow 是 [Auto-Empirical-Research-Skills](https://github.com/brycewang
 从一句话想法到可投稿全文，让流水线替你跑完中间那一百步。
 
 如果它帮到你，欢迎点个 Star。
+
+<br/>
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="200" /></a>
+    </td>
+    <td width="40"></td>
+    <td align="center">
+      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP" width="300" /></a>
+    </td>
+  </tr>
+</table>
+
+<sub><strong>Stanford REAP × CoPaper.AI</strong> · 面向实证研究的产学 AI 工具箱</sub>
+
+<br/>
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-qrcode.png" alt="访问 copaper.ai" width="170" /></a><br/>
+      <strong>访问 <a href="https://copaper.ai">copaper.ai</a></strong>
+    </td>
+    <td width="40"></td>
+    <td align="center">
+      <img src="assets/copaper-wechat.jpg" alt="CoPaper.AI 微信" width="170" /><br/>
+      <strong>微信：CoPaper.AI</strong>
+    </td>
+  </tr>
+</table>
+
+由 <a href="https://copaper.ai"><strong>CoPaper.AI</strong></a> 维护，孵化于 <a href="https://sccei.fsi.stanford.edu/reap"><strong>Stanford REAP / SCCEI</strong></a> · 实证研究 AI 助手
 
 </div>

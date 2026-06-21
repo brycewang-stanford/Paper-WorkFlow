@@ -4,6 +4,25 @@ Research-grade orchestration for empirical social-science papers: idea -> design
 
 [中文说明](README.md)
 
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="240" /></a>
+    </td>
+    <td width="56"></td>
+    <td align="center">
+      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP · Center on China's Economy and Institutions" width="340" /></a>
+    </td>
+  </tr>
+</table>
+
+<strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research<br/>
+<sub>The full pipeline from data cleaning to top-journal submission — Paper-WorkFlow is its manuscript-level orchestrator</sub>
+
+</div>
+
 `Paper-WorkFlow` is a meta-orchestrator. It does not reimplement the underlying research skills. It routes each stage to the right local skill, subagent, method gate, reproducibility artifact, and human decision point.
 
 The old 30-page PDF lecture has been folded into this README. The durable content is now maintained as text: the eight-stage teaching map, the 47-skill map, the DiD teaching checklist, the exhibit standards, and the writing/review/submission path. The PDF file itself is no longer part of the package.
@@ -259,3 +278,41 @@ Paper-WorkFlow is the meta-orchestrator inside `Auto-Empirical-Research-Skills`,
 ## License
 
 This package is released under the [MIT License](LICENSE). Child skills from mixed upstream sources should be redistributed only under their own upstream license terms.
+
+---
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="200" /></a>
+    </td>
+    <td width="40"></td>
+    <td align="center">
+      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP" width="300" /></a>
+    </td>
+  </tr>
+</table>
+
+<sub><strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research</sub>
+
+<br/>
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://copaper.ai"><img src="assets/copaper-qrcode.png" alt="Visit copaper.ai" width="170" /></a><br/>
+      <strong>Visit <a href="https://copaper.ai">copaper.ai</a></strong>
+    </td>
+    <td width="40"></td>
+    <td align="center">
+      <img src="assets/copaper-wechat.jpg" alt="CoPaper.AI WeChat" width="170" /><br/>
+      <strong>WeChat: CoPaper.AI</strong>
+    </td>
+  </tr>
+</table>
+
+Maintained by <a href="https://copaper.ai"><strong>CoPaper.AI</strong></a>, incubated at <a href="https://sccei.fsi.stanford.edu/reap"><strong>Stanford REAP / SCCEI</strong></a> · AI Assistant for Empirical Research
+
+</div>
