@@ -106,6 +106,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(WARN, f"schema:{key}", "missing top-level block (schema drift?)")
 
     empirical = state.get("empirical_audit", {}) if isinstance(state.get("empirical_audit"), dict) else {}
+    evidence = state.get("evidence_governance", {}) if isinstance(state.get("evidence_governance"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
     replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
@@ -119,6 +120,19 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(FAIL, "empirical_audit", f"status=pass but missing {sample_audit}")
     else:
         rep.add(INFO, "empirical_audit", f"status={empirical.get('status', 'absent')}")
+
+    # --- evidence governance (claim ledger) ----------------------------------
+    if _passed(evidence.get("status")):
+        ledger = _gate_artifact(evidence, "evidence_ledger", "00_meta/evidence_ledger.md")
+        if not _exists(workspace, ledger):
+            rep.add(FAIL, "evidence_governance", f"status=pass but missing {ledger}")
+        else:
+            rep.add(OKAY, "evidence_governance", f"pass, evidence ledger present: {ledger}")
+        open_disc = evidence.get("open_discrepancies")
+        if isinstance(open_disc, list) and open_disc:
+            rep.add(WARN, "evidence_governance:open", f"status=pass but {len(open_disc)} open discrepancy(ies) recorded")
+    elif "evidence_governance" in state:
+        rep.add(INFO, "evidence_governance", f"status={evidence.get('status', 'absent')}")
 
     # --- method gate ---------------------------------------------------------
     if _passed(method.get("status")):
@@ -302,6 +316,7 @@ def _selftest() -> int:
             "03_analysis/results/main_results.json",
             "03_analysis/inference_report.md",
             "00_meta/quality_scorecard.md",
+            "00_meta/evidence_ledger.md",
             "REPLICATION.md",
             "run_all.sh",
         ):
@@ -309,6 +324,7 @@ def _selftest() -> int:
         write_state(good, {
             "project": {}, "stages": {}, "artifacts": {}, "decisions": [],
             "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
+            "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md", "open_discrepancies": []},
             "method_gate": {
                 "status": "pass",
                 "design_register": "03_analysis/design_register.md",
@@ -329,11 +345,13 @@ def _selftest() -> int:
         write_state(bad_a, {
             "project": {}, "stages": {},
             "empirical_audit": {"status": "not_pass", "sample_audit": "02_data/sample_audit.md"},
+            "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md"},
             "method_gate": {"status": "pass", "missing_artifacts": ["main_results"]},
             "replication_pack": {"status": "ready", "master_script": "", "last_rebuild_check": ""},
         })
         hit_a = {chk for lvl, chk, det in run(bad_a, reconcile=False).rows if lvl == FAIL}
         expect_a = {
+            "evidence_governance",    # status=pass but ledger missing on disk
             "method_gate:evidence",   # required artifacts missing
             "method_gate:self",       # missing_artifacts non-empty while pass
             "method_gate:ordering",   # empirical audit not passed
