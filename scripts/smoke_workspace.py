@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_OUTPUTS = {
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
+    "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
     "templates/quality_scorecard.md": "00_meta/quality_scorecard.md",
     "templates/REPLICATION.md": "REPLICATION.md",
     "templates/FINAL_REPORT.md": "FINAL_REPORT.md",
@@ -29,6 +30,7 @@ TEMPLATE_OUTPUTS = {
 ARTIFACTS = {
     "design_register": "03_analysis/design_register.md",
     "method_gate": "03_analysis/method_gate.md",
+    "evidence_ledger": "00_meta/evidence_ledger.md",
     "quality_scorecard": "00_meta/quality_scorecard.md",
     "replication_readme": "REPLICATION.md",
     "final_report": "FINAL_REPORT.md",
@@ -136,6 +138,10 @@ def check_workspace(workspace: Path) -> None:
     gate = (workspace / "03_analysis" / "method_gate.md").read_text(encoding="utf-8")
     if "Decision: PASS / NOT PASS" not in gate:
         fail("method gate template lost its explicit decision placeholder")
+    ledger = (workspace / "00_meta" / "evidence_ledger.md").read_text(encoding="utf-8")
+    for marker in ["Claim Register", "Data and Sample Provenance", "Exhibit and Script Map"]:
+        if marker not in ledger:
+            fail(f"evidence ledger template missing marker: {marker}")
     governance = (workspace / "00_meta" / "data_governance.md").read_text(encoding="utf-8")
     for marker in ["Public replication package must not include", "IRB", "DUA"]:
         if marker not in governance:

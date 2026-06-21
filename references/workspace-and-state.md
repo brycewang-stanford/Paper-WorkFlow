@@ -24,6 +24,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── workflow_state.json        # ★唯一权威进度文件（断点续跑依据）
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   ├── data_governance.md         # ★数据分级、PII、IRB/DUA、公开包边界
+│   ├── evidence_ledger.md         # ★claim→data→estimate→exhibit→script 总账
 │   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
 ├── 01_proposal/
 │   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
@@ -135,6 +136,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
   "main_results": "03_analysis/results/main_results.json",
   "design_register": "03_analysis/design_register.md",
   "method_gate": "03_analysis/method_gate.md",
+  "evidence_ledger": "00_meta/evidence_ledger.md",
   "draft": "05_draft/main.tex",
   "submission_grade_draft": "07_dehumanize/main.tex",
   "quality_scorecard": "00_meta/quality_scorecard.md",
@@ -185,8 +187,8 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 - 数据版权 / 来源在 `02_data/codebook.md`、`00_meta/data_governance.md` 与 `FINAL_REPORT.md` 注明；
   不可分发的数据只留拉取脚本与说明，不入库原始文件。目标 AEA/AER/AEJ 时，从 Stage 2 起按 AEA
   data/code policy 记录 provenance、访问成本、权限限制与预计重跑时间，避免投稿前补 replication package。
-- `templates/` 下的 design register、method gate、quality scorecard、data governance、DAS、REPLICATION、
-  submission checklist、FINAL_REPORT、run_all 可作为工作区 artifact 的起始模板；实例化后仍以工作区文件
+- `templates/` 下的 design register、method gate、evidence ledger、quality scorecard、data governance、
+  DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all 可作为工作区 artifact 的起始模板；实例化后仍以工作区文件
   为准，模板本身不代表研究已通过闸门。
 - 收尾时写 `REPLICATION.md`、DAS（如需）、archive plan 与最近一次重跑耗时；若任何一项缺失，
   `replication_pack.status` 只能是 `not_ready`，质量门维度⑦不得放水。

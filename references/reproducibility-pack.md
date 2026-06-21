@@ -106,7 +106,8 @@ and Code Availability Form、特定仓库或匿名化格式，把要求写进 `0
 | 15 | References ✚ | 所有数据源与材料的引用 |
 
 > 第 14 节是审稿/数据编辑最看重的一节：它把论文里 Table 3、Figure 2 精确映射到
-> `03_analysis/<script>:line`。本工作区的 `04_results/exhibits_index.md` 正好是它的原料。
+> `03_analysis/<script>:line`。本工作区的 `04_results/exhibits_index.md` 与
+> `00_meta/evidence_ledger.md` 正好是它的原料：前者管表图索引，后者管 claim 到数据、估计和脚本的全链路。
 
 ### 3.1 Master script（一键重跑契约）
 

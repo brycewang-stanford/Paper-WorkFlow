@@ -120,7 +120,8 @@ Stage 5 让 `paper-writer` 产出的 `main.tex` 应覆盖下列结构；**缺节
 | **6. Robustness** | 主结论经得起哪些扰动（对应 `03_analysis/robustness/`） | 罗列检验但不说明威胁 |
 | **7. Conclusion** | 重述贡献、边界、未来方向 | 重复摘要、夸大政策含义 |
 
-> 写作前先读 `04_results/exhibits_index.md`（每张表图对应哪个论点）与 `01_proposal/proposal.md`
+> 写作前先读 `00_meta/evidence_ledger.md`（每个 claim 对应的数据、估计、表图、脚本）、
+> `04_results/exhibits_index.md`（每张表图对应哪个论点）与 `01_proposal/proposal.md`
 > （贡献/假设），让结构与证据严格对齐；**论文里每个 claim 都要能指到一张表/图或一段引用**。
 
 ---

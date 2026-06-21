@@ -23,6 +23,7 @@ Auditor: method-gate critic subagent
 | Identification diagnostic | 03_analysis/results/<diagnostic> | no | no |  |
 | Robustness matrix | 03_analysis/robustness/ | no | no |  |
 | Sensitivity / refuter | 03_analysis/robustness/<sensitivity> | no | no |  |
+| Evidence ledger | 00_meta/evidence_ledger.md | no | no |  |
 | Rebuild path | REPLICATION.md / run_all.sh | no | no |  |
 
 ## 3. Hard Flags

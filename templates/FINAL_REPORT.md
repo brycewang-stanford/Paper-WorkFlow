@@ -25,6 +25,7 @@ Workspace: <paper_workspace/...>
 - Draft quality gate: PASS / NOT PASS
 - Replication pack: ready / not_ready
 - Data governance: clear / restricted / blocked
+- Evidence ledger: complete / incomplete
 
 ## 3. Deliverables
 
@@ -33,6 +34,7 @@ Workspace: <paper_workspace/...>
 | Proposal | 01_proposal/proposal.md | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
 | Main results | 03_analysis/results/main_results.json | no |
+| Evidence ledger | 00_meta/evidence_ledger.md | no |
 | Tables and figures | 04_results/ | no |
 | Manuscript | 07_dehumanize/main.tex | no |
 | Review response | 08_review/response_letter.md | no |
@@ -51,6 +53,7 @@ Last rebuild check:
 
 - Identification:
 - Robustness:
+- Evidence-to-claim alignment:
 - Citation:
 - Data access / IRB / DUA:
 - Journal formatting:

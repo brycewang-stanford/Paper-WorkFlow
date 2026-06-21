@@ -5,7 +5,7 @@ Round: <k>
 Scored at (Beijing): <YYYY-MM-DD HH:MM>
 Scorer: quality-gate critic subagent
 
-| Dimension | Score / 10 | Evidence with section/table/path | Fatal flag? |
+| Dimension | Score / 10 | Evidence with ledger/table/path | Fatal flag? |
 |---|---:|---|---|
 | 1. Contribution sharpness |  |  | no |
 | 2. Identification credibility |  |  | no |
