@@ -48,6 +48,7 @@ REQUIRED_TEMPLATES = {
     "templates/design_register.md": ["Target estimand", "Claim Boundary", "Bad-control screen", "Fallback Plan"],
     "templates/method_gate.md": ["Required Artifact Table", "Design Gate Card", "Decision: PASS / NOT PASS", "Hard Flags"],
     "templates/sample_audit.md": ["Estimand Alignment", "Sample Construction Flow", "Inference-Level Check"],
+    "templates/inference_report.md": ["Standard Errors and Clustering Decision", "Few-Cluster", "Multiple Hypothesis Testing"],
     "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance", "Evidence ledger claim strength"],
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
     "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
@@ -64,6 +65,20 @@ REQUIRED_REFERENCES = {
         "IV / 2SLS",
         "RDD / Kink",
         "Design Gate Card",
+    ],
+    "references/inference-and-uncertainty.md": [
+        "Inference & Uncertainty Pack",
+        "标准误与聚类层级",
+        "多重检验",
+        "弱工具稳健推断",
+        "inference_report.md",
+    ],
+    "references/mechanism-and-channels.md": [
+        "Mechanism & Channels Pack",
+        "先分清三类",
+        "反模式清单",
+        "Gelbach",
+        "sequential ignorability",
     ],
 }
 
@@ -223,11 +238,14 @@ def check_assets() -> None:
         "references/workspace-and-state.md",
         "references/threats-to-validity.md",
         "references/design-transparency.md",
+        "references/inference-and-uncertainty.md",
+        "references/mechanism-and-channels.md",
         "references/literature-and-positioning.md",
         "references/worked-example.md",
         "references/data-governance.md",
         "references/runtime-fallbacks.md",
         "scripts/smoke_workspace.py",
+        "scripts/check_workspace_gates.py",
     ]
     required.extend(REQUIRED_TEMPLATES)
     for rel in required:
@@ -299,9 +317,20 @@ def check_init_workspace(template: dict) -> None:
 
 
 def check_python_compile() -> None:
-    files = [ROOT / "validate_skill.py", ROOT / "scripts" / "smoke_workspace.py"]
+    files = [
+        ROOT / "validate_skill.py",
+        ROOT / "scripts" / "smoke_workspace.py",
+        ROOT / "scripts" / "check_workspace_gates.py",
+    ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
+
+
+def check_gate_verifier() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_workspace_gates.py"), "--selftest"],
+        check=True,
+    )
 
 
 def check_smoke_workspace() -> None:
@@ -319,6 +348,7 @@ def main() -> None:
     check_init_workspace(template)
     check_python_compile()
     check_smoke_workspace()
+    check_gate_verifier()
     print("OK: Paper-WorkFlow skill checks passed")
 
 
