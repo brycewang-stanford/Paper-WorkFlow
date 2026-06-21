@@ -231,6 +231,9 @@ Stage 3 的目标不是「跑出显著系数」，而是把识别设计、估计
 因此 Stage 3 必须加载 [`references/research-grade-methods.md`](references/research-grade-methods.md)
 与 [`references/design-gate-cards.md`](references/design-gate-cards.md)（按设计分支列 required artifacts、
 hard fail 和 claim 降级规则）、[`references/empirical-audit.md`](references/empirical-audit.md)（样本、变量与 estimand 对齐）、
+[`references/inference-and-uncertainty.md`](references/inference-and-uncertainty.md)（标准误/聚类层级、few-cluster 修正、
+随机化推断、多重检验、弱工具稳健区间、p 值报告纪律）、[`references/mechanism-and-channels.md`](references/mechanism-and-channels.md)
+（X→M→Y 机制主张的分类与识别，把中介挡在主设定之外）、
 [`references/analysis-backends.md`](references/analysis-backends.md)（Python/StatsPAI、Stata、R 三种后端选择），
 若主后端为 `python-statspai` 还要加载 [`references/statspai-analysis.md`](references/statspai-analysis.md)
 （StatsPAI 引擎：MCP 优先拍板+拟合+诊断，`statspai` 包做出版级出表；其七块稳健性闸门正是下面最低证据包的实现入口），并完成：
@@ -242,6 +245,9 @@ hard fail 和 claim 降级规则）、[`references/empirical-audit.md`](referenc
 3. **最低证据包**：按方法分支补齐必需 artifact。交错 DiD 需 CS/SA/BJS 等 group-time 或事件研究稳健
    估计；RDD 需 bandwidth、robust bias-corrected CI、density/covariate continuity；DML/HTE 需
    cross-fitting、nuisance diagnostics、overlap 与 seed stability；其它分支见 methods pack。
+   **推断口径与机制**：按 `inference-and-uncertainty.md` 把聚类层级、few-cluster 修正、多重检验校正、
+   弱工具区间定死并写 `03_analysis/inference_report.md`；若有机制主张，按 `mechanism-and-channels.md`
+   分类（描述性分解 / 因果中介 / 异质性）并把中介移出主设定，机制证据落 `03_analysis/mechanism/`。
 4. **方法闸门报告**：写 `03_analysis/method_gate.md`，逐项列出必需证据是否存在、路径在哪里、是否
    `PASS`，并按 `design-gate-cards.md` 填好 **Design Gate Card** 与最强允许 claim 等级。若 `NOT PASS`，
    不得进入 Stage 4；必须按报告回 Stage 1/2/3 修设计、数据或估计。
@@ -255,6 +261,9 @@ hard fail 和 claim 降级规则）、[`references/empirical-audit.md`](referenc
 7. **写入状态**：更新 `workflow_state.json.analysis_backend`、`empirical_audit`、`method_gate`、
    `evidence_governance` 与 `decisions`，记录分析后端、主设计、主估计量、缺失 artifact、最强 claim 等级、
    open discrepancies 与是否放行。
+8. **机械闸门自检**：跑 `python3 scripts/check_workspace_gates.py <workspace>`，机械校验「某道闸门标了
+   `pass`/`ready` 但所需 artifact 不在盘上、或上游闸门未过（质量门不得松于方法闸门）」这类 critic 读 prose
+   保证不了的硬不一致；返回非零必须先补齐再放行。这是对 critic 主观判定的机械兜底，不替代它。
 
 质量门可以比方法闸门更严，但不能更松：若 `method_gate.md` 未通过，初稿质量门的「识别可信度」不得
 达标；若 `evidence_ledger.md` 中存在影响主结论的 open discrepancy，质量门和投稿包不得标 ready。这个约束把现代实证研究的 reviewer 标准前置到写作之前，避免后面用语言包装弥补方法硬伤。
@@ -321,6 +330,11 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   或 evidence ledger 不允许该 claim 强度，就不得把相关结果写成主因果发现。
 - **绝不让估计样本漂移**。`sample_audit.md` 未说明 raw→clean→estimation sample 的 N、drop 原因、
   treated/control 数、missingness/balance/overlap 与聚类层级时，不得把结果写成已通过方法闸门。
+- **绝不让不确定性量化错位**。聚类层级要至少等于处理分配层级；cluster 少（G≲30–50）要 wild bootstrap /
+  CR2 / 随机化推断；多 outcome / 多子样本要预先指定或族内校正；弱工具要 AR/tF 区间——口径写进
+  `inference_report.md`，缺则按 [`references/inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 在质量门封顶。
+- **绝不把机制当主回归的赠品**。X→M→Y 是独立因果问题：按 [`references/mechanism-and-channels.md`](references/mechanism-and-channels.md)
+  分清「描述性分解 / 因果中介 / 异质性」，中介绝不进主设定，措辞退到证据支持的档位。
 - **人类决策点不可跳过**（除非 `全自动` 档位且用户已显式授权）：选题定标题、定目标期刊、识别
   策略拍板、投稿前终审——这些在阶段闸门处守住。
 - **数据治理不可绕过**：受限数据、PII、IRB/DUA、许可证、archive boundary 按
@@ -361,6 +375,10 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   **示意**，真实运行由真实估计填充）。新人理解整条流水线、编排器照着填空都从这里看起。
 - **研究深化层（按阶段加载）**：[`references/threats-to-validity.md`](references/threats-to-validity.md)
   （识别威胁 × 审稿异议预案 · Stage 3/5/8）、
+  [`references/inference-and-uncertainty.md`](references/inference-and-uncertainty.md)（标准误/聚类层级 ·
+  few-cluster 修正 · 随机化推断 · 多重检验 · 弱工具区间 · CI 报告纪律 · Stage 3/4/5/8）、
+  [`references/mechanism-and-channels.md`](references/mechanism-and-channels.md)（X→M→Y 机制主张三分类 ·
+  Gelbach 分解 · 因果中介 + 敏感性 · 坏控制 · Stage 1/3/5/8）、
   [`references/design-transparency.md`](references/design-transparency.md)（预分析 · 功效/MDE · 预趋势功效 ·
   设定曲线 · 研究者自由度 · Stage 3）、
   [`references/literature-and-positioning.md`](references/literature-and-positioning.md)（结构化检索 ·
@@ -375,5 +393,8 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   本地链接、核心资产、模板契约、smoke workspace 与 DiD Notebook 结构。
 - [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) — 在临时目录生成最小工作区并实例化模板，
   验证 Stage 0 初始化 + 状态文件 + 模板路径契约。
+- [`scripts/check_workspace_gates.py`](scripts/check_workspace_gates.py) — **运行期闸门机械校验器**：在方法闸门 /
+  质量门 / 收尾处跑 `python3 scripts/check_workspace_gates.py <workspace>`，校验某道闸门标了 `pass`/`ready` 时
+  所需 artifact 是否真的在盘上、gate 顺序是否一致（质量门不得松于方法闸门）；`--reconcile` 还会核对结果数字与表图。带 `--selftest`。
 - 演示物料（可选教学用）：README 已整合原流程讲义的 8 阶段教学主线、47 个技能地图与 DiD 自检清单；
   本仓库另保留一个可一键运行的 DiD 演示 Notebook，适合在讲解本流水线时配合展示。
