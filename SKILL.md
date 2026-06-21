@@ -341,5 +341,5 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   本地链接、核心资产、模板契约、smoke workspace 与 DiD Notebook 结构。
 - [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) — 在临时目录生成最小工作区并实例化模板，
   验证 Stage 0 初始化 + 状态文件 + 模板路径契约。
-- 演示物料（可选教学用）：本仓库根目录有一份 30 页流程 PDF 讲义
-  与一个可一键运行的 DiD 演示 Notebook，适合在讲解本流水线时配合展示。
+- 演示物料（可选教学用）：README 已整合原流程讲义的 8 阶段教学主线、47 个技能地图与 DiD 自检清单；
+  本仓库另保留一个可一键运行的 DiD 演示 Notebook，适合在讲解本流水线时配合展示。
