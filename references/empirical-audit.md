@@ -11,6 +11,10 @@
 `research-grade-methods.md` 管“这个识别设计需要哪些方法证据”；本文件管“进入估计器的数据是否真的支持
 那个 estimand”。两者同时通过，结果才可进入写作。
 
+> **与测量层的分工**：本文件管**样本会计与 estimand 对齐**（流失、计数、聚类层级）；变量测得准不准、
+> 测量误差往哪偏、异常值/合并/缺失的处理纪律，由 [`measurement-and-data-quality.md`](measurement-and-data-quality.md)
+> 管。两者都在 Stage 2 末加载、都喂 `sample_audit.md` 与 `measurement_audit.md`，缺一条都会让「方法对、结论错」。
+
 最低标准：
 
 1. **样本流失可追踪**：从 raw import 到 clean data 再到 estimation sample，每一步 N、单位数、

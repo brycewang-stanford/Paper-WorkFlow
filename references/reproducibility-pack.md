@@ -6,7 +6,9 @@
 >
 > **分工**：[`research-grade-methods.md`](research-grade-methods.md) 的 Method Gate 管「方法 artifact
 > 是否齐」（识别诊断、稳健性矩阵）；本文件管「整个项目能不能被第三方一键复跑、数据来源是否交代
-> 清楚」。[`data-governance.md`](data-governance.md) 进一步管 public/restricted/confidential/PII、
+> 清楚」的**打包完整性**；其**技术姊妹篇** [`computational-reproducibility.md`](computational-reproducibility.md)
+> 管「删掉派生产物重跑、数字能不能真对上」的**确定性、环境固定与产出容差核验**。
+> [`data-governance.md`](data-governance.md) 进一步管 public/restricted/confidential/PII、
 > IRB/DUA 与公开 archive boundary。前者是科学性，后者是可复现性与合规边界——AEA/AEJ/AER 等期刊
 > 已把后者列为**强制**。
 
