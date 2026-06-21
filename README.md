@@ -347,7 +347,7 @@ python3 scripts/smoke_workspace.py
 
 Paper-WorkFlow 是 [Auto-Empirical-Research-Skills](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)（一套面向经管 / 社科实证研究的 skill 合集，含 69 个编号集合）中的总编排器。它本身不内置任何被编排的子 skill，运行时按需调用母仓库 `67-econfin-workflow-toolkit/` 等集合里的能力。
 
-- 执行范式模仿自 `do-agent`（多代理 + 上下文保护，母仓库授权模仿）。
+- 执行范式采用「多代理 + 上下文保护」：子代理自己写盘、只回传状态摘要，主代理只持有指针与状态。
 - 编排范式来自 `67-econfin-workflow-toolkit/paper-pipeline`（固定顺序 + 断点续跑 + 交互档位）。
 - 混合来源集合的再分发请各自核对其上游许可。
 
