@@ -228,6 +228,12 @@ Stage 3 估计完成时，除 `method_gate.md` 外，写一份 `03_analysis/infe
 `inference_report.md` 与 `method_gate.md` 的 artifact 表对账：method gate 的「替换 SE / 稳健性」行必须指向
 本文件记录的真实口径与 `03_analysis/robustness/` 文件。
 
+> **机械闸门自检**：写完闸门 artifact 后，在方法闸门 / 质量门 / 收尾处跑一次
+> `python3 scripts/check_workspace_gates.py <workspace>`（详见 [`../scripts/check_workspace_gates.py`](../scripts/check_workspace_gates.py)）。
+> 它机械校验「某道闸门标了 `pass`/`ready`，但所需 artifact 文件不在盘上、或上游闸门没过（质量门不得松于方法闸门）」
+> 这类 critic 读 prose 保证不了的硬不一致；返回非零即说明闸门**名不副实**，必须先补齐再放行。加 `--reconcile`
+> 还会启发式核对 `main_results.json` 的系数是否出现在 `04_results/` 表里。这是对 critic 主观打分的**机械兜底**，不替代它。
+
 ---
 
 ## 9. 接入点（本层如何嵌进流水线与闸门）
