@@ -104,7 +104,8 @@
 
 **plan（先定设计，再定方法）**
 - 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`design-gate-cards.md`](design-gate-cards.md) +
-  [`empirical-audit.md`](empirical-audit.md) + [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
+  [`empirical-audit.md`](empirical-audit.md) + [`inference-and-uncertainty.md`](inference-and-uncertainty.md)（推断口径）+
+  [`mechanism-and-channels.md`](mechanism-and-channels.md)（机制主张分类）+ [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
   missingness/balance/overlap 与 estimand 对齐，再用 methods pack 定识别合同，最后用 backend 文件选择
   `python-statspai` / `stata` / `r`；若选
   `python-statspai` 或需要 StatsPAI 交叉验证，再读 [`statspai-analysis.md`](statspai-analysis.md)。StatsPAI 引擎（MCP 优先拍板/拟合/诊断，
