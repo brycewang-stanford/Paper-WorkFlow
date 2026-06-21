@@ -7,7 +7,9 @@
 > 调用一个 skill = 让它的 `SKILL.md` 正文驱动这一步，按它自己的工作流跑到完成。**能调用就
 > 不要重写。** 但「怎么调用」有讲究——见下面的「调用机制」，它决定了本编排器是否真的跑得通。
 > 现代因果推断/应用计量的最低证据包见 [`research-grade-methods.md`](research-grade-methods.md)；
-> Stage 3 的方法选择必须同时满足该文件的 Method Gate。
+> Stage 3 的方法选择必须同时满足该文件的 Method Gate。**Stage 3–4 的统一估计与出版级出表引擎是
+> StatsPAI**（MCP 优先、`statspai` 包做重活），用法见 [`statspai-analysis.md`](statspai-analysis.md)——
+> 下表 Stage 3 各行的「StatsPAI …」入口都展开在那里。
 
 ---
 
@@ -94,8 +96,8 @@ playbook 指定的工作区子目录落盘即可。
 | 3 | ML 因果 / 异质效应 | **`67/ml-causal`** | `51-pymc-labs-CausalPy`、StatsPAI `causal_forest`/`dml`、DoubleML、EconML、GRF、DoWhy refuters |
 | 3 | Stata 执行 | **`67/stata`** | `64-tmonk-mcp-stata`、`32-dylantmoore-stata-skill`、`18-jusi-aalto-stata-accounting-research`、`mcp__stata-code`/`mcp__stata-mcp` |
 | 3 | 通用统计 | **`67/stats`** | `00-Full-empirical-analysis-skill_*`（StatsPAI/Python/Stata/R 四语言变体） |
-| 4 | 回归表（LaTeX 三线） | **`67/table`** | `66/latex-table` |
-| 4 | 图 | **`67/figure`** | `39-vincentarelbundock-marginaleffects`、`55-ab604-claude-code-r-skills` |
+| 4 | 回归表（三格式：LaTeX/Word/Excel 同出） | **StatsPAI 出表栈**（`statspai` 包：`regtable`/`paper_tables`/`collect`，见 [`statspai-analysis.md`](statspai-analysis.md) §4） | **`67/table`**（LaTeX 三线）、`66/latex-table` |
+| 4 | 图 | **StatsPAI 标准图谱**（`coefplot`/`enhanced_event_study_plot`/`rdplot`/`cate_plot`/`spec_curve`，见 [`statspai-analysis.md`](statspai-analysis.md) §5） | **`67/figure`**、`39-vincentarelbundock-marginaleffects`、`55-ab604-claude-code-r-skills` |
 | 5 | 从表图写论文 | **`67/paper-writer`** | `01-lishix520-academic-paper-skills`、`04-K-Dense-AI-claude-scientific-writer`、`35-bahayonghang-academic-writing-skills` |
 | 5 | 文献综述 | `36-taoyunudt-literature-review-skill` | `52-keemanxp-slr-prisma`、`53-keemanxp-thematic-analysis-skill`、`59-shiquda-openalex-skill` |
 | 6 | 打磨流水线（编排级） | **`67/paper-pipeline`** | 其内部串：`paper-polish`/`paper-self-revise`/`paper-style`/`reference-verify` |
@@ -123,7 +125,7 @@ playbook 指定的工作区子目录落盘即可。
 | 联网搜索 / 抓取 / 登录后操作 | **`67/web-access`**（中文站点首选）、`67/web-research`、`67/agent-browser`、`WebSearch`/`WebFetch` |
 | arXiv / NBER / 预印本 | `67/arxiv`、`68-research-productivity-skills/nber-working-papers-api`、`68/.../academic-paper-search`、`68/.../unpaywall-api` |
 | 文献库管理 / 引用入库 | Zotero MCP（`zotero_*`、`scite_*`）、`59-shiquda-openalex-skill` |
-| 因果推断 MCP（agent-native） | **StatsPAI MCP**：`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex` |
+| **Stage 3–4 估计 + 出表引擎** | **StatsPAI**：[`statspai-analysis.md`](statspai-analysis.md)——MCP 优先（`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex`），`statspai` 包做出版级三格式表图与 8 段 paper bundle；含三种领域模式、估计量路由、七块稳健性闸门、反模式清单 |
 | 方法增强包 | `69-Paper-WorkFlow/references/research-grade-methods.md`：design register、method gate、最低证据包 |
 | 识别威胁 / 审稿异议预案 | `69-Paper-WorkFlow/references/threats-to-validity.md`：威胁×诊断×预防×回应对照表（坏控制、预趋势功效、弱工具…，Stage 3/5/8） |
 | 设计透明度 / 预分析 | `69-Paper-WorkFlow/references/design-transparency.md`：PAP/预注册、功效与 MDE、预趋势功效 + HonestDiD、设定曲线、研究者自由度披露（Stage 3） |

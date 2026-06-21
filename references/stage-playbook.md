@@ -92,9 +92,13 @@ DUA、IRB/ethics、许可证、再分发边界。
 最后用方法闸门确认最低证据包齐全。
 
 **plan（先定设计，再定方法）**
-- 必读 [`research-grade-methods.md`](research-grade-methods.md)，把 proposal 的识别路线翻译成
-  `03_analysis/design_register.md`：estimand、treatment、comparison group、识别假设、主估计量、
-  必需诊断、替代估计量、失败回退。
+- 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`statspai-analysis.md`](statspai-analysis.md)
+  （StatsPAI 引擎：MCP 优先拍板/拟合/诊断，`statspai` 包做出版级出表；其 §1 8 段映射、§3 估计量路由、
+  §6 七块稳健性闸门是本阶段的操作主线）。把 proposal 的识别路线翻译成 `03_analysis/design_register.md`：
+  estimand、treatment、comparison group、识别假设、主估计量、必需诊断、替代估计量、失败回退。
+- **领域模式分流**（statspai-analysis §2）：默认应用计量；用户措辞含 target trial / IPTW / TMLE / 孟德尔
+  随机化 → Mode A（流行病学，报风险差/比/HR/RMST + E-value）；含 causal forest / DML / CATE / policy →
+  Mode B（ML 因果，CATE 分布 + policy value + conformal）。
 - 同时加载 [`threats-to-validity.md`](threats-to-validity.md)（把稳健性矩阵设计成「针对每个识别威胁的
   回应」，并按 §3 给控制集标注前处理/混淆/中介/对撞、剔除坏控制）与
   [`design-transparency.md`](design-transparency.md)（估计前写预分析计划锁定设计；空结果报 MDE；DiD 跑
@@ -115,20 +119,27 @@ DUA、IRB/ethics、许可证、再分发边界。
   | 时间序列 / 宏观 | `time-series` | 单位根、协整、VAR/IRF |
   | 异质处理效应 / 高维 | `ml-causal` | DML、EconML/DoubleML、因果森林/GRF、overlap 与 cross-fitting |
 
-- **可选增强**：用 StatsPAI MCP 链路做 agent-native 因果推断与稳健性自检：
-  `detect_design → preflight → recommend → 用 as_handle=true 拟合得 result_id →
-  audit_result(result_id) 列出缺的稳健性 → 逐个调它建议的函数 →
-  honest_did_from_result / sensitivity_from_result → bibtex(keys) 取可信引用`。
-  若使用外部 Python/R 方法包（DoubleML、EconML、DoWhy、GRF、PyFixest、rdrobust、CausalPy），按
-  methods pack §1 的官方入口核对 API，并把包版本、seed、关键参数写入估计脚本或 `method_gate.md`。
+- **主引擎 = StatsPAI（MCP 优先）**：默认走 MCP 链路做 agent-native 拍板 / 拟合 / 诊断 / 稳健性自检，
+  全程不落 Python：`detect_design → preflight → recommend → 用 as_handle=true 拟合得 result_id →
+  audit_result(result_id) 列出缺的稳健性 → 逐个调它 emit 的 suggest_function →
+  honest_did_from_result / sensitivity_from_result → bibtex(keys) 取可信引用`（`paper.bib` 为唯一真源）。
+  设计→函数路由见 [`statspai-analysis.md`](statspai-analysis.md) §3。
+- **需要出版级三格式表图 / 8 段 paper bundle 时切到 `statspai` 包**（`sp.feols`/`sp.regtable`/`sp.collect`，
+  见 statspai-analysis §4–5）：MCP 拍板拟合后用包出表，两条路径的系数 / SE / N / 聚类**必须对得上**，
+  对不上先停下查口径。若改用外部 Python/R 方法包（DoubleML、EconML、DoWhy、GRF、PyFixest、rdrobust、
+  CausalPy），按 methods pack §1 的官方入口核对 API；无论走哪条，都把包版本、seed、关键参数（或 MCP 的
+  `result_id` 与设计判定）写入估计脚本或 `method_gate.md`。
 
 **execute**
-- `Skill` 调用选定的估计 skill，按其工作流跑基准回归（用 `64-tmonk-mcp-stata` / `mcp__stata-*`
-  跑 Stata，或 Python statsmodels/linearmodels/pyfixest=`40-py-econometrics-pyfixest`）。
-- **稳健性矩阵并行化**（套用 [`subagent-templates.md`](subagent-templates.md) §S3）：把"安慰剂、
-  替换样本、替换度量、加/减控制变量、改聚类层级、子样本异质性、机制中介"等彼此独立的检验，一次性
-  派多个 subagent 并行跑，**每个 subagent 自己把系数/SE/图写盘**到
-  `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。
+- **基准回归优先用 StatsPAI**（statspai-analysis §3）：MCP `fit(as_handle)` 拿 `result_id`，或本机用
+  `statspai` 包跑 `sp.feols`/`sp.callaway_santanna`/`sp.ivreg`/`sp.rdrobust` 等。仍可按需 `Skill` 调用选定的
+  `67/` 估计 skill 或 `64-tmonk-mcp-stata` / `mcp__stata-*` 跑 Stata、`40-py-econometrics-pyfixest` 跑
+  PyFixest 做交叉验证——但同一主结果只认一份口径一致的系数。
+- **稳健性矩阵并行化**（套用 [`subagent-templates.md`](subagent-templates.md) §S3）：按 statspai-analysis §6
+  的**七块稳健性闸门**（安慰剂 / 替换样本 / 设定曲线 / 替换 SE / Oster 界 / HonestDiD / E-value）+ 机制中介
+  把彼此独立的检验一次性派多个 subagent 并行跑，**每个 subagent 自己把系数/SE/图写盘**到
+  `03_analysis/robustness/<name>.json|png`，只回传"通过/不通过 + 关键系数"。这七块正是下面 `method_gate.md`
+  artifact 表的实现入口，缺一块对应行标 `no`。
 - 所有代码留在 `03_analysis/`（`.py`/`.do`/`.R`），结果存 `03_analysis/results/`。
 - 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
   有路径；缺失项标 `no`，不得用空话替代。方法闸门还要检查 `00_meta/data_governance.md`：合法访问、
@@ -151,14 +162,20 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ## Stage 4 · 表与图
 
-**目的**：把 Stage 3 的结果做成**出版级**三线表与图（事件研究图、系数图、机制图）。
+**目的**：把 Stage 3 的结果做成**出版级**三格式表（LaTeX/Word/Excel 同出）与图（事件研究图、系数图、机制图）。
 
 **execute**
-- `Skill` 调用 `67/table` 生成 LaTeX 三线回归表（主表 + 稳健性表 + 描述性统计表），落 `04_results/*.tex`。
-  Stata 用户可配合 `18-jusi-aalto-stata-accounting-research`、`32-dylantmoore-stata-skill` 的表格规范，
-  或 `66/latex-table`。
-- `Skill` 调用 `67/figure` 画事件研究 / 系数 / 机制图，落 `04_results/*.pdf` + `*.png`。
-- `39-vincentarelbundock-marginaleffects` 可用于边际效应图。
+- **主路径 = StatsPAI 出表栈**（statspai-analysis §4，用 `statspai` 包）：把 Stage 3 的结果对象喂给
+  `sp.regtable(M1..M5, template="aer")`（Tier 1 单表）/ `sp.paper_tables(main=, heterogeneity=, robustness=)`
+  （Tier 2 多面板）/ `sp.collect("Title")`（Tier 3 整场 bundle），用 `.to_word()/.to_excel()/.to_latex()`
+  **同时**落 `04_results/*.{tex,docx,xlsx}`（合作者改 Word、编辑要 Excel、CI 编 LaTeX）。**永远不要从 pandas
+  手搓 Word/Excel**。需纯 LaTeX 三线表时 `Skill` 调用 `67/table`（或 `66/latex-table`）作替代/补充；Stata
+  用户可配 `18-jusi-aalto-stata-accounting-research`、`32-dylantmoore-stata-skill` 的表格规范。
+- **图：StatsPAI 标准图谱**（statspai-analysis §5）：`sp.enhanced_event_study_plot(cs)`（事件研究，从 CS/SA
+  结果出）、`sp.coefplot(...)`（系数森林）、`sp.rdplot`、`sp.cate_plot`、`sp.spec_curve(...).plot()`、
+  `sp.sensitivity_plot(sp.honest_did(...))`。每个 plotter 返回 `(fig, ax)`（`binscatter` 是 3 元组），解包后
+  `fig.savefig(..., dpi=300)` 落 `04_results/*.pdf` + `*.png`；脚本顶部先跑一次 CJK+retina 设置。需要时
+  `Skill` 调用 `67/figure` 或 `39-vincentarelbundock-marginaleffects`（边际效应图）作补充。
 
 **review**：critic 检查——表注是否齐（样本量、R²、聚类层级、显著性星标说明）、图是否自解释、
 数字与 Stage 3 结果一致。意见写 `04_results/figtab_audit.md`。
@@ -265,7 +282,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - `Skill` 调用 `67/paper-referee-revise`，按审稿意见**逐条**修订 `main.tex`，并生成 response letter
   落 `08_review/response_letter.md`。若是内部自评则用 `67/paper-self-revise`。
 - 想要更狠的对抗审阅可叠加 `66/grillme`、`66/econ-reviewer`、`21-claesbackman-AI-research-feedback`、
-  `41-sticerd-eee-sewage-econometrics-check`（计量自检）。
+  `41-sticerd-eee-sewage-econometrics-check`（计量自检）。计量复核可再用 StatsPAI MCP
+  `audit_result(result_id)` 复跑「还缺哪些稳健性」，与 `03_analysis/method_gate.md` 对账（statspai-analysis §6）。
 
 **review**：critic 核对——每条审稿意见是否都有实质回应、修订是否引入新矛盾（交叉引用、表号）。
 

@@ -49,8 +49,8 @@ The lecture version presented eight teaching stages. The current skill keeps tha
 | 1. Ideation | Stage 1 | Is the question novel, important, and identifiable? | `econfin-idea-finder`, `novelty-check`, `significance-search` -> topic card |
 | 2. Design | Stage 1 | Are the causal question, counterfactual, variation, and target journal clear? | `econfin-proposal`, `journal-digest` -> `proposal.md` |
 | 3. Data | Stage 2 | Are sources, keys, frequency, and cleaning rules reproducible? | `data-fetcher`, `data-cleaning` -> `clean.parquet`, `codebook.md`, data log |
-| 4. Estimation | Stage 3 | Where does the counterfactual come from, and is the evidence bundle complete? | `did-analysis`, `iv-estimation`, `rdd-analysis`, `synthetic-control`, etc. -> `design_register.md`, `method_gate.md` |
-| 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | `table`, `figure` -> regression tables, event-study plots, coefficient plots |
+| 4. Estimation | Stage 3 | Where does the counterfactual come from, and is the evidence bundle complete? | **StatsPAI engine** (MCP-first design/fit/diagnostics) + `did-analysis`, `iv-estimation`, `rdd-analysis`, `synthetic-control`, etc. -> `design_register.md`, `method_gate.md` |
+| 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | **StatsPAI export stack** (Word/Excel/LaTeX in one shot) + `table`, `figure` -> regression tables, event-study plots, coefficient plots |
 | 6. Writing | Stage 5-7 | Is the draft complete, restrained, citation-faithful, and free of AI residue? | `paper-writer`, `paper-pipeline`, `readability` / `fix-chinese` -> `main.tex`, quality scorecard |
 | 7. Review | Stage 8 | What would a reviewer attack before submission? | `referee-report`, `paper-referee-revise` -> referee report, response letter, revised draft |
 | 8. Submission | Stage 9 | Is the journal fit right, and is the package complete? | `paper-submission`, `reference-verify` -> journal shortlist, cover letter, submission package |
@@ -67,6 +67,8 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 
 The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules.
 
+The unified estimation and publication-grade export engine for Stages 3-4 is **StatsPAI** ([statspai-analysis.md](references/statspai-analysis.md)). By default the agent drives the already-connected StatsPAI MCP server (`detect_design -> preflight -> recommend -> fit(as_handle) -> audit_result -> sensitivity_from_result -> bibtex`) for agent-native design adjudication, fitting, diagnostics, robustness self-checks, and verified citations, with no Python written. When publication-grade three-format tables/figures (Word/Excel/LaTeX together) and an 8-section paper bundle are needed, it switches to the `statspai` package (`sp.regtable` / `sp.paper_tables` / `sp.collect`). It also extends the design router from applied econometrics into epidemiology (target-trial, IPTW, g-formula, TMLE, E-value) and ML causal inference (DML, meta-learners, causal forest, CATE, policy), and fills the Method Gate's minimum evidence bundle through a seven-block robustness gauntlet (placebo, alternative samples, spec curve, alternative SE, Oster bounds, HonestDiD, E-value).
+
 ## The 47-Skill Map
 
 Paper-WorkFlow orchestrates the research action; the underlying action comes from the parent repository's `67-econfin-workflow-toolkit/` and related skill collections.
@@ -75,8 +77,8 @@ Paper-WorkFlow orchestrates the research action; the underlying action comes fro
 |---|---|---|
 | Ideation and design | `econfin-idea-finder`, `novelty-check`, `significance-search`, `journal-digest`, `econfin-proposal` | Turn an interest into an executable proposal |
 | Data | `data-fetcher`, `data-cleaning` | Build an auditable analysis table |
-| Estimation | `ols-regression`, `panel-data`, `iv-estimation`, `did-analysis`, `rdd-analysis`, `synthetic-control`, `time-series`, `ml-causal`, `stata`, `stats` | Generate method-specific evidence |
-| Tables and figures | `table`, `figure` | Produce publication-grade exhibits |
+| Estimation | **StatsPAI** (MCP + package), `ols-regression`, `panel-data`, `iv-estimation`, `did-analysis`, `rdd-analysis`, `synthetic-control`, `time-series`, `ml-causal`, `stata`, `stats` | Generate method-specific evidence |
+| Tables and figures | **StatsPAI export stack** (`regtable`/`paper_tables`/`collect`, three formats at once), `table`, `figure` | Produce publication-grade exhibits |
 | Writing and polishing | `paper-writer`, `paper-style`, `paper-polish`, `paper-self-revise`, `paper-pipeline`, `readability` | Move from draft to journal-specific manuscript |
 | Review and citations | `referee-report`, `paper-referee-revise`, `reference-verify` | Simulate review, revise, and verify references |
 | Submission | `paper-submission` | Prepare the journal shortlist, cover letter, and submission materials |
@@ -219,6 +221,7 @@ Paper-WorkFlow/
 │   ├── skill-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
+│   ├── statspai-analysis.md
 │   ├── threats-to-validity.md
 │   ├── design-transparency.md
 │   ├── writing-craft.md
@@ -247,6 +250,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
+- [references/statspai-analysis.md](references/statspai-analysis.md): StatsPAI estimation + publication-grade export engine for Stages 3-4 (MCP + package, three domain modes, estimator routing, seven-block robustness gauntlet).
 - [references/writing-craft.md](references/writing-craft.md): scholarly writing standards.
 - [references/reproducibility-pack.md](references/reproducibility-pack.md): replication packaging standard.
 - [references/peer-review-and-submission.md](references/peer-review-and-submission.md): review and submission standard.
