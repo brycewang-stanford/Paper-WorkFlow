@@ -11,7 +11,7 @@
 
 Setup 阶段用 `init_workspace.sh <workspace-dir>` 铺出下列骨架。工作区根目录名建议为
 `paper_workspace/<研究短名>_<YYYYMMDD-HHMM>/`（北京时间）。脚本**拒绝覆盖已存在路径**——
-撞名就另选一个新的时间戳目录（`do-agent` 纪律）。脚本会自动复制
+撞名就另选一个新的时间戳目录。脚本会自动复制
 `assets/workflow_state.template.json` 到 `00_meta/workflow_state.json`，并写一个
 `00_meta/intake.md` 占位；带 ★ 的具体研究产物由各阶段在运行中写入。
 
@@ -158,7 +158,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 ## 3. 子代理（subagent）输入/输出约定 —— 上下文保护的落地细则
 
-源自 `do-agent`「子代理自己写盘、只回传状态摘要」。每次用 `Agent` 派 subagent，prompt **必须**显式给：
+核心原则是「子代理自己写盘、只回传状态摘要」。每次用 `Agent` 派 subagent，prompt **必须**显式给：
 
 1. **角色与目标**：一句话说清它在哪个阶段做什么。
 2. **输入文件**：明确路径，告诉它该读什么（如 `01_proposal/proposal.md`、`02_data/clean.parquet`）。
@@ -169,8 +169,8 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
    通过与否、一句话下一步建议。**严禁回传完整产出。**
 6. **工具放行**：主代理确保 subagent 可用 Read + Write + Bash（必要时 Skill）。
 
-**并行批次**：同阶段彼此独立的任务一次性并行派发，每批 ≤10 个（参考 `do-agent` 上限；
-`idea-finder` 用 5）。有依赖的串行，并把上游产物路径写进下游 subagent 的输入清单。
+**并行批次**：同阶段彼此独立的任务一次性并行派发，每批 ≤10 个（选题漏斗用 5，
+沿用 `idea-finder`）。有依赖的串行，并把上游产物路径写进下游 subagent 的输入清单。
 
 **主代理侧**：拿到摘要后只更新 `workflow_state.json` / `logs/` / `backups/`，**不把摘要里引用的大
 文件读回上下文**，除非下一步确实需要其中的具体数字——那也只 `Read` 需要的那几行/那个 json，而非整份。

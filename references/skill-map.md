@@ -52,7 +52,7 @@
 `table`、`figure`、`paper-writer`、`paper-pipeline`、`paper-polish`、`paper-self-revise`、`paper-style`、
 `reference-verify`、`readability`、`fix-chinese`、`chinese-quote-converter`、`referee-report`、
 `paper-referee-revise`、`paper-submission`、`master-thesis-review`、`md-to-docx`、`markitdown`、
-`marp-slides-creator`、`marp-export`、`web-access`、`web-research`、`agent-browser`、`arxiv`、`do-agent`、
+`marp-slides-creator`、`marp-export`、`web-access`、`web-research`、`agent-browser`、`arxiv`、
 `skill-creator`。`66/` 的 reviewer（`did-reviewer`、`econ-reviewer`、`grillme`、`latex-table`、
 `citation-fidelity`、`codebook-pass`、`R-optimizer`）注册名均 = 文件夹名。
 
@@ -135,7 +135,6 @@ playbook 指定的工作区子目录落盘即可。
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |
 | 笔记 / 知识库 | Obsidian MCP（`create-note`/`search-vault`） |
-| 多代理执行范式 | **`67/do-agent`** / `68/.../do-agent`（本编排器的设计母本） |
 | 新建 / 改 skill | `67/skill-creator`、`67/command-development` |
 
 ---
