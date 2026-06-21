@@ -177,6 +177,9 @@
 - 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
   有路径；`02_data/sample_audit.md` 也必须作为必需 artifact 进入表格，且其 final estimation sample 的 N、
   treated/control 数、cluster level 必须与 `main_results.json` 对上。缺失项标 `no`，不得用空话替代。
+  同步写 `03_analysis/inference_report.md`（聚类层级与 cluster 数、few-cluster 修正、随机化推断、多重检验族与
+  校正、弱工具区间，见 [`inference-and-uncertainty.md`](inference-and-uncertainty.md)）；有机制主张则按
+  [`mechanism-and-channels.md`](mechanism-and-channels.md) 把它分类、把中介移出主设定、结果落 `03_analysis/mechanism/`。
   还要按 `design-gate-cards.md` 填写 **Design Gate Card**：列出当前设计卡每个 required artifact 的路径、
   是否通过、以及对应 claim consequence（causal / qualified_causal / descriptive / exploratory / no_claim）。
   方法闸门给出的最强 claim 等级必须同步写入 `workflow_state.json.evidence_governance.claim_strength`。
@@ -192,7 +195,9 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 先回 Stage 2/3 修数据或设定，不得用更多稳健性表掩盖。
 
 **revise / 交付**：据审阅补检验、修设定，定稿 `03_analysis/results/main_results.json` 与一份
-`03_analysis/results/summary.md`（人话版结论）。只有 `method_gate.md` 为 `PASS` 时，Stage 3 才能置
+`03_analysis/results/summary.md`（人话版结论）。置 `done` 前跑一次
+`python3 scripts/check_workspace_gates.py <workspace>` 机械核对（method_gate 标 PASS 时所需 artifact 必须真的在盘上）。
+只有 `method_gate.md` 为 `PASS`、且机械核对无 hard 不一致时，Stage 3 才能置
 `done` 并进入 Stage 4；否则按 `method_gate.md` 的 Next Action 回退。
 
 **失败回退（关键）**：平行趋势不过 / IV 弱工具 / 系数不显著 / 机制不成立 → **不要硬写成功**。
