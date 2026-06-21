@@ -33,6 +33,14 @@ Last updated (Beijing): <YYYY-MM-DD HH:MM>
   - Power / MDE or detectable effect note:
   - Random seeds and version pinning:
 
+Claim Boundary:
+
+- Strongest claim sought: causal / qualified_causal / descriptive / exploratory
+- Population, time window, and treatment version the claim covers:
+- External validity boundary:
+- Conditions that would force downgrade:
+- Evidence ledger row(s): 00_meta/evidence_ledger.md#claim-register
+
 ## 3. Variable Construction
 
 | Role | Variable | Construction | Source | Timing | Notes |

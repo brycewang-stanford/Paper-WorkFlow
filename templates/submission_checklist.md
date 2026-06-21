@@ -33,6 +33,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 
 - Reference verification final pass:
 - Method gate still valid after revisions:
+- Evidence ledger supports abstract / highlights / cover letter claims:
 - Quality scorecard accepted:
 - No restricted data in public package:
 - No credentials, API keys, or personal identifiers in logs:

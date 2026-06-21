@@ -22,6 +22,7 @@ Scorer: quality-gate critic subagent
 - Total >= 56:
 - No fatal flags in identification / robustness / citation:
 - Governance red flags absent:
+- Evidence ledger claim strength matches manuscript wording:
 - Decision: PASS / NOT PASS
 
 ## Top 3 Shortfalls

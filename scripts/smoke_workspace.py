@@ -125,6 +125,16 @@ def build_workspace(tmp_root: Path) -> Path:
             "primary_estimator": "Callaway-Santanna",
         }
     )
+    state["evidence_governance"].update(
+        {
+            "status": "pending",
+            "evidence_ledger": "00_meta/evidence_ledger.md",
+            "design_gate_card": "03_analysis/method_gate.md#design-gate-card",
+            "claim_strength": "pending",
+            "open_discrepancies": [],
+            "last_claim_audit": "smoke fixture only; no real claim audited",
+        }
+    )
     state["replication_pack"].update(
         {
             "status": "not_ready",
@@ -148,8 +158,8 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 6:
-        fail("smoke state schema_version must remain 6")
+    if state.get("schema_version") != 7:
+        fail("smoke state schema_version must remain 7")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
@@ -158,6 +168,8 @@ def check_workspace(workspace: Path) -> None:
         fail("smoke state empirical audit was not populated")
     if state["replication_pack"]["status"] != "not_ready":
         fail("smoke fixture must not pretend replication is ready")
+    if state["evidence_governance"]["evidence_ledger"] != "00_meta/evidence_ledger.md":
+        fail("smoke state evidence governance was not populated")
     for name, rel in ARTIFACTS.items():
         path = workspace / rel
         if not path.exists():
@@ -167,8 +179,10 @@ def check_workspace(workspace: Path) -> None:
     gate = (workspace / "03_analysis" / "method_gate.md").read_text(encoding="utf-8")
     if "Decision: PASS / NOT PASS" not in gate:
         fail("method gate template lost its explicit decision placeholder")
+    if "Design Gate Card" not in gate:
+        fail("method gate template missing design gate card section")
     ledger = (workspace / "00_meta" / "evidence_ledger.md").read_text(encoding="utf-8")
-    for marker in ["Claim Register", "Data and Sample Provenance", "Exhibit and Script Map"]:
+    for marker in ["Claim Register", "Estimand-to-Claim Map", "Claim Strength Ladder", "Exhibit and Script Map"]:
         if marker not in ledger:
             fail(f"evidence ledger template missing marker: {marker}")
     governance = (workspace / "00_meta" / "data_governance.md").read_text(encoding="utf-8")

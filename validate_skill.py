@@ -45,17 +45,26 @@ EXPECTED_WORKSPACE_DIRS = [
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]+\]\(([^)]+)\)")
 REQUIRED_TEMPLATES = {
     "templates/analysis_backend.md": ["Backend Choice", "Environment Check", "Fallback"],
-    "templates/design_register.md": ["Target estimand", "Bad-control screen", "Fallback Plan"],
-    "templates/method_gate.md": ["Required Artifact Table", "Decision: PASS / NOT PASS", "Hard Flags"],
+    "templates/design_register.md": ["Target estimand", "Claim Boundary", "Bad-control screen", "Fallback Plan"],
+    "templates/method_gate.md": ["Required Artifact Table", "Design Gate Card", "Decision: PASS / NOT PASS", "Hard Flags"],
     "templates/sample_audit.md": ["Estimand Alignment", "Sample Construction Flow", "Inference-Level Check"],
-    "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance"],
+    "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance", "Evidence ledger claim strength"],
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
     "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
-    "templates/evidence_ledger.md": ["Claim Register", "Data and Sample Provenance", "Exhibit and Script Map"],
+    "templates/evidence_ledger.md": ["Claim Register", "Estimand-to-Claim Map", "Claim Strength Ladder", "Exhibit and Script Map"],
     "templates/submission_checklist.md": ["Journal Policy Refresh", "Final Gates"],
     "templates/data_governance.md": ["Data Classification", "Public replication package must not include", "IRB"],
     "templates/DAS.md": ["Restricted or Confidential Data", "Rights and Ethics"],
     "templates/run_all.sh": ["set -euo pipefail", "build tables and figures"],
+}
+REQUIRED_REFERENCES = {
+    "references/design-gate-cards.md": [
+        "Claim strength ladder",
+        "DiD / Event Study",
+        "IV / 2SLS",
+        "RDD / Kink",
+        "Design Gate Card",
+    ],
 }
 
 
@@ -90,8 +99,8 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 6:
-        fail("workflow_state.template.json schema_version must be 6")
+    if data.get("schema_version") != 7:
+        fail("workflow_state.template.json schema_version must be 7")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
@@ -99,6 +108,7 @@ def load_template() -> dict:
         "analysis_backend",
         "empirical_audit",
         "method_gate",
+        "evidence_governance",
         "quality_gate",
         "replication_pack",
         "artifacts",
@@ -142,6 +152,17 @@ def load_template() -> dict:
     ]:
         if key not in gate:
             fail(f"replication_pack missing key: {key}")
+    governance = data["evidence_governance"]
+    for key in [
+        "status",
+        "evidence_ledger",
+        "design_gate_card",
+        "claim_strength",
+        "open_discrepancies",
+        "last_claim_audit",
+    ]:
+        if key not in governance:
+            fail(f"evidence_governance missing key: {key}")
     return data
 
 
@@ -190,6 +211,7 @@ def check_assets() -> None:
         "references/stage-playbook.md",
         "references/skill-map.md",
         "references/research-grade-methods.md",
+        "references/design-gate-cards.md",
         "references/empirical-audit.md",
         "references/statspai-analysis.md",
         "references/analysis-backends.md",
@@ -220,6 +242,12 @@ def check_assets() -> None:
 
 def check_template_contracts() -> None:
     for rel, markers in REQUIRED_TEMPLATES.items():
+        path = ROOT / rel
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                fail(f"{rel} missing required marker: {marker}")
+    for rel, markers in REQUIRED_REFERENCES.items():
         path = ROOT / rel
         text = path.read_text(encoding="utf-8")
         for marker in markers:
@@ -263,6 +291,8 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh did not create 00_meta/intake.md")
         if not (workspace / "00_meta" / "analysis_backend.md").exists():
             fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
+        if not (workspace / "00_meta" / "evidence_ledger.md").exists():
+            fail("init_workspace.sh did not create 00_meta/evidence_ledger.md")
         second = subprocess.run(["bash", str(script), str(workspace)], capture_output=True)
         if second.returncode == 0:
             fail("init_workspace.sh should refuse to overwrite an existing workspace")

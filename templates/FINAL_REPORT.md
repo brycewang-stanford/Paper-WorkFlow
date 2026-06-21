@@ -28,6 +28,8 @@ Workspace: <paper_workspace/...>
 - Replication pack: ready / not_ready
 - Data governance: clear / restricted / blocked
 - Evidence ledger: complete / incomplete
+- Evidence governance: pass / not_pass
+- Strongest allowed claim: causal / qualified_causal / descriptive / exploratory / no_claim
 
 ## 3. Deliverables
 

@@ -31,7 +31,23 @@ Auditor: method-gate critic subagent
 | Evidence ledger | 00_meta/evidence_ledger.md | no | no |  |
 | Rebuild path | REPLICATION.md / run_all.sh | no | no |  |
 
-## 3. Hard Flags
+## 3. Design Gate Card
+
+Reference: `references/design-gate-cards.md`
+
+Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / other
+
+| Gate item | Required artifact | Path | Present? | Pass? | Claim consequence |
+|---|---|---|---:|---:|---|
+| <item> | <artifact> | <path> | no | no | causal / qualified_causal / descriptive / exploratory / no_claim |
+
+Claim Downgrade:
+
+- Strongest allowed claim after this gate: causal / qualified_causal / descriptive / exploratory / no_claim
+- Claims that must be downgraded in `00_meta/evidence_ledger.md`:
+- Manuscript sections affected:
+
+## 4. Hard Flags
 
 - Parallel trends / exclusion / continuity / overlap:
 - Bad-control risk:
@@ -43,7 +59,7 @@ Auditor: method-gate critic subagent
 - Runtime fallback used:
 - Backend parity / cross-validation:
 
-## 4. Decision
+## 5. Decision
 
 Decision: PASS / NOT PASS
 
@@ -53,7 +69,7 @@ Allowed claim:
 - Descriptive:
 - Exploratory only:
 
-## 5. Next Action
+## 6. Next Action
 
 If NOT PASS, route back to:
 

@@ -12,7 +12,8 @@
 Setup 阶段用 `init_workspace.sh <workspace-dir>` 铺出下列骨架。工作区根目录名建议为
 `paper_workspace/<研究短名>_<YYYYMMDD-HHMM>/`（北京时间）。脚本**拒绝覆盖已存在路径**——
 撞名就另选一个新的时间戳目录。脚本会自动复制
-`assets/workflow_state.template.json` 到 `00_meta/workflow_state.json`，并写一个
+`assets/workflow_state.template.json` 到 `00_meta/workflow_state.json`，复制
+`00_meta/analysis_backend.md` 与 `00_meta/evidence_ledger.md` 起始模板，并写一个
 `00_meta/intake.md` 占位；带 ★ 的具体研究产物由各阶段在运行中写入。
 
 ```text
@@ -25,7 +26,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── analysis_backend.md        # ★Python/StatsPAI、Stata、R 后端选择与环境检查
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   ├── data_governance.md         # ★数据分级、PII、IRB/DUA、公开包边界
-│   ├── evidence_ledger.md         # ★claim→data→estimate→exhibit→script 总账
+│   ├── evidence_ledger.md         # ★estimand→claim→data→estimate→exhibit→script 总账
 │   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
 ├── 01_proposal/
 │   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
@@ -90,7 +91,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `6`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`） |
+| `schema_version` | 模板版本号（当前 `7`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -119,6 +120,12 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `method_gate.required_artifacts` | 本设计要求的最低证据包 artifact 列表 |
 | `method_gate.missing_artifacts` | 最近一次方法闸门仍缺失的 artifact |
 | `method_gate.last_audit` | 最近一次方法闸门审计时间/摘要 |
+| `evidence_governance.status` | `pending` / `pass` / `not_pass`——claim 与 evidence ledger 是否一致 |
+| `evidence_governance.evidence_ledger` | claim→estimand→data→estimate→exhibit→script 总账路径（默认 `00_meta/evidence_ledger.md`） |
+| `evidence_governance.design_gate_card` | 当前主设计卡在方法闸门中的位置（默认 `03_analysis/method_gate.md#design-gate-card`） |
+| `evidence_governance.claim_strength` | 主 claim 当前允许的最强等级：`causal` / `qualified_causal` / `descriptive` / `exploratory` / `no_claim` / `pending` |
+| `evidence_governance.open_discrepancies` | 仍未解决的 claim、表图、样本、估计或复现不一致问题列表 |
+| `evidence_governance.last_claim_audit` | 最近一次 evidence-to-claim 审计时间/摘要 |
 | `quality_gate.draft_milestone` | `pending` / `done`——「可投稿级初稿」核心里程碑是否达成（质量门 `pass` 时置 `done`） |
 | `quality_gate.status` | `pending` / `pass` / `not_pass`——最近一轮质量门判定 |
 | `quality_gate.rounds` | 已执行的质量门轮次（含回退；上限 2） |
@@ -141,6 +148,11 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 **写入纪律**：阶段开始置 `in_progress`、完成（产出 + 审阅闸门都过）才置 `done`、入口前置被跳过的
 阶段置 `skipped`；每次写入同时刷新 `last_updated_beijing`。这是断点续跑的唯一依据——续跑时读它，
 从第一个非 `done`/`skipped` 的阶段恢复。
+
+**Evidence governance 写入纪律**：Stage 3 末由 Method Gate 写入当前主设计卡和 `claim_strength`；
+Stage 4 生成表图后把每个 exhibit 补进 `00_meta/evidence_ledger.md`；Stage 5–7 每次写作或改稿后重新核对
+manuscript claim 是否强于 ledger 允许等级。若 `open_discrepancies` 非空且影响摘要、引言主贡献、结果段或
+cover letter，`evidence_governance.status` 必须是 `not_pass`，质量门和投稿包不得标 ready。
 
 **`artifacts` 示例**：
 

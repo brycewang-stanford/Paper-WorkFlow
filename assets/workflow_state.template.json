@@ -1,5 +1,5 @@
 {
-  "schema_version": 6,
+  "schema_version": 7,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -46,6 +46,14 @@
     "required_artifacts": [],
     "missing_artifacts": [],
     "last_audit": ""
+  },
+  "evidence_governance": {
+    "status": "pending",
+    "evidence_ledger": "00_meta/evidence_ledger.md",
+    "design_gate_card": "03_analysis/method_gate.md#design-gate-card",
+    "claim_strength": "pending",
+    "open_discrepancies": [],
+    "last_claim_audit": ""
   },
   "quality_gate": {
     "draft_milestone": "pending",
