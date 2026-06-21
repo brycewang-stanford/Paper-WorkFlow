@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 TEMPLATE_OUTPUTS = {
+    "templates/analysis_backend.md": "00_meta/analysis_backend.md",
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
     "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
@@ -28,6 +29,7 @@ TEMPLATE_OUTPUTS = {
 }
 
 ARTIFACTS = {
+    "analysis_backend": "00_meta/analysis_backend.md",
     "design_register": "03_analysis/design_register.md",
     "method_gate": "03_analysis/method_gate.md",
     "evidence_ledger": "00_meta/evidence_ledger.md",
@@ -92,6 +94,16 @@ def build_workspace(tmp_root: Path) -> Path:
             "language": "en",
         }
     )
+    state["analysis_backend"].update(
+        {
+            "primary": "python-statspai",
+            "secondary_validation": "none",
+            "script_extension": ".py",
+            "child_skill": "StatsPAI MCP / statspai package",
+            "environment_status": "pending",
+            "version_report": "00_meta/analysis_backend.md",
+        }
+    )
     state["stages"]["0_intake_setup"] = "done"
     state["method_gate"].update(
         {
@@ -123,10 +135,12 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 4:
-        fail("smoke state schema_version must remain 4")
+    if state.get("schema_version") != 5:
+        fail("smoke state schema_version must remain 5")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
+    if state["analysis_backend"]["primary"] != "python-statspai":
+        fail("smoke state analysis backend was not populated")
     if state["replication_pack"]["status"] != "not_ready":
         fail("smoke fixture must not pretend replication is ready")
     for name, rel in ARTIFACTS.items():
@@ -146,6 +160,10 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Public replication package must not include", "IRB", "DUA"]:
         if marker not in governance:
             fail(f"data governance template missing marker: {marker}")
+    backend = (workspace / "00_meta" / "analysis_backend.md").read_text(encoding="utf-8")
+    for marker in ["Backend Choice", "Environment Check", "Output Contract"]:
+        if marker not in backend:
+            fail(f"analysis backend template missing marker: {marker}")
     run_all = workspace / "run_all.sh"
     subprocess.run(["bash", "-n", str(run_all)], check=True)
 

@@ -44,6 +44,7 @@ EXPECTED_WORKSPACE_DIRS = [
 ]
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]+\]\(([^)]+)\)")
 REQUIRED_TEMPLATES = {
+    "templates/analysis_backend.md": ["Backend Choice", "Environment Check", "Fallback"],
     "templates/design_register.md": ["Target estimand", "Bad-control screen", "Fallback Plan"],
     "templates/method_gate.md": ["Required Artifact Table", "Decision: PASS / NOT PASS", "Hard Flags"],
     "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance"],
@@ -88,12 +89,13 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 4:
-        fail("workflow_state.template.json schema_version must be 4")
+    if data.get("schema_version") != 5:
+        fail("workflow_state.template.json schema_version must be 5")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
         "project",
+        "analysis_backend",
         "method_gate",
         "quality_gate",
         "replication_pack",
@@ -103,6 +105,17 @@ def load_template() -> dict:
     ]:
         if key not in data:
             fail(f"workflow_state.template.json missing top-level key: {key}")
+    backend = data["analysis_backend"]
+    for key in [
+        "primary",
+        "secondary_validation",
+        "script_extension",
+        "child_skill",
+        "environment_status",
+        "version_report",
+    ]:
+        if key not in backend:
+            fail(f"analysis_backend missing key: {key}")
     gate = data["replication_pack"]
     for key in [
         "status",
@@ -164,6 +177,7 @@ def check_assets() -> None:
         "references/skill-map.md",
         "references/research-grade-methods.md",
         "references/statspai-analysis.md",
+        "references/analysis-backends.md",
         "references/writing-craft.md",
         "references/reproducibility-pack.md",
         "references/peer-review-and-submission.md",
@@ -232,6 +246,8 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh copied a workflow_state.json that differs from template")
         if not (workspace / "00_meta" / "intake.md").exists():
             fail("init_workspace.sh did not create 00_meta/intake.md")
+        if not (workspace / "00_meta" / "analysis_backend.md").exists():
+            fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
         second = subprocess.run(["bash", str(script), str(workspace)], capture_output=True)
         if second.returncode == 0:
             fail("init_workspace.sh should refuse to overwrite an existing workspace")

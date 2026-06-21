@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -7,6 +7,14 @@
     "mode": "",
     "target_journal": "",
     "language": ""
+  },
+  "analysis_backend": {
+    "primary": "",
+    "secondary_validation": "",
+    "script_extension": "",
+    "child_skill": "",
+    "environment_status": "pending",
+    "version_report": "00_meta/analysis_backend.md"
   },
   "stages": {
     "0_intake_setup": "pending",
