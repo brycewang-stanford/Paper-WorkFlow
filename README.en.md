@@ -50,7 +50,7 @@ The lecture version presented eight teaching stages. The current skill keeps tha
 | 1. Ideation | Stage 1 | Is the question novel, important, and identifiable? | `econfin-idea-finder`, `novelty-check`, `significance-search` -> topic card |
 | 2. Design | Stage 1 | Are the causal question, counterfactual, variation, and target journal clear? | `econfin-proposal`, `journal-digest` -> `proposal.md` |
 | 3. Data | Stage 2 | Are sources, keys, frequency, cleaning rules, and the estimation sample reproducible? | `data-fetcher`, `data-cleaning` -> `clean.parquet`, `codebook.md`, `sample_audit.md`, data log |
-| 4. Estimation | Stage 3 | Where does the counterfactual come from, and are the sample/estimand and evidence bundle complete? | **Backend router**: Python/StatsPAI by default, or Stata `.do`, or R/fixest/Quarto + design-specific skills -> `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md` |
+| 4. Estimation | Stage 3 | Where does the counterfactual come from, and are the sample/estimand, design card, and evidence bundle complete? | **Backend router**: Python/StatsPAI by default, or Stata `.do`, or R/fixest/Quarto + design-specific skills -> `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `evidence_ledger.md` |
 | 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | Backend-native Word/Excel/LaTeX tables and PDF/PNG figures: StatsPAI, Stata `esttab`/`outreg2`, or R `modelsummary`/Quarto |
 | 6. Writing | Stage 5-7 | Is the draft complete, restrained, citation-faithful, and free of AI residue? | `paper-writer`, `paper-pipeline`, `readability` / `fix-chinese` -> `main.tex`, quality scorecard |
 | 7. Review | Stage 8 | What would a reviewer attack before submission? | `referee-report`, `paper-referee-revise` -> referee report, response letter, revised draft |
@@ -63,10 +63,10 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 | Layer | Responsibility | Key artifacts |
 |---|---|---|
 | Orchestration | Entry routing, resumability, subagent dispatch, stage gates | `workflow_state.json`, `logs/stage_<N>.md` |
-| Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `main_results.json`, `robustness/` |
+| Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence, claim governance | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `evidence_ledger.md`, `main_results.json`, `robustness/` |
 | Manuscript | Exhibits, draft, polish, de-slop, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `response_letter.md`, `journal_shortlist.md` |
 
-The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules.
+The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules. [design-gate-cards.md](references/design-gate-cards.md) converts those requirements into reviewer-facing gate cards with required artifacts, hard fails, and claim-downgrade rules.
 
 [empirical-audit.md](references/empirical-audit.md) makes the Stage 2-3 sample contract explicit: raw-to-clean-to-estimation sample attrition, treated/control counts, treatment timing, missingness/balance/overlap, and cluster/weight choices must be recorded in `sample_audit.md` before the Method Gate can pass.
 
@@ -95,13 +95,14 @@ Finishing stages is not enough. The workflow enforces four standards that review
 |---|---|---|---|
 | Sample and estimand audit | Sample attrition, variable construction, missingness/balance/overlap, cluster/weights | Stage 2-3 Method Gate | [empirical-audit.md](references/empirical-audit.md) |
 | Method evidence | Identification registry, method-specific diagnostics, robustness matrix, reproducible scripts | Stage 3 Method Gate | [research-grade-methods.md](references/research-grade-methods.md) |
+| Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
 | Review and submission | Simulated review, response letter, journal decision order, cover letter | Stages 8, 9 | [peer-review-and-submission.md](references/peer-review-and-submission.md) |
 
 The two hard gates make these standards executable:
 
-- Method Gate: no causal claim advances unless the design register, diagnostics, robustness artifacts, transparency checks, and data-governance hard flags are addressed.
+- Method Gate: no causal claim advances unless the design register, design gate card, diagnostics, robustness artifacts, transparency checks, evidence ledger, and data-governance hard flags are addressed.
 - Draft Quality Gate: an independent critic scores contribution, identification, robustness, interpretation, writing, citation fidelity, and reproducibility/governance. The draft must score at least 7 in every dimension, at least 56/70 overall, and have no fatal flags in identification, robustness, or citations.
 
 If a gate fails, the workflow routes back to the right stage instead of turning weak evidence into polished prose.
@@ -155,6 +156,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/analysis_backend.md
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
+├── 00_meta/evidence_ledger.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md + sample_audit.md
 ├── 03_analysis/design_register.md + method_gate.md
@@ -220,6 +222,7 @@ Paper-WorkFlow/
 │   ├── analysis_backend.md
 │   ├── sample_audit.md
 │   ├── method_gate.md
+│   ├── evidence_ledger.md
 │   ├── quality_scorecard.md
 │   ├── data_governance.md
 │   ├── DAS.md
@@ -232,6 +235,7 @@ Paper-WorkFlow/
 │   ├── skill-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
+│   ├── design-gate-cards.md
 │   ├── empirical-audit.md
 │   ├── analysis-backends.md
 │   ├── statspai-analysis.md
@@ -263,6 +267,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
+- [references/design-gate-cards.md](references/design-gate-cards.md): design-specific required artifacts, hard fails, and claim-downgrade rules.
 - [references/empirical-audit.md](references/empirical-audit.md): sample, construct, and estimand audit requirements.
 - [references/analysis-backends.md](references/analysis-backends.md): Python/StatsPAI, Stata, and R backend routing for Stages 3-4.
 - [references/statspai-analysis.md](references/statspai-analysis.md): StatsPAI estimation + publication-grade export engine for Stages 3-4 (MCP + package, three domain modes, estimator routing, seven-block robustness gauntlet).
