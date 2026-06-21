@@ -120,7 +120,7 @@ Stage 5 让 `paper-writer` 产出的 `main.tex` 应覆盖下列结构；**缺节
 | **6. Robustness** | 主结论经得起哪些扰动（对应 `03_analysis/robustness/`） | 罗列检验但不说明威胁 |
 | **7. Conclusion** | 重述贡献、边界、未来方向 | 重复摘要、夸大政策含义 |
 
-> 写作前先读 `00_meta/evidence_ledger.md`（每个 claim 对应的数据、估计、表图、脚本）、
+> 写作前先读 `00_meta/evidence_ledger.md`（每个 claim 对应的 estimand、允许措辞、数据、估计、表图、脚本）、
 > `04_results/exhibits_index.md`（每张表图对应哪个论点）与 `01_proposal/proposal.md`
 > （贡献/假设），让结构与证据严格对齐；**论文里每个 claim 都要能指到一张表/图或一段引用**。
 
@@ -140,13 +140,14 @@ Stage 5 让 `paper-writer` 产出的 `main.tex` 应覆盖下列结构；**缺节
    一阶段 F、McCrary 检验、安慰剂）——指向 `03_analysis/` 里的真实 artifact。
 4. **威胁与排除**：列主要 confounding 威胁，逐一说明如何排除或为何不致命。
 
-**措辞分级（必须与 `method_gate.md` 一致）**：
+**措辞分级（必须与 `method_gate.md` 和 `evidence_ledger.md` 一致）**：
 
-| method_gate 状态 | 允许的措辞 | 禁止的措辞 |
+| gate / ledger 状态 | 允许的措辞 | 禁止的措辞 |
 |---|---|---|
-| PASS + 诊断干净 | "we identify the causal effect of ..." | — |
-| PASS 但诊断偏弱 | "our estimates are consistent with a causal interpretation, though ..." | "proves", "causes"（无保留） |
-| NOT PASS | "we document a robust association between ..." | 任何因果动词 |
+| PASS + ledger strength `causal` | "we identify the causal effect of ..." | 样本外、时窗外或 treatment 版本外的无边界外推 |
+| PASS + ledger strength `qualified_causal` | "our estimates are consistent with a causal interpretation, though ..." | "proves", "establishes", "causes"（无保留） |
+| NOT PASS 或 ledger strength `descriptive` | "we document a robust association between ..." | 任何因果动词 |
+| ledger strength `exploratory` / `no_claim` | "appendix evidence suggests ..." 或不写入主文 | 摘要、引言主贡献、cover letter 主卖点 |
 
 ---
 

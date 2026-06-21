@@ -5,7 +5,8 @@
 > [`subagent-templates.md`](subagent-templates.md) §QG），结果写入 `00_meta/quality_scorecard.md`。
 >
 > **打分纪律**：① 只依据稿件与工作区里的**真实产物**（`main.tex`、表图、`results/summary.md`、
-> `proposal.md`、`sample_audit.md`、`design_register.md`、`method_gate.md`、`ref.bib`、`data_governance.md`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
+> `proposal.md`、`sample_audit.md`、`design_register.md`、`method_gate.md`、`evidence_ledger.md`、
+> `ref.bib`、`data_governance.md`），不脑补；② 每维先找证据再给分，分数后面必须附 1–2 句**带行号/表号的
 > 具体依据**；③ 命中「致命红旗」直接把该维封顶到 ≤ 4 分，无论其它方面多好；④ 宁可严格，不可放水
 > ——质量门的意义就是拦住「跑完了但不够格」的稿子。
 
@@ -65,6 +66,10 @@
 - `sample_audit.md` 为 `NOT PASS` 或暴露 estimation sample 与 estimand 不一致但未改写 claim：本维封顶 4。
 - 找不到 `03_analysis/method_gate.md`：本维封顶 6。
 - `method_gate.md` 为 `NOT PASS`：本维封顶 4。
+- 找不到 `00_meta/evidence_ledger.md`，或 ledger 没有把主因果 claim 指到 result / exhibit / script：
+  本维封顶 6。
+- ledger 的 claim strength 低于正文措辞（例如 ledger 只允许 descriptive，正文写 causal effect）：
+  本维封顶 4。
 - 方法标签缺 [`research-grade-methods.md`](research-grade-methods.md) 对应最低证据包：本维最高 6。
 - 方法闸门记录了 runtime fallback，但缺 [`runtime-fallbacks.md`](runtime-fallbacks.md) 要求的等价 artifact：
   本维最高 6；若 fallback 影响主因果 claim 却未披露，本维最高 4。
@@ -120,6 +125,12 @@
 - **7–8**：解读基本克制，个别地方略有拔高。
 - **5–6**：频繁把显著当「重大影响」，缺经济量级，因果语气过满。
 - **≤4**：通篇过度解读 / 政策建议远超证据能支撑的范围。
+
+**Evidence ledger 联动**
+- 摘要、引言主贡献、结果段或结论中的每个 empirical claim 都必须能在 `00_meta/evidence_ledger.md` 找到
+  Claim ID、allowed wording、primary evidence、exhibit 和 script。
+- `evidence_ledger.md` 的 Open Discrepancies 有 blocking 项且影响主结论：本维封顶 5。
+- 任何 policy implication 超过 Estimand-to-Claim Map 的 population/time/treatment boundary：本维封顶 6。
 
 **回退**：→ Stage 5/6（改写结果与结论段，配 `paper-self-revise` / `readability`）。
 
@@ -193,6 +204,8 @@
 - `workflow_state.json.replication_pack.status` 缺失或为 `pending`：本维封顶 7。
 - `replication_pack.status = not_ready`：本维封顶 6；若阻断原因涉及无法重建主表图，本维 ≤4。
 - 没有 `replication_pack.master_script` 或 `last_rebuild_check` 为空：本维封顶 7。
+- `workflow_state.json.evidence_governance.status = not_pass` 或
+  `evidence_governance.open_discrepancies` 仍有 blocking 项：本维封顶 6。
 
 **回退**：→ Stage 2（补 codebook / 清洗脚本）/ Stage 3（补估计脚本）/ 收尾（补一键重跑命令）。
 

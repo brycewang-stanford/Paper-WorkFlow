@@ -13,6 +13,8 @@
 > 变量口径、missingness/balance/overlap 与目标 estimand 对齐。
 > Stage 3–4 的 Python/StatsPAI、Stata、R 三种分析后端按
 > [`analysis-backends.md`](analysis-backends.md) 选择；默认后端为 `python-statspai`。
+> 每个因果设计还必须加载 [`design-gate-cards.md`](design-gate-cards.md)，把设计分支的 required artifacts、
+> hard fail 与 claim 降级规则写进 `method_gate.md` 和 `evidence_ledger.md`。
 > **想先看一条完整跑通的 trace**（每阶段产物 + 两道闸门如何触发 + NOT PASS→回退→PASS 循环），见
 > [`worked-example.md`](worked-example.md)——它就是下面这套协议的填空范本。
 > 工具、网络、MCP 或统计软件不可用时按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 退化执行；
@@ -101,14 +103,16 @@
 最后用方法闸门确认最低证据包齐全。
 
 **plan（先定设计，再定方法）**
-- 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`empirical-audit.md`](empirical-audit.md) +
-  [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
+- 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`design-gate-cards.md`](design-gate-cards.md) +
+  [`empirical-audit.md`](empirical-audit.md) + [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
   missingness/balance/overlap 与 estimand 对齐，再用 methods pack 定识别合同，最后用 backend 文件选择
   `python-statspai` / `stata` / `r`；若选
   `python-statspai` 或需要 StatsPAI 交叉验证，再读 [`statspai-analysis.md`](statspai-analysis.md)。StatsPAI 引擎（MCP 优先拍板/拟合/诊断，
   `statspai` 包做出版级出表）的 §1 8 段映射、§3 估计量路由、§6 七块稳健性闸门是本阶段的操作主线。
   把 proposal 的识别路线翻译成 `03_analysis/design_register.md`：
   estimand、treatment、comparison group、识别假设、主估计量、必需诊断、替代估计量、失败回退。
+  同时确定本研究使用哪张 design gate card，并在 `design_register.md` 写清最强目标 claim、样本/时窗/处理版本
+  边界，以及触发降级的条件。
 - **分析后端分流**（analysis-backends）：默认 `workflow_state.json.analysis_backend.primary=python-statspai`。
   用户或既有脚本指定 Stata 时加载 `Full-empirical-analysis-skill-Stata`（not found 则
   `Read skills/00.2-Full-empirical-analysis-skill_Stata/SKILL.md`）并产出 `.do` + `.log`；指定 R 时加载
@@ -172,7 +176,13 @@
 - 同步写 `03_analysis/method_gate.md` 的 artifact 表：主结果、识别诊断、稳健性矩阵、复现脚本都必须
   有路径；`02_data/sample_audit.md` 也必须作为必需 artifact 进入表格，且其 final estimation sample 的 N、
   treated/control 数、cluster level 必须与 `main_results.json` 对上。缺失项标 `no`，不得用空话替代。
+  还要按 `design-gate-cards.md` 填写 **Design Gate Card**：列出当前设计卡每个 required artifact 的路径、
+  是否通过、以及对应 claim consequence（causal / qualified_causal / descriptive / exploratory / no_claim）。
+  方法闸门给出的最强 claim 等级必须同步写入 `workflow_state.json.evidence_governance.claim_strength`。
   方法闸门还要检查 `00_meta/data_governance.md`：合法访问、公开包边界、PII/小样本披露、IRB/DUA 状态若阻断主结果，列入 hard flags。
+- 同步刷新 `00_meta/evidence_ledger.md`：为每个主结果写 claim row、estimand-to-claim map、result ID、
+  robustness/threat matrix；若任何 claim 强于 design gate card 允许等级，把该行标成 `no_claim` 或降级，并在
+  Open Discrepancies 中记录。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
 `econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑、methods
@@ -199,6 +209,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - **先读 `workflow_state.json.analysis_backend.primary`**，再按
   [`analysis-backends.md`](analysis-backends.md) §4 选出表路径。所有后端都必须落
   `04_results/*.{tex,docx,xlsx}` 和 `04_results/*.{pdf,png}`，并生成 `04_results/exhibits_index.md`。
+  每张表图还必须回填 `00_meta/evidence_ledger.md` 的 Exhibit and Script Map，保证每个 exhibit 都能追溯到
+  claim、result、生成脚本和重建状态。
 - **`python-statspai` 主路径 = StatsPAI 出表栈**（statspai-analysis §4，用 `statspai` 包）：把 Stage 3 的结果对象喂给
   `sp.regtable(M1..M5, template="aer")`（Tier 1 单表）/ `sp.paper_tables(main=, heterogeneity=, robustness=)`
   （Tier 2 多面板）/ `sp.collect("Title")`（Tier 3 整场 bundle），用 `.to_word()/.to_excel()/.to_latex()`
@@ -232,6 +244,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - `Skill` 调用 `67/paper-writer`，喂入 `04_results/`（表图）+ `01_proposal/proposal.md`（动机/贡献/
   假设），让它按"Intro → 文献/制度背景 → 数据 → 识别策略 → 结果 → 机制 → 稳健性 → 结论"写出
   `05_draft/main.tex` 与 `05_draft/ref.bib`。
+  写作 prompt 必须附 `00_meta/evidence_ledger.md`，要求每个摘要、引言、结果和结论 claim 使用不高于 ledger
+  允许等级的措辞；ledger 中 `descriptive` / `exploratory` / `no_claim` 的内容不得被包装成主因果发现。
 - 文献综述薄弱时，配合 `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、
   `59-shiquda-openalex-skill` 补做结构化综述；引用入库可配 Zotero MCP。
 - **写作标尺**：按 [`writing-craft.md`](writing-craft.md)（引言五段公式、解剖结构、量级纪律）写；识别段按
@@ -290,7 +304,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **execute**（套用 [`subagent-templates.md`](subagent-templates.md) §QG，**只派 1 个**）
 - critic 必读 `references/quality-rubric.md`，读初稿（`07_dehumanize/main.tex` + `04_results/` 表图 +
   `05_draft/ref.bib`）+ 对照 `01_proposal/proposal.md`（贡献承诺）与 `03_analysis/results/summary.md`
-  （真实结果）+ `03_analysis/design_register.md` / `03_analysis/method_gate.md`（方法证据），**逐维打分写入
+  （真实结果）+ `03_analysis/design_register.md` / `03_analysis/method_gate.md`（方法证据）+
+  `00_meta/evidence_ledger.md`（claim strength 和表图/脚本追溯），**逐维打分写入
   `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
 - 7 维：① 贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 解读克制度 ⑤ 写作与结构 ⑥ 引用真实性 ⑦ 可复现性。
 
@@ -323,6 +338,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - 想要更狠的对抗审阅可叠加 `66/grillme`、`66/econ-reviewer`、`21-claesbackman-AI-research-feedback`、
   `41-sticerd-eee-sewage-econometrics-check`（计量自检）。计量复核可再用 StatsPAI MCP
   `audit_result(result_id)` 复跑「还缺哪些稳健性」，与 `03_analysis/method_gate.md` 对账（statspai-analysis §6）。
+  审稿人还必须抽查 `00_meta/evidence_ledger.md`：摘要、贡献段、结果段、cover letter 的每个 claim 是否都有
+  result/exhibit/script 支撑，且措辞没有超过 design gate card 允许等级。
 
 **review**：critic 核对——每条审稿意见是否都有实质回应、修订是否引入新矛盾（交叉引用、表号）。
 

@@ -81,7 +81,7 @@
   `Full-empirical-analysis-skill-R`；可选 StatsPAI MCP 链路做交叉验证。
 - 把系数/SE/p/样本量/必要图写盘到 {{WS}}/03_analysis/robustness/{{CHECK_NAME}}.json（图同名 .png）。
 - 若本检验属于 research-grade-methods.md 的最低证据包，把 artifact 路径追加到
-  {{WS}}/03_analysis/method_gate.md 的对应行。
+  {{WS}}/03_analysis/method_gate.md 的对应行，并同步标注它对应的 design gate card item。
 
 # 回传（≤6 行）
 做了什么 / 写到哪个文件 / 核心系数与 SE / 相对基准是否稳健（稳/不稳）/ 一句话判断。
@@ -92,7 +92,8 @@
 ## §MG · Stage 3 方法闸门审计（Stage 3 末强制派 1 个）
 
 > 这个 subagent 不改模型、不写论文，只检查 Stage 3 是否具备现代实证方法的最低证据包。它读
-> `research-grade-methods.md` 与 `empirical-audit.md` 后输出 `method_gate.md`，给 PASS / NOT PASS 与回退指令。
+> `research-grade-methods.md`、`design-gate-cards.md` 与 `empirical-audit.md` 后输出 `method_gate.md`，
+> 给 PASS / NOT PASS、最强 claim 等级与回退指令。
 
 ```text
 你是应用计量方法审计员。任务是审计 Stage 3 的方法证据包是否足够支撑论文的因果 claim。
@@ -100,6 +101,7 @@
 
 # 必读
 - 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
+- 设计分支证据卡与 claim 降级规则：{{REPO_69}}/references/design-gate-cards.md
 - 样本、变量与 estimand 对齐规则：{{REPO_69}}/references/empirical-audit.md
 - 分析后端路由与输出合同：{{REPO_69}}/references/analysis-backends.md
 - 数据治理与运行时 fallback：{{REPO_69}}/references/data-governance.md、
@@ -113,6 +115,7 @@
 - 分析后端：{{WS}}/00_meta/analysis_backend.md（若缺失，列为 hard flag）
 - 设计注册：{{WS}}/03_analysis/design_register.md
 - 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
+- Evidence ledger：{{WS}}/00_meta/evidence_ledger.md（若缺失，先用模板生成草稿并标 pending）
 - 稳健性目录：{{WS}}/03_analysis/robustness/
 - 估计脚本：{{WS}}/03_analysis/
 
@@ -120,13 +123,17 @@
 按 research-grade-methods.md §3 的格式写 {{WS}}/03_analysis/method_gate.md：
 - Primary design / estimator
 - Required artifact table（每项路径 + present yes/no）
+- Design Gate Card（当前设计卡、每个 required artifact、hard fail、claim consequence）
 - Hard flags（含样本/estimand 漂移、bad controls、missingness/balance/overlap、cluster/weights、
   治理、PII/IRB/DUA、runtime fallback 是否影响最低证据包）
 - PASS / NOT PASS
+- Strongest allowed claim（causal / qualified_causal / descriptive / exploratory / no_claim）
 - Next Action（若 NOT PASS，明确回退到 Stage 1/2/3 的哪一步）
+同时刷新 {{WS}}/00_meta/evidence_ledger.md 的 Claim Register、Estimand-to-Claim Map、Robustness and Threat Matrix
+与 Open Discrepancies，并更新 workflow_state.json.evidence_governance。
 
 # 回传（≤8 行）
-主设计 / 主估计量 / PASS 或 NOT PASS / 缺失 artifact 数量 / 最严重 blocker / 建议回退阶段。
+主设计 / 主估计量 / PASS 或 NOT PASS / 最强允许 claim / 缺失 artifact 数量 / 最严重 blocker / 建议回退阶段。
 ```
 
 ---
@@ -178,6 +185,7 @@
 - 真实结果（对照表中数字）：{{WS}}/03_analysis/results/summary.md + main_results.json
 - 样本证据（对照 N、treated/control、cluster/weights）：{{WS}}/02_data/sample_audit.md
 - 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
+- Claim 证据总账：{{WS}}/00_meta/evidence_ledger.md（claim strength、allowed wording、open discrepancies）
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
 - 复现证据：{{WS}}/00_meta/workflow_state.json 的 replication_pack、{{WS}}/REPLICATION.md、
   {{WS}}/09_submission/DAS.md、{{WS}}/00_meta/data_governance.md（若目标刊或数据限制要求）

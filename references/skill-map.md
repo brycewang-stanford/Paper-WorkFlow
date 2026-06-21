@@ -177,14 +177,16 @@ playbook 指定的工作区子目录落盘即可。
    - 纯时序 / 宏观 → **time-series**。
    - 关注异质效应 / 高维控制 → **ml-causal（因果森林 / DML）**。
    - 都不典型 → 退回 `67/stats` 做探索，或回 Stage 1 重审识别。
+   选定主设计后，立即加载 `references/design-gate-cards.md` 的对应卡片，把 required artifacts、
+   hard fail 与最强允许 claim 写进 `method_gate.md` 和 `evidence_ledger.md`。
 3. **分析后端分流**（Stage 3–4）：默认 `python-statspai`；用户要 `.do` / `reghdfe` / `esttab` / Stata
    replication 就走 `Full-empirical-analysis-skill-Stata`；用户要 `fixest` / `modelsummary` / Quarto / `renv`
    就走 `Full-empirical-analysis-skill-R`。后端只改变实现，不降低 Method Gate。
 4. **稿件语言分流**（Stage 7）：英文走 `readability` + 44/45/46/47；中文走 `fix-chinese` +
    `chinese-quote-converter` + 48/49。
 5. **能用 MCP 验证就别凭记忆**：引用真实性、计量稳健性、宏观数据都有对应 MCP/skill 兜底。
-6. **方法闸门优先于写作推进**：Stage 3 的 `method_gate.md` 没过，Stage 4–7 不应继续把结果包装成
-   主发现；先回退补证据或降级因果 claim。
+6. **方法闸门优先于写作推进**：Stage 3 的 `method_gate.md` 没过，或 `evidence_ledger.md` 不允许该
+   claim 强度，Stage 4–7 不应继续把结果包装成主发现；先回退补证据或降级因果 claim。
 
 ---
 

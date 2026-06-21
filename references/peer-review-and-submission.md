@@ -49,15 +49,16 @@ Stage 8 用 `referee-report` 生成审稿报告。本层要求审稿覆盖五个
 | 审稿维度 | 要问的问题 |
 |---|---|
 | **贡献** | 相对最近前作，增量够不够顶刊？是否 convex / just-another-determinant？ |
-| **识别** | 核心假设成立吗？诊断齐吗？（对照 `method_gate.md` 与 `design_register.md`） |
+| **识别** | 核心假设成立吗？诊断齐吗？（对照 `method_gate.md`、`design_register.md` 与 `design-gate-cards.md`） |
 | **稳健性** | 主结论经得起合理扰动吗？关键威胁应对了吗？ |
-| **写作/解读** | 引言抓人吗？结果是否过度解读、缺经济量级？ |
+| **写作/解读** | 引言抓人吗？结果是否过度解读、缺经济量级？claim wording 是否强于 `00_meta/evidence_ledger.md` 允许等级？ |
 | **可复现** | 数据来源清楚吗？复现包齐吗？（对照 [`reproducibility-pack.md`](reproducibility-pack.md)） |
 
 **意见分级**：每条意见标 **Essential（不解决不接收）/ Desirable（锦上添花）**。这个分级直接决定 Stage 8
 修订的优先级——先把所有 Essential 关掉，再处理 Desirable。审稿报告落 `08_review/referee_report.md`。
 
-> 模拟评审若暴露**根本性识别缺陷** → 不要硬修，回 Stage 3（补检验/换策略）甚至 Stage 1（改设计），
+> 模拟评审若暴露**根本性识别缺陷**或 evidence ledger 显示摘要/cover letter 主 claim 没有对应结果、
+> 表图和脚本支撑 → 不要硬修，回 Stage 3（补检验/换策略）甚至 Stage 1（改设计），或把 claim 降级后重写，
 > 并在闸门标红（与 stage-playbook 的失败回退一致）。
 
 ---
