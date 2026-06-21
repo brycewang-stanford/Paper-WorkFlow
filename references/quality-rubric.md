@@ -76,6 +76,9 @@
 - 关键数据的合法访问、IRB/DUA 或公开包边界未知，且影响 estimand 或样本选择：本维最高 6。
 - treatment timing、missingness/balance/overlap、cluster level 或 weights 未通过样本审计，且影响主结果：
   本维最高 6。
+- 弱工具（effective F 远低阈值）只报 2SLS t 比、无 AR/tF 区间，或处理只落少数 cluster 却无随机化推断
+  交叉验证（[`inference-and-uncertainty.md`](inference-and-uncertainty.md) §3/§6）：本维最高 6。
+- 主设定含后处理中介 M 当控制（[`mechanism-and-channels.md`](mechanism-and-channels.md) §3 坏控制）：本维封顶 4。
 
 **致命红旗（命中即 ≤4）**
 - **平行趋势证据缺失或明显违背**，却仍按 DiD 解读因果。
@@ -105,6 +108,8 @@
 - 稳健性矩阵没有对应 `03_analysis/robustness/` 真实文件：本维封顶 5。
 - `sample_audit.md` 的 final estimation sample、N、treated/control 数或 cluster level 与主结果/表图不一致：
   本维封顶 5。
+- 聚类口径换了显著性就翻却只报最有利的一个、或 few-cluster（G≲30–50）仍只报渐近 SE 无 wild bootstrap/CR2，
+  或多 outcome/多子样本无族内校正却挑显著讲故事（[`inference-and-uncertainty.md`](inference-and-uncertainty.md) §2/§3/§5）：本维封顶 5。
 
 **致命红旗（命中即 ≤4）**
 - **稳健性结果与主表数字对不上 / 疑似挑样本拼出来的**（p-hacking 嫌疑）。
@@ -131,6 +136,10 @@
   Claim ID、allowed wording、primary evidence、exhibit 和 script。
 - `evidence_ledger.md` 的 Open Discrepancies 有 blocking 项且影响主结论：本维封顶 5。
 - 任何 policy implication 超过 Estimand-to-Claim Map 的 population/time/treatment boundary：本维封顶 6。
+- 通篇只报星标、不报 CI、把统计显著当经济重要、用「marginally significant」当证据
+  （[`inference-and-uncertainty.md`](inference-and-uncertainty.md) §7）：本维封顶 6。
+- 机制用因果措辞却无 sequential ignorability 说明/敏感性，或「系数下降即渠道」无 Gelbach 正式分解
+  （[`mechanism-and-channels.md`](mechanism-and-channels.md) §3/§4）：本维封顶 6。
 
 **回退**：→ Stage 5/6（改写结果与结论段，配 `paper-self-revise` / `readability`）。
 
