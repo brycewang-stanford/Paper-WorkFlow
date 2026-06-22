@@ -59,9 +59,13 @@ new work fast to stake a claim.
 `python3 validate_skill.py` → `OK: Paper-WorkFlow skill checks passed` (incl. the parallel
 agent's verification-log checker selftest). dataset-cards.md local links validate.
 
-## Deferred (one safe follow-up)
+## Follow-ups (done)
 
-Add a one-line `references/dataset-cards.md` entry to SKILL.md's「进一步阅读」list once SKILL.md
-is no longer being actively edited by the parallel agent — deferred now to avoid clobbering their
-in-flight SKILL.md changes. Until then, dataset-cards is discoverable via the empirical-audit.md
-pointer (Stage 2).
+- `templates/dataset_card.md` (`74e0c76`) — per-source project card so the catalog becomes an
+  instantiated Stage-2 artifact, not just reference reading; its threats sync into the design-risk ledger.
+- SKILL.md「进一步阅读」bullet (`6d8c49a`) — added during a clean-tree window via an exact-match Edit
+  (can't clobber: a contended region would have failed the match harmlessly). dataset-cards +
+  dataset_card template are now first-class discoverable.
+
+Net: one coherent Light-inspired layer (Stage-2 source selection) shipped end-to-end in 6 commits,
+zero collisions after ceding the verification-log overlap. `validate_skill.py` green throughout.
