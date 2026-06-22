@@ -207,6 +207,7 @@ The checked-in demo outputs are:
 7. Route child skills robustly: use registered skill names when available, otherwise read the local `SKILL.md` and execute it inline.
 8. Treat quality as a scored gate, not a vague aspiration.
 9. Start the replication package on day one.
+10. Evolve this skill with a SkillOpt-style packet: collect rollout evidence, split train from held-out selection, propose a bounded patch, and reject candidates that do not improve the held-out gate or pass regression checks.
 
 ## Repository Layout
 
@@ -217,7 +218,9 @@ Paper-WorkFlow/
 ├── README.en.md
 ├── validate_skill.py
 ├── scripts/
-│   └── smoke_workspace.py
+│   ├── smoke_workspace.py
+│   ├── check_workspace_gates.py
+│   └── check_skillopt_packet.py
 ├── templates/
 │   ├── design_register.md
 │   ├── design_risk_ledger.md
@@ -229,6 +232,7 @@ Paper-WorkFlow/
 │   ├── data_governance.md
 │   ├── DAS.md
 │   ├── REPLICATION.md
+│   ├── SKILLOPT_PACKET.md
 │   ├── submission_checklist.md
 │   ├── FINAL_REPORT.md
 │   └── run_all.sh
@@ -251,6 +255,7 @@ Paper-WorkFlow/
 │   ├── quality-rubric.md
 │   ├── data-governance.md
 │   ├── runtime-fallbacks.md
+│   ├── skillopt-improvement-loop.md
 │   ├── subagent-templates.md
 │   └── workspace-and-state.md
 ├── assets/
@@ -281,6 +286,7 @@ Paper-WorkFlow/
 - [references/quality-rubric.md](references/quality-rubric.md): Draft Quality Gate scoring rubric.
 - [references/subagent-templates.md](references/subagent-templates.md): reusable subagent prompts.
 - [references/workspace-and-state.md](references/workspace-and-state.md): workspace layout and state contract.
+- [references/skillopt-improvement-loop.md](references/skillopt-improvement-loop.md): SkillOpt-style rollout, bounded-patch, and held-out-gate protocol for maintaining this skill.
 - [templates/](templates/): reusable artifact templates.
 
 ## Local Checks
@@ -290,7 +296,10 @@ Run from this directory:
 ```bash
 python3 validate_skill.py
 python3 scripts/smoke_workspace.py
+python3 scripts/check_skillopt_packet.py --selftest
 ```
+
+For an actual maintenance packet, run `python3 scripts/check_skillopt_packet.py <packet>`.
 
 From the parent repository, regenerate and validate catalog metadata when publishing changes that affect discovery:
 

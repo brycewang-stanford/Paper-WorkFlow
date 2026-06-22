@@ -355,8 +355,11 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   [`references/runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化执行；影响最低证据包或复现的，
   必须降低闸门状态/分数。
 - **上下文保护优先于一切**：任何会把大段文本灌回主代理的操作，改成"写盘 + 回传摘要"。
-- **自检不靠感觉**：维护或改造本 skill 时，先后运行 `python3 validate_skill.py` 与仓库级验证；若自检
-  失败，必须修到通过再宣称可交付。
+- **自我改进不靠训练集幻觉**：维护或改造本 skill 时，按
+  [`references/skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) 收集 rollout、拆分 train /
+  held-out selection、提出有界 patch、过 selection gate；不得只凭触发本次修改的样例接受改动。
+- **自检不靠感觉**：维护或改造本 skill 时，先后运行 `python3 validate_skill.py` 与仓库级验证；若有
+  SkillOpt-style 改进包，还要跑 `python3 scripts/check_skillopt_packet.py <packet>`。若自检失败，必须修到通过再宣称可交付。
 
 ---
 
@@ -385,6 +388,8 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
 - [`references/worked-example.md`](references/worked-example.md) — 一条端到端「黄金路径」trace
   （绿色信贷→企业创新）：逐阶段产物、两道闸门如何触发、`NOT PASS → 回退 → PASS` 的完整循环（数字均为
   **示意**，真实运行由真实估计填充）。新人理解整条流水线、编排器照着填空都从这里看起。
+- [`references/skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) — **维护本 skill 的
+  SkillOpt-style 优化协议**：rollout 证据、train/held-out split、有界 patch、selection gate、rejected-edit memory。
 - **研究深化层（按阶段加载）**：[`references/threats-to-validity.md`](references/threats-to-validity.md)
   （识别威胁 × 审稿异议预案 · Stage 3/5/8）、
   [`references/inference-and-uncertainty.md`](references/inference-and-uncertainty.md)（标准误/聚类层级 ·
@@ -407,6 +412,8 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   本地链接、核心资产、模板契约、smoke workspace 与 DiD Notebook 结构。
 - [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) — 在临时目录生成最小工作区并实例化模板，
   验证 Stage 0 初始化 + 状态文件 + 模板路径契约。
+- [`scripts/check_skillopt_packet.py`](scripts/check_skillopt_packet.py) — **维护期 SkillOpt-style 改进包
+  机械校验器**：检查 train / held-out selection 证据、edit budget、accept/reject gate 与 placeholder 清理。
 - [`scripts/check_workspace_gates.py`](scripts/check_workspace_gates.py) — **运行期闸门机械校验器**：在方法闸门 /
   质量门 / 收尾处跑 `python3 scripts/check_workspace_gates.py <workspace>`，校验某道闸门标了 `pass`/`ready` 时
   所需 artifact 是否真的在盘上、gate 顺序是否一致（质量门不得松于方法闸门）；`--reconcile` 还会核对结果数字与表图。带 `--selftest`。
