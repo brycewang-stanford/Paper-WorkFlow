@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 TEMPLATE_OUTPUTS = {
     "templates/analysis_backend.md": "00_meta/analysis_backend.md",
+    "templates/design_risk_ledger.md": "03_analysis/design_risk_ledger.md",
     "templates/sample_audit.md": "02_data/sample_audit.md",
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
@@ -31,6 +32,7 @@ TEMPLATE_OUTPUTS = {
 
 ARTIFACTS = {
     "analysis_backend": "00_meta/analysis_backend.md",
+    "design_risk_ledger": "03_analysis/design_risk_ledger.md",
     "sample_audit": "02_data/sample_audit.md",
     "design_register": "03_analysis/design_register.md",
     "method_gate": "03_analysis/method_gate.md",
@@ -135,6 +137,19 @@ def build_workspace(tmp_root: Path) -> Path:
             "last_claim_audit": "smoke fixture only; no real claim audited",
         }
     )
+    state["design_risk"].update(
+        {
+            "status": "pending",
+            "risk_ledger": "03_analysis/design_risk_ledger.md",
+            "threats_reviewed": ["smoke fixture only"],
+            "blocking_threats": [],
+            "external_validity": "pending",
+            "specification_search": "pending",
+            "spillover_interference": "pending",
+            "selection_attrition": "pending",
+            "last_review": "smoke fixture only; no real design risk reviewed",
+        }
+    )
     state["replication_pack"].update(
         {
             "status": "not_ready",
@@ -158,8 +173,8 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 7:
-        fail("smoke state schema_version must remain 7")
+    if state.get("schema_version") != 8:
+        fail("smoke state schema_version must remain 8")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
@@ -170,6 +185,8 @@ def check_workspace(workspace: Path) -> None:
         fail("smoke fixture must not pretend replication is ready")
     if state["evidence_governance"]["evidence_ledger"] != "00_meta/evidence_ledger.md":
         fail("smoke state evidence governance was not populated")
+    if state["design_risk"]["risk_ledger"] != "03_analysis/design_risk_ledger.md":
+        fail("smoke state design risk was not populated")
     for name, rel in ARTIFACTS.items():
         path = workspace / rel
         if not path.exists():
@@ -197,6 +214,10 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Estimand Alignment", "Sample Construction Flow", "Missingness, Balance, and Overlap"]:
         if marker not in sample_audit:
             fail(f"sample audit template missing marker: {marker}")
+    design_risk = (workspace / "03_analysis" / "design_risk_ledger.md").read_text(encoding="utf-8")
+    for marker in ["Threat Register", "Claim Consequence", "External Validity and Transport", "Blocking Threats"]:
+        if marker not in design_risk:
+            fail(f"design risk ledger template missing marker: {marker}")
     run_all = workspace / "run_all.sh"
     subprocess.run(["bash", "-n", str(run_all)], check=True)
 

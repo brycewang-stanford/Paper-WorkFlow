@@ -10,6 +10,8 @@ enforced at runtime by a critic subagent reading prose. Prose judgement cannot
     (the orchestrator's rule "the quality gate may be stricter than the method
     gate but never looser");
   - the replication pack is ``ready`` with no master script or no rebuild check.
+  - a Method Gate is marked ``pass`` while the design-risk ledger still has
+    blocking threats or is not passed.
 
 This script makes those invariants testable. It reads
 ``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is
@@ -101,12 +103,13 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     rep = Report()
 
     # --- top-level shape (soft: schema may evolve) ---------------------------
-    for key in ("project", "stages", "method_gate", "quality_gate", "replication_pack"):
+    for key in ("project", "stages", "method_gate", "design_risk", "quality_gate", "replication_pack"):
         if key not in state:
             rep.add(WARN, f"schema:{key}", "missing top-level block (schema drift?)")
 
     empirical = state.get("empirical_audit", {}) if isinstance(state.get("empirical_audit"), dict) else {}
     evidence = state.get("evidence_governance", {}) if isinstance(state.get("evidence_governance"), dict) else {}
+    design_risk = state.get("design_risk", {}) if isinstance(state.get("design_risk"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
     replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
@@ -134,6 +137,25 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     elif "evidence_governance" in state:
         rep.add(INFO, "evidence_governance", f"status={evidence.get('status', 'absent')}")
 
+    # --- design risk ledger -------------------------------------------------
+    if _passed(design_risk.get("status")):
+        ledger = _gate_artifact(design_risk, "risk_ledger", "03_analysis/design_risk_ledger.md")
+        if not _exists(workspace, ledger):
+            rep.add(FAIL, "design_risk", f"status=pass but missing {ledger}")
+        else:
+            rep.add(OKAY, "design_risk", f"pass, risk ledger present: {ledger}")
+        blocking = design_risk.get("blocking_threats")
+        if isinstance(blocking, list) and blocking:
+            rep.add(FAIL, "design_risk:blocking", f"status=pass but {len(blocking)} blocking threat(s) recorded")
+        reviewed = design_risk.get("threats_reviewed")
+        if isinstance(reviewed, list) and not reviewed:
+            rep.add(WARN, "design_risk:review", "status=pass but threats_reviewed is empty")
+        for key in ("external_validity", "specification_search", "spillover_interference", "selection_attrition"):
+            if _norm(design_risk.get(key)) in {"not_pass", "blocking", "fail", "failed"}:
+                rep.add(FAIL, f"design_risk:{key}", f"status=pass but {key}={design_risk.get(key)}")
+    elif "design_risk" in state:
+        rep.add(INFO, "design_risk", f"status={design_risk.get('status', 'absent')}")
+
     # --- method gate ---------------------------------------------------------
     if _passed(method.get("status")):
         required = {
@@ -159,6 +181,13 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 "method_gate:ordering",
                 f"status=pass but empirical_audit.status={empirical.get('status', 'absent')} "
                 "(sample/estimand audit must pass first)",
+            )
+        if "design_risk" in state and not _passed(design_risk.get("status")):
+            rep.add(
+                FAIL,
+                "method_gate:design_risk",
+                f"status=pass but design_risk.status={design_risk.get('status', 'absent')} "
+                "(design-risk ledger must pass before Method Gate can pass)",
             )
 
         # inference layer companion (soft, this skill introduces it as method-gate kin)
@@ -317,6 +346,7 @@ def _selftest() -> int:
             "03_analysis/inference_report.md",
             "00_meta/quality_scorecard.md",
             "00_meta/evidence_ledger.md",
+            "03_analysis/design_risk_ledger.md",
             "REPLICATION.md",
             "run_all.sh",
         ):
@@ -325,6 +355,16 @@ def _selftest() -> int:
             "project": {}, "stages": {}, "artifacts": {}, "decisions": [],
             "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md", "open_discrepancies": []},
+            "design_risk": {
+                "status": "pass",
+                "risk_ledger": "03_analysis/design_risk_ledger.md",
+                "threats_reviewed": ["parallel_trends", "external_validity"],
+                "blocking_threats": [],
+                "external_validity": "pass",
+                "specification_search": "pass",
+                "spillover_interference": "not_applicable",
+                "selection_attrition": "pass",
+            },
             "method_gate": {
                 "status": "pass",
                 "design_register": "03_analysis/design_register.md",
@@ -346,6 +386,7 @@ def _selftest() -> int:
             "project": {}, "stages": {},
             "empirical_audit": {"status": "not_pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md"},
+            "design_risk": {"status": "pass", "risk_ledger": "03_analysis/design_risk_ledger.md", "blocking_threats": ["bad control"]},
             "method_gate": {"status": "pass", "missing_artifacts": ["main_results"]},
             "replication_pack": {"status": "ready", "master_script": "", "last_rebuild_check": ""},
         })
@@ -355,6 +396,8 @@ def _selftest() -> int:
             "method_gate:evidence",   # required artifacts missing
             "method_gate:self",       # missing_artifacts non-empty while pass
             "method_gate:ordering",   # empirical audit not passed
+            "design_risk",            # status=pass but risk ledger missing on disk
+            "design_risk:blocking",   # status=pass but blocking threat recorded
             "replication_pack",       # ready but no master script / rebuild check
         }
         assert expect_a <= hit_a, f"bad_a should flag {expect_a - hit_a}; got {hit_a}"
@@ -364,11 +407,30 @@ def _selftest() -> int:
         touch(bad_b, "00_meta/quality_scorecard.md")
         write_state(bad_b, {
             "project": {}, "stages": {},
+            "design_risk": {"status": "pending"},
             "method_gate": {"status": "not_pass"},
             "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
         })
         hit_b = {chk for lvl, chk, det in run(bad_b, reconcile=False).rows if lvl == FAIL}
         assert "quality_gate:ordering" in hit_b, f"bad_b should flag quality_gate:ordering; got {hit_b}"
+
+        # --- bad workspace C: method gate skips unresolved design risk -------
+        bad_c = root / "bad_c"
+        for rel in (
+            "02_data/sample_audit.md",
+            "03_analysis/design_register.md",
+            "03_analysis/method_gate.md",
+            "03_analysis/results/main_results.json",
+        ):
+            touch(bad_c, rel)
+        write_state(bad_c, {
+            "project": {}, "stages": {},
+            "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
+            "design_risk": {"status": "not_pass", "risk_ledger": "03_analysis/design_risk_ledger.md"},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+        })
+        hit_c = {chk for lvl, chk, det in run(bad_c, reconcile=False).rows if lvl == FAIL}
+        assert "method_gate:design_risk" in hit_c, f"bad_c should flag method_gate:design_risk; got {hit_c}"
 
         # --- empty / missing state -------------------------------------------
         rep = run(root / "does_not_exist", reconcile=False)
