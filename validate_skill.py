@@ -353,6 +353,7 @@ def check_assets() -> None:
         "scripts/check_workspace_gates.py",
         "scripts/check_skillopt_packet.py",
         "scripts/check_verification_log.py",
+        "scripts/check_citation_integrity.py",
     ]
     required.extend(REQUIRED_TEMPLATES)
     for rel in required:
@@ -444,6 +445,7 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_workspace_gates.py",
         ROOT / "scripts" / "check_skillopt_packet.py",
         ROOT / "scripts" / "check_verification_log.py",
+        ROOT / "scripts" / "check_citation_integrity.py",
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -474,6 +476,13 @@ def check_verification_log() -> None:
     )
 
 
+def check_citation_integrity_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_citation_integrity.py"), "--selftest"],
+        check=True,
+    )
+
+
 def check_smoke_workspace() -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
 
@@ -492,6 +501,7 @@ def main() -> None:
     check_gate_verifier()
     check_skillopt_packet_checker()
     check_verification_log()
+    check_citation_integrity_checker()
     print("OK: Paper-WorkFlow skill checks passed")
 
 

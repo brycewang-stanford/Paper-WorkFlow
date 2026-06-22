@@ -391,6 +391,11 @@ Stage 7→8 之间还要加载
 - **claim 忠实度必须单独验**：citation 存在不等于 claim 忠实。Stage 7→8 与 Stage 9 按
   [`references/integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 审计数字、引用、因果措辞和
   forbidden wording；有 blocking finding 时质量门和投稿包都不能标 ready。
+- **引用存在性与时序完整性也必须单独验**：claim 忠实之外的互补半——先确认「引用真实存在且引对」（DOI 解析、
+  撤稿筛查、版本、无 citation laundering）与「没有时序穿越」（look-ahead / real-time vs final vintage / 训练-测试
+  时序切分 / 样本期 vs 论断期）。按 [`references/citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md)
+  逐项落 `00_meta/citation_integrity_log.md`，终审跑 `python3 scripts/check_citation_integrity.py <workspace> --final`；
+  未排除的 look-ahead 把相关结论封顶到 `descriptive`。
 - **上下文保护优先于一切**：任何会把大段文本灌回主代理的操作，改成"写盘 + 回传摘要"。
 - **断点交接必须可恢复**：阶段完成不只更新聊天摘要；必须更新 `00_meta/stage_passport.md`。长期暂停、
   阶段切换或接手前写 `00_meta/handoff/`，并在续跑时用 fresh evidence 重新核当前事实。
@@ -432,6 +437,11 @@ Stage 7→8 之间还要加载
 - [`references/integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) — **claim/citation/number
   忠实度审计**：Stage 7→8 的 `pre-review`、Stage 9 的 `final-check`、claim locator manifest、
   verdict taxonomy 与 `workflow_state.json.integrity_audit` 状态合同。
+- [`references/citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md) — **引用存在性 +
+  时序完整性**（上一条 claim-audit 的互补半，专管它 bracket 掉的两件事）：DOI/撤稿/版本/掠夺刊核验、citation
+  laundering、look-ahead / real-time vs final vintage / 事件窗口偷看 / 训练-测试时序 / 生存偏差 / 样本期 vs 论断期；
+  配 [`templates/citation_integrity_log.md`](templates/citation_integrity_log.md) 与
+  `scripts/check_citation_integrity.py`（`--selftest` / `--final` 终审）。
 - [`references/worked-example.md`](references/worked-example.md) — 一条端到端「黄金路径」trace
   （绿色信贷→企业创新）：逐阶段产物、两道闸门如何触发、`NOT PASS → 回退 → PASS` 的完整循环（数字均为
   **示意**，真实运行由真实估计填充）。新人理解整条流水线、编排器照着填空都从这里看起。
