@@ -58,6 +58,13 @@ REQUIRED_TEMPLATES = {
     "templates/data_governance.md": ["Data Classification", "Public replication package must not include", "IRB"],
     "templates/DAS.md": ["Restricted or Confidential Data", "Rights and Ethics"],
     "templates/run_all.sh": ["set -euo pipefail", "build tables and figures"],
+    "templates/SKILLOPT_PACKET.md": [
+        "SkillOpt Improvement Packet",
+        "Train rollouts",
+        "Held-out selection rollouts",
+        "Gate Decision",
+        "Adoption Record",
+    ],
 }
 REQUIRED_REFERENCES = {
     "references/design-risk-ledger.md": [
@@ -87,6 +94,13 @@ REQUIRED_REFERENCES = {
         "反模式清单",
         "Gelbach",
         "sequential ignorability",
+    ],
+    "references/skillopt-improvement-loop.md": [
+        "SkillOpt-style improvement loop",
+        "rollout",
+        "held-out selection",
+        "bounded patch",
+        "check_skillopt_packet.py",
     ],
 }
 
@@ -266,10 +280,12 @@ def check_assets() -> None:
         "references/mechanism-and-channels.md",
         "references/literature-and-positioning.md",
         "references/worked-example.md",
+        "references/skillopt-improvement-loop.md",
         "references/data-governance.md",
         "references/runtime-fallbacks.md",
         "scripts/smoke_workspace.py",
         "scripts/check_workspace_gates.py",
+        "scripts/check_skillopt_packet.py",
     ]
     required.extend(REQUIRED_TEMPLATES)
     for rel in required:
@@ -347,6 +363,7 @@ def check_python_compile() -> None:
         ROOT / "validate_skill.py",
         ROOT / "scripts" / "smoke_workspace.py",
         ROOT / "scripts" / "check_workspace_gates.py",
+        ROOT / "scripts" / "check_skillopt_packet.py",
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -355,6 +372,13 @@ def check_python_compile() -> None:
 def check_gate_verifier() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_workspace_gates.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_skillopt_packet_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_skillopt_packet.py"), "--selftest"],
         check=True,
     )
 
@@ -375,6 +399,7 @@ def main() -> None:
     check_python_compile()
     check_smoke_workspace()
     check_gate_verifier()
+    check_skillopt_packet_checker()
     print("OK: Paper-WorkFlow skill checks passed")
 
 
