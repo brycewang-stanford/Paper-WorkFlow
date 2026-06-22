@@ -1,5 +1,5 @@
 {
-  "schema_version": 7,
+  "schema_version": 8,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -54,6 +54,17 @@
     "claim_strength": "pending",
     "open_discrepancies": [],
     "last_claim_audit": ""
+  },
+  "design_risk": {
+    "status": "pending",
+    "risk_ledger": "03_analysis/design_risk_ledger.md",
+    "threats_reviewed": [],
+    "blocking_threats": [],
+    "external_validity": "pending",
+    "specification_search": "pending",
+    "spillover_interference": "pending",
+    "selection_attrition": "pending",
+    "last_review": ""
   },
   "quality_gate": {
     "draft_milestone": "pending",

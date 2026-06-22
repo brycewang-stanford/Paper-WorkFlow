@@ -11,6 +11,7 @@ script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 template="$script_dir/workflow_state.template.json"
 backend_template="$script_dir/../templates/analysis_backend.md"
 ledger_template="$script_dir/../templates/evidence_ledger.md"
+risk_template="$script_dir/../templates/design_risk_ledger.md"
 
 if [[ -e "$workspace" ]]; then
   echo "refusing to overwrite existing path: $workspace" >&2
@@ -21,6 +22,7 @@ mkdir -p "$workspace"/{00_meta,01_proposal/candidates,02_data/raw,03_analysis/re
 cp "$template" "$workspace/00_meta/workflow_state.json"
 cp "$backend_template" "$workspace/00_meta/analysis_backend.md"
 cp "$ledger_template" "$workspace/00_meta/evidence_ledger.md"
+cp "$risk_template" "$workspace/03_analysis/design_risk_ledger.md"
 printf '# Paper workflow workspace\n\nCreated for staged empirical-paper orchestration.\n' > "$workspace/README.md"
 cat > "$workspace/00_meta/intake.md" <<'EOF'
 # Intake
