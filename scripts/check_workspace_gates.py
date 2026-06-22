@@ -14,6 +14,8 @@ enforced at runtime by a critic subagent reading prose. Prose judgement cannot
     blocking threats or is not passed.
   - a stage is marked complete but the Stage 0 route / stage passport / latest
     handoff pointer is missing.
+  - a Draft Quality Gate or ready replication pack is declared while the claim
+    integrity audit is missing, stale, or blocking.
 
 This script makes those invariants testable. It reads
 ``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is
@@ -105,7 +107,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     rep = Report()
 
     # --- top-level shape (soft: schema may evolve) ---------------------------
-    for key in ("project", "orchestration", "stages", "method_gate", "design_risk", "quality_gate", "replication_pack"):
+    for key in ("project", "orchestration", "stages", "method_gate", "design_risk", "integrity_audit", "quality_gate", "replication_pack"):
         if key not in state:
             rep.add(WARN, f"schema:{key}", "missing top-level block (schema drift?)")
 
@@ -113,6 +115,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     stages = state.get("stages", {}) if isinstance(state.get("stages"), dict) else {}
     empirical = state.get("empirical_audit", {}) if isinstance(state.get("empirical_audit"), dict) else {}
     evidence = state.get("evidence_governance", {}) if isinstance(state.get("evidence_governance"), dict) else {}
+    integrity = state.get("integrity_audit", {}) if isinstance(state.get("integrity_audit"), dict) else {}
     design_risk = state.get("design_risk", {}) if isinstance(state.get("design_risk"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
@@ -123,6 +126,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
         completed_stage = any(_norm(v) in {"done", "skipped"} for v in stages.values())
         routing = _gate_artifact(orchestration, "entry_routing", "00_meta/entry_routing.md")
         passport = _gate_artifact(orchestration, "stage_passport", "00_meta/stage_passport.md")
+        pipeline_status = _gate_artifact(orchestration, "pipeline_status", "00_meta/pipeline_status.md")
         latest_handoff = str(orchestration.get("latest_handoff") or "").strip()
         if _exists(workspace, routing):
             rep.add(OKAY, "orchestration:routing", f"entry routing present: {routing}")
@@ -134,6 +138,12 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(FAIL, "orchestration:passport", f"stage completed but missing {passport}")
         else:
             rep.add(WARN, "orchestration:passport", f"missing {passport}")
+        if _exists(workspace, pipeline_status):
+            rep.add(OKAY, "orchestration:pipeline_status", f"pipeline status present: {pipeline_status}")
+        elif completed_stage:
+            rep.add(WARN, "orchestration:pipeline_status", f"stage completed but missing {pipeline_status}")
+        else:
+            rep.add(INFO, "orchestration:pipeline_status", f"missing {pipeline_status}")
         if latest_handoff:
             if _exists(workspace, latest_handoff):
                 rep.add(OKAY, "orchestration:handoff", f"latest handoff present: {latest_handoff}")
@@ -146,6 +156,9 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
         cap = orchestration.get("revision_rounds_cap")
         if isinstance(cap, int) and cap < 1:
             rep.add(WARN, "orchestration:revision_cap", f"revision_rounds_cap={cap}")
+        reset_boundaries = orchestration.get("reset_boundaries")
+        if reset_boundaries is not None and not isinstance(reset_boundaries, list):
+            rep.add(WARN, "orchestration:reset_boundaries", "reset_boundaries is not a list")
 
     # --- empirical (sample/estimand) audit -----------------------------------
     if _passed(empirical.get("status")):
@@ -169,6 +182,31 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(WARN, "evidence_governance:open", f"status=pass but {len(open_disc)} open discrepancy(ies) recorded")
     elif "evidence_governance" in state:
         rep.add(INFO, "evidence_governance", f"status={evidence.get('status', 'absent')}")
+
+    # --- claim integrity audit ----------------------------------------------
+    istatus = _norm(integrity.get("status"))
+    integrity_ok_for_quality = istatus in {"pass", "passed", "pass_with_notes"}
+    integrity_ready_for_delivery = istatus in {"pass", "passed"}
+    if integrity_ok_for_quality:
+        audit = _gate_artifact(integrity, "claim_integrity_audit", "00_meta/claim_integrity_audit.md")
+        if not _exists(workspace, audit):
+            rep.add(FAIL, "integrity_audit", f"status={integrity.get('status')} but missing {audit}")
+        else:
+            rep.add(OKAY, "integrity_audit", f"{integrity.get('status')}, audit present: {audit}")
+        blocking = integrity.get("blocking_findings")
+        if isinstance(blocking, list) and blocking:
+            rep.add(FAIL, "integrity_audit:blocking", f"status={integrity.get('status')} but {len(blocking)} blocking finding(s) recorded")
+        unsupported = integrity.get("unsupported_claims")
+        if isinstance(unsupported, int) and unsupported > 0:
+            rep.add(FAIL, "integrity_audit:unsupported", f"status={integrity.get('status')} but unsupported_claims={unsupported}")
+        unverified = integrity.get("unverified_citations")
+        if istatus == "pass" and isinstance(unverified, int) and unverified > 0:
+            rep.add(WARN, "integrity_audit:unverified", f"status=pass but unverified_citations={unverified}")
+        checked = integrity.get("checked_claims")
+        if isinstance(checked, int) and checked == 0:
+            rep.add(WARN, "integrity_audit:coverage", "status pass/pass_with_notes but checked_claims=0")
+    elif "integrity_audit" in state:
+        rep.add(INFO, "integrity_audit", f"status={integrity.get('status', 'absent')}")
 
     # --- design risk ledger -------------------------------------------------
     if _passed(design_risk.get("status")):
@@ -245,6 +283,13 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 f"status=pass but method_gate.status={method.get('status', 'absent')} "
                 "(quality gate may be stricter than the method gate, never looser)",
             )
+        if "integrity_audit" in state and not integrity_ok_for_quality:
+            rep.add(
+                FAIL,
+                "quality_gate:integrity",
+                f"status=pass but integrity_audit.status={integrity.get('status', 'absent')} "
+                "(claim integrity audit must pass or pass_with_notes before Draft Quality Gate can pass)",
+            )
     else:
         rep.add(INFO, "quality_gate", f"status={quality.get('status', 'absent')}")
 
@@ -262,6 +307,8 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             problems.append(f"readme missing ({readme})")
         if not str(replication.get("last_rebuild_check") or "").strip():
             problems.append("last_rebuild_check empty")
+        if "integrity_audit" in state and not integrity_ready_for_delivery:
+            problems.append(f"integrity_audit.status={integrity.get('status', 'absent')} (must be pass for delivery)")
         if problems:
             rep.add(FAIL, "replication_pack", "status=ready but " + "; ".join(problems))
         else:
@@ -374,6 +421,7 @@ def _selftest() -> int:
         for rel in (
             "00_meta/entry_routing.md",
             "00_meta/stage_passport.md",
+            "00_meta/pipeline_status.md",
             "00_meta/handoff/S01-ready.md",
             "02_data/sample_audit.md",
             "03_analysis/design_register.md",
@@ -382,6 +430,7 @@ def _selftest() -> int:
             "03_analysis/inference_report.md",
             "00_meta/quality_scorecard.md",
             "00_meta/evidence_ledger.md",
+            "00_meta/claim_integrity_audit.md",
             "03_analysis/design_risk_ledger.md",
             "REPLICATION.md",
             "run_all.sh",
@@ -393,13 +442,23 @@ def _selftest() -> int:
                 "status": "active",
                 "entry_routing": "00_meta/entry_routing.md",
                 "stage_passport": "00_meta/stage_passport.md",
+                "pipeline_status": "00_meta/pipeline_status.md",
                 "handoff_dir": "00_meta/handoff",
                 "latest_handoff": "00_meta/handoff/S01-ready.md",
                 "fresh_evidence_required": True,
                 "revision_rounds_cap": 2,
+                "reset_boundaries": [],
             },
             "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md", "open_discrepancies": []},
+            "integrity_audit": {
+                "status": "pass",
+                "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
+                "checked_claims": 12,
+                "unsupported_claims": 0,
+                "unverified_citations": 0,
+                "blocking_findings": [],
+            },
             "design_risk": {
                 "status": "pass",
                 "risk_ledger": "03_analysis/design_risk_ledger.md",
@@ -432,9 +491,11 @@ def _selftest() -> int:
             "orchestration": {
                 "entry_routing": "00_meta/entry_routing.md",
                 "stage_passport": "00_meta/stage_passport.md",
+                "pipeline_status": "00_meta/pipeline_status.md",
                 "latest_handoff": "00_meta/handoff/S99-missing.md",
                 "fresh_evidence_required": False,
                 "revision_rounds_cap": 0,
+                "reset_boundaries": "not-a-list",
             },
             "empirical_audit": {"status": "not_pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md"},
@@ -462,11 +523,13 @@ def _selftest() -> int:
         write_state(bad_b, {
             "project": {}, "stages": {},
             "design_risk": {"status": "pending"},
+            "integrity_audit": {"status": "not_pass"},
             "method_gate": {"status": "not_pass"},
             "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
         })
         hit_b = {chk for lvl, chk, det in run(bad_b, reconcile=False).rows if lvl == FAIL}
         assert "quality_gate:ordering" in hit_b, f"bad_b should flag quality_gate:ordering; got {hit_b}"
+        assert "quality_gate:integrity" in hit_b, f"bad_b should flag quality_gate:integrity; got {hit_b}"
 
         # --- bad workspace C: method gate skips unresolved design risk -------
         bad_c = root / "bad_c"
@@ -485,6 +548,32 @@ def _selftest() -> int:
         })
         hit_c = {chk for lvl, chk, det in run(bad_c, reconcile=False).rows if lvl == FAIL}
         assert "method_gate:design_risk" in hit_c, f"bad_c should flag method_gate:design_risk; got {hit_c}"
+
+        # --- bad workspace D: integrity audit claims pass while blocking ----
+        bad_d = root / "bad_d"
+        touch(bad_d, "00_meta/claim_integrity_audit.md")
+        touch(bad_d, "REPLICATION.md")
+        touch(bad_d, "run_all.sh")
+        write_state(bad_d, {
+            "project": {}, "stages": {},
+            "integrity_audit": {
+                "status": "pass",
+                "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
+                "checked_claims": 0,
+                "unsupported_claims": 1,
+                "unverified_citations": 2,
+                "blocking_findings": ["C2 unsupported"],
+            },
+            "replication_pack": {
+                "status": "ready",
+                "readme": "REPLICATION.md",
+                "master_script": "run_all.sh",
+                "last_rebuild_check": "rebuilt",
+            },
+        })
+        hit_d = {chk for lvl, chk, det in run(bad_d, reconcile=False).rows if lvl == FAIL}
+        for expected in ("integrity_audit:blocking", "integrity_audit:unsupported"):
+            assert expected in hit_d, f"bad_d should flag {expected}; got {hit_d}"
 
         # --- empty / missing state -------------------------------------------
         rep = run(root / "does_not_exist", reconcile=False)

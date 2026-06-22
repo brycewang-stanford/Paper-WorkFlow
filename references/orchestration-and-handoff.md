@@ -37,6 +37,23 @@ Each completed stage needs:
 If the passport and `workflow_state.json` disagree, treat that as a recovery
 problem and refresh current evidence before proceeding.
 
+## Pipeline Status Dashboard
+
+`00_meta/pipeline_status.md` is the compact dashboard for humans and follow-on
+agents. Update it at the same boundaries as the stage passport, but keep it
+short: current status, key materials, latest checkpoint, open flags, and next
+smallest action.
+
+Use it when:
+
+- the user asks for status;
+- another agent may take over;
+- a hard gate just passed or failed;
+- a long session needs a reset boundary.
+
+Do not treat the dashboard as proof. It is an index into current artifacts and
+fresh evidence, not a substitute for `workflow_state.json` or gate reports.
+
 ## Fresh Evidence
 
 Do not declare a stage done from memory. A current proof must exist in one of
@@ -68,24 +85,48 @@ The latest card path should be written to
 `workflow_state.json.orchestration.latest_handoff`. If that field is set, the
 runtime checker verifies the file exists.
 
+## Reset Boundaries
+
+For long sessions, use the handoff card as the reset boundary. Append a compact
+entry to `workflow_state.json.orchestration.reset_boundaries` with:
+
+- completed stage;
+- handoff card path;
+- status snapshot (`verified`, `stale`, or `needs_probe`);
+- next stage or pending decision;
+- created time.
+
+This is lighter than ARS's hash ledger, but preserves the same operational
+discipline: a new session resumes from disk artifacts and a named boundary,
+not from chat memory. If two agents are active, write a new boundary instead of
+mutating an old one.
+
 ## Runtime Discipline
 
 - `orchestration.fresh_evidence_required` stays `true`.
 - `orchestration.revision_rounds_cap` defaults to `2`; do not reset it after a
   handoff.
+- `orchestration.pipeline_status` points to `00_meta/pipeline_status.md`.
+- `orchestration.checkpoint_policy` records the current confirmation policy
+  (`full-at-hard-gates` by default).
+- `orchestration.reset_boundaries` is append-only within a run.
 - `orchestration.self_review_gate` and `orchestration.ethics_gate` record whether
   the current stage had a fresh self-review and research-integrity pass.
 - Any fallback or unavailable probe goes into `logs/stage_<N>.md` and
   `workflow_state.json.decisions`.
 
-## schema_version 9
+## schema_version 10
 
-Schema v9 adds the `orchestration` block plus the Stage 0 artifacts:
+Schema v10 keeps the v9 `orchestration` block and adds ARS-inspired checkpoint
+and integrity surfaces:
 
 - `00_meta/entry_routing.md`
 - `00_meta/stage_passport.md`
+- `00_meta/pipeline_status.md`
 - `00_meta/handoff/`
 - `00_meta/handoff_prompt.md`
+- `00_meta/claim_integrity_audit.md`
+- `workflow_state.json.integrity_audit`
 
 These files are created by `assets/init_workspace.sh`, exercised by
 `scripts/smoke_workspace.py`, and checked by `validate_skill.py`.

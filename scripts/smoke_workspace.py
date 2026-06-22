@@ -19,12 +19,14 @@ TEMPLATE_OUTPUTS = {
     "templates/stage_passport.md": "00_meta/stage_passport.md",
     "templates/handoff_card.md": "00_meta/handoff/S00-template.md",
     "templates/handoff_prompt.md": "00_meta/handoff_prompt.md",
+    "templates/pipeline_status.md": "00_meta/pipeline_status.md",
     "templates/analysis_backend.md": "00_meta/analysis_backend.md",
     "templates/design_risk_ledger.md": "03_analysis/design_risk_ledger.md",
     "templates/sample_audit.md": "02_data/sample_audit.md",
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
     "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
+    "templates/claim_integrity_audit.md": "00_meta/claim_integrity_audit.md",
     "templates/quality_scorecard.md": "00_meta/quality_scorecard.md",
     "templates/REPLICATION.md": "REPLICATION.md",
     "templates/FINAL_REPORT.md": "FINAL_REPORT.md",
@@ -39,12 +41,14 @@ ARTIFACTS = {
     "stage_passport": "00_meta/stage_passport.md",
     "handoff_template": "00_meta/handoff/S00-template.md",
     "handoff_prompt": "00_meta/handoff_prompt.md",
+    "pipeline_status": "00_meta/pipeline_status.md",
     "analysis_backend": "00_meta/analysis_backend.md",
     "design_risk_ledger": "03_analysis/design_risk_ledger.md",
     "sample_audit": "02_data/sample_audit.md",
     "design_register": "03_analysis/design_register.md",
     "method_gate": "03_analysis/method_gate.md",
     "evidence_ledger": "00_meta/evidence_ledger.md",
+    "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
     "quality_scorecard": "00_meta/quality_scorecard.md",
     "replication_readme": "REPLICATION.md",
     "final_report": "FINAL_REPORT.md",
@@ -121,8 +125,18 @@ def build_workspace(tmp_root: Path) -> Path:
             "status": "active",
             "entry_routing": "00_meta/entry_routing.md",
             "stage_passport": "00_meta/stage_passport.md",
+            "pipeline_status": "00_meta/pipeline_status.md",
             "handoff_dir": "00_meta/handoff",
             "latest_handoff": "00_meta/handoff/S00-template.md",
+            "checkpoint_policy": "full-at-hard-gates",
+            "reset_boundaries": [
+                {
+                    "stage": 0,
+                    "boundary": "smoke",
+                    "handoff": "00_meta/handoff/S00-template.md",
+                    "status": "verified",
+                }
+            ],
             "fresh_evidence_required": True,
             "last_recovery_probe": "smoke fixture only; git/passport/current artifacts not probed",
             "self_review_gate": "pending",
@@ -159,6 +173,19 @@ def build_workspace(tmp_root: Path) -> Path:
             "last_claim_audit": "smoke fixture only; no real claim audited",
         }
     )
+    state["integrity_audit"].update(
+        {
+            "status": "pending",
+            "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
+            "claim_locator_manifest": "00_meta/claim_integrity_audit.md#claim-locator-manifest",
+            "audit_mode": "pre-review",
+            "checked_claims": 0,
+            "unsupported_claims": 0,
+            "unverified_citations": 0,
+            "blocking_findings": [],
+            "last_audit": "smoke fixture only; no real claims audited",
+        }
+    )
     state["design_risk"].update(
         {
             "status": "pending",
@@ -184,7 +211,7 @@ def build_workspace(tmp_root: Path) -> Path:
     state["decisions"].append(
         {
             "stage": 0,
-            "decision": "Smoke fixture instantiated orchestration, governance, gate, replication, and submission templates",
+            "decision": "Smoke fixture instantiated orchestration, pipeline-status, integrity-audit, governance, gate, replication, and submission templates",
             "at": "2026-06-20 18:30",
         }
     )
@@ -195,8 +222,8 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 9:
-        fail("smoke state schema_version must remain 9")
+    if state.get("schema_version") != 10:
+        fail("smoke state schema_version must remain 10")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
@@ -205,12 +232,18 @@ def check_workspace(workspace: Path) -> None:
         fail("smoke state orchestration passport was not populated")
     if state["orchestration"]["latest_handoff"] != "00_meta/handoff/S00-template.md":
         fail("smoke state latest handoff was not populated")
+    if state["orchestration"]["pipeline_status"] != "00_meta/pipeline_status.md":
+        fail("smoke state pipeline status was not populated")
+    if not state["orchestration"]["reset_boundaries"]:
+        fail("smoke state reset boundary list was not populated")
     if state["empirical_audit"]["sample_audit"] != "02_data/sample_audit.md":
         fail("smoke state empirical audit was not populated")
     if state["replication_pack"]["status"] != "not_ready":
         fail("smoke fixture must not pretend replication is ready")
     if state["evidence_governance"]["evidence_ledger"] != "00_meta/evidence_ledger.md":
         fail("smoke state evidence governance was not populated")
+    if state["integrity_audit"]["claim_integrity_audit"] != "00_meta/claim_integrity_audit.md":
+        fail("smoke state integrity audit was not populated")
     if state["design_risk"]["risk_ledger"] != "03_analysis/design_risk_ledger.md":
         fail("smoke state design risk was not populated")
     for name, rel in ARTIFACTS.items():
@@ -240,6 +273,14 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Entry Routing", "Route Examples", "Decision Points"]:
         if marker not in routing:
             fail(f"entry routing template missing marker: {marker}")
+    pipeline_status = (workspace / "00_meta" / "pipeline_status.md").read_text(encoding="utf-8")
+    for marker in ["Pipeline Status", "Stage Dashboard", "Checkpoint Policy", "Reset Boundary"]:
+        if marker not in pipeline_status:
+            fail(f"pipeline status template missing marker: {marker}")
+    claim_integrity = (workspace / "00_meta" / "claim_integrity_audit.md").read_text(encoding="utf-8")
+    for marker in ["Claim Integrity Audit", "Audit Scope", "Claim Locator Manifest", "Verdict Taxonomy"]:
+        if marker not in claim_integrity:
+            fail(f"claim integrity audit template missing marker: {marker}")
     passport = (workspace / "00_meta" / "stage_passport.md").read_text(encoding="utf-8")
     for marker in ["Stage Passport", "Fresh Evidence", "Revision Budget"]:
         if marker not in passport:

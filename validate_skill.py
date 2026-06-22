@@ -50,6 +50,7 @@ REQUIRED_TEMPLATES = {
     "templates/stage_passport.md": ["Stage Passport", "Fresh Evidence", "Revision Budget", "Known Limitations"],
     "templates/handoff_card.md": ["Handoff Card", "Current Stage", "Completed Artifacts", "Do Not"],
     "templates/handoff_prompt.md": ["Handoff Prompt", "Fresh Reality Check", "Completion Criteria"],
+    "templates/pipeline_status.md": ["Pipeline Status", "Stage Dashboard", "Checkpoint Policy", "Reset Boundary"],
     "templates/design_risk_ledger.md": ["Design Risk Ledger", "Threat Register", "Claim Consequence", "External Validity and Transport", "Blocking Threats"],
     "templates/design_register.md": ["Target estimand", "Claim Boundary", "Bad-control screen", "Fallback Plan"],
     "templates/method_gate.md": ["Required Artifact Table", "Design Gate Card", "Decision: PASS / NOT PASS", "Hard Flags"],
@@ -59,6 +60,7 @@ REQUIRED_TEMPLATES = {
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
     "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
     "templates/evidence_ledger.md": ["Claim Register", "Estimand-to-Claim Map", "Claim Strength Ladder", "Exhibit and Script Map"],
+    "templates/claim_integrity_audit.md": ["Claim Integrity Audit", "Audit Scope", "Claim Locator Manifest", "Verdict Taxonomy", "Blocking findings"],
     "templates/submission_checklist.md": ["Journal Policy Refresh", "Final Gates"],
     "templates/data_governance.md": ["Data Classification", "Public replication package must not include", "IRB"],
     "templates/DAS.md": ["Restricted or Confidential Data", "Rights and Ethics"],
@@ -113,7 +115,14 @@ REQUIRED_REFERENCES = {
         "Stage Passport",
         "Fresh Evidence",
         "Handoff Card",
-        "schema_version 9",
+        "schema_version 10",
+    ],
+    "references/integrity-and-claim-audit.md": [
+        "Integrity & Claim Audit",
+        "Claim Locator Manifest",
+        "Verdicts",
+        "Sampling Discipline",
+        "integrity_audit",
     ],
 }
 
@@ -149,8 +158,8 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 9:
-        fail("workflow_state.template.json schema_version must be 9")
+    if data.get("schema_version") != 10:
+        fail("workflow_state.template.json schema_version must be 10")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
@@ -160,6 +169,7 @@ def load_template() -> dict:
         "empirical_audit",
         "method_gate",
         "evidence_governance",
+        "integrity_audit",
         "design_risk",
         "quality_gate",
         "replication_pack",
@@ -174,8 +184,11 @@ def load_template() -> dict:
         "status",
         "entry_routing",
         "stage_passport",
+        "pipeline_status",
         "handoff_dir",
         "latest_handoff",
+        "checkpoint_policy",
+        "reset_boundaries",
         "fresh_evidence_required",
         "last_recovery_probe",
         "self_review_gate",
@@ -188,6 +201,8 @@ def load_template() -> dict:
         fail("orchestration.fresh_evidence_required must default to true")
     if orchestration.get("revision_rounds_cap") != 2:
         fail("orchestration.revision_rounds_cap must default to 2")
+    if not isinstance(orchestration.get("reset_boundaries"), list):
+        fail("orchestration.reset_boundaries must default to an empty list")
     backend = data["analysis_backend"]
     for key in [
         "primary",
@@ -234,6 +249,20 @@ def load_template() -> dict:
     ]:
         if key not in governance:
             fail(f"evidence_governance missing key: {key}")
+    integrity = data["integrity_audit"]
+    for key in [
+        "status",
+        "claim_integrity_audit",
+        "claim_locator_manifest",
+        "audit_mode",
+        "checked_claims",
+        "unsupported_claims",
+        "unverified_citations",
+        "blocking_findings",
+        "last_audit",
+    ]:
+        if key not in integrity:
+            fail(f"integrity_audit missing key: {key}")
     design_risk = data["design_risk"]
     for key in [
         "status",
@@ -312,6 +341,7 @@ def check_assets() -> None:
         "references/threats-to-validity.md",
         "references/design-transparency.md",
         "references/orchestration-and-handoff.md",
+        "references/integrity-and-claim-audit.md",
         "references/inference-and-uncertainty.md",
         "references/mechanism-and-channels.md",
         "references/literature-and-positioning.md",
@@ -392,10 +422,14 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh did not create 00_meta/handoff/HANDOFF_TEMPLATE.md")
         if not (workspace / "00_meta" / "handoff_prompt.md").exists():
             fail("init_workspace.sh did not create 00_meta/handoff_prompt.md")
+        if not (workspace / "00_meta" / "pipeline_status.md").exists():
+            fail("init_workspace.sh did not create 00_meta/pipeline_status.md")
         if not (workspace / "00_meta" / "analysis_backend.md").exists():
             fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
         if not (workspace / "00_meta" / "evidence_ledger.md").exists():
             fail("init_workspace.sh did not create 00_meta/evidence_ledger.md")
+        if not (workspace / "00_meta" / "claim_integrity_audit.md").exists():
+            fail("init_workspace.sh did not create 00_meta/claim_integrity_audit.md")
         if not (workspace / "03_analysis" / "design_risk_ledger.md").exists():
             fail("init_workspace.sh did not create 03_analysis/design_risk_ledger.md")
         second = subprocess.run(["bash", str(script), str(workspace)], capture_output=True)

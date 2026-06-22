@@ -16,6 +16,8 @@ routing_template="$script_dir/../templates/entry_routing.md"
 passport_template="$script_dir/../templates/stage_passport.md"
 handoff_template="$script_dir/../templates/handoff_card.md"
 handoff_prompt_template="$script_dir/../templates/handoff_prompt.md"
+pipeline_status_template="$script_dir/../templates/pipeline_status.md"
+claim_integrity_template="$script_dir/../templates/claim_integrity_audit.md"
 
 if [[ -e "$workspace" ]]; then
   echo "refusing to overwrite existing path: $workspace" >&2
@@ -31,6 +33,8 @@ cp "$routing_template" "$workspace/00_meta/entry_routing.md"
 cp "$passport_template" "$workspace/00_meta/stage_passport.md"
 cp "$handoff_template" "$workspace/00_meta/handoff/HANDOFF_TEMPLATE.md"
 cp "$handoff_prompt_template" "$workspace/00_meta/handoff_prompt.md"
+cp "$pipeline_status_template" "$workspace/00_meta/pipeline_status.md"
+cp "$claim_integrity_template" "$workspace/00_meta/claim_integrity_audit.md"
 printf '# Paper workflow workspace\n\nCreated for staged empirical-paper orchestration.\n' > "$workspace/README.md"
 cat > "$workspace/00_meta/intake.md" <<'EOF'
 # Intake
@@ -45,6 +49,8 @@ cat > "$workspace/00_meta/intake.md" <<'EOF'
 - Source material:
 - Entry routing file: 00_meta/entry_routing.md
 - Stage passport: 00_meta/stage_passport.md
+- Pipeline status: 00_meta/pipeline_status.md
 - Handoff directory: 00_meta/handoff/
+- Claim integrity audit: 00_meta/claim_integrity_audit.md
 - Notes:
 EOF

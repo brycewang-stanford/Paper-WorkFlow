@@ -1,5 +1,5 @@
 {
-  "schema_version": 9,
+  "schema_version": 10,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -12,8 +12,11 @@
     "status": "pending",
     "entry_routing": "00_meta/entry_routing.md",
     "stage_passport": "00_meta/stage_passport.md",
+    "pipeline_status": "00_meta/pipeline_status.md",
     "handoff_dir": "00_meta/handoff",
     "latest_handoff": "",
+    "checkpoint_policy": "full-at-hard-gates",
+    "reset_boundaries": [],
     "fresh_evidence_required": true,
     "last_recovery_probe": "",
     "self_review_gate": "pending",
@@ -66,6 +69,17 @@
     "claim_strength": "pending",
     "open_discrepancies": [],
     "last_claim_audit": ""
+  },
+  "integrity_audit": {
+    "status": "pending",
+    "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
+    "claim_locator_manifest": "00_meta/claim_integrity_audit.md#claim-locator-manifest",
+    "audit_mode": "pre-review",
+    "checked_claims": 0,
+    "unsupported_claims": 0,
+    "unverified_citations": 0,
+    "blocking_findings": [],
+    "last_audit": ""
   },
   "design_risk": {
     "status": "pending",

@@ -23,6 +23,7 @@ Workspace: <paper_workspace/...>
 
 - Orchestration route: recorded / missing
 - Stage passport: current / stale / missing
+- Pipeline status: current / stale / missing
 - Latest handoff: recorded / missing / not needed
 - Method gate: PASS / NOT PASS
 - Analysis backend: python-statspai / stata / r
@@ -33,6 +34,7 @@ Workspace: <paper_workspace/...>
 - Data governance: clear / restricted / blocked
 - Evidence ledger: complete / incomplete
 - Evidence governance: pass / not_pass
+- Claim integrity audit: pass / pass_with_notes / not_pass
 - Strongest allowed claim: causal / qualified_causal / descriptive / exploratory / no_claim
 
 ## 3. Deliverables
@@ -42,6 +44,7 @@ Workspace: <paper_workspace/...>
 | Proposal | 01_proposal/proposal.md | no |
 | Entry routing | 00_meta/entry_routing.md | no |
 | Stage passport | 00_meta/stage_passport.md | no |
+| Pipeline status | 00_meta/pipeline_status.md | no |
 | Latest handoff | 00_meta/handoff/ | no |
 | Analysis backend report | 00_meta/analysis_backend.md | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
@@ -49,6 +52,7 @@ Workspace: <paper_workspace/...>
 | Design risk ledger | 03_analysis/design_risk_ledger.md | no |
 | Main results | 03_analysis/results/main_results.json | no |
 | Evidence ledger | 00_meta/evidence_ledger.md | no |
+| Claim integrity audit | 00_meta/claim_integrity_audit.md | no |
 | Tables and figures | 04_results/ | no |
 | Manuscript | 07_dehumanize/main.tex | no |
 | Review response | 08_review/response_letter.md | no |
@@ -70,6 +74,7 @@ Last rebuild check:
 - Sample / estimand alignment:
 - Robustness:
 - Evidence-to-claim alignment:
+- Claim/citation/number integrity:
 - Citation:
 - Data access / IRB / DUA:
 - Journal formatting:
