@@ -1,25 +1,48 @@
+<div align="center">
+
+<br/>
+
 # Paper-WorkFlow
 
-Research-grade orchestration for empirical social-science papers: idea -> design -> data -> identification -> exhibits -> manuscript -> review -> submission package.
+**Research-grade orchestration for empirical social-science papers**
 
-[中文说明](README.md)
+<samp>idea&nbsp;&nbsp;→&nbsp;&nbsp;design&nbsp;&nbsp;→&nbsp;&nbsp;data&nbsp;&nbsp;→&nbsp;&nbsp;identification&nbsp;&nbsp;→&nbsp;&nbsp;exhibits&nbsp;&nbsp;→&nbsp;&nbsp;manuscript&nbsp;&nbsp;→&nbsp;&nbsp;review&nbsp;&nbsp;→&nbsp;&nbsp;submission</samp>
 
-<div align="center">
+<br/>
+
+![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
+![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
+![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
+![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
+![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
+
+<br/>
+
+[Mental Model](#mental-model)&nbsp;·&nbsp;[Research Standards](#research-standards)&nbsp;·&nbsp;[Quickstart](#quickstart)&nbsp;·&nbsp;[Outputs](#workspace-outputs)&nbsp;·&nbsp;[中文说明](README.md)
+
+<br/>
+<br/>
+
+**You bring a research direction; it delivers an auditable empirical-paper engine.**
+
+<sub>From ideation, data, identification, estimation, exhibits, writing, polishing, de-slopping and mock review, all the way to a submission package<br/>— captured in a single resumable, auditable workspace.</sub>
+
+<br/>
 
 <table>
   <tr>
     <td align="center">
-      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="240" /></a>
+      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="220" /></a>
     </td>
     <td width="56"></td>
     <td align="center">
-      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP · Center on China's Economy and Institutions" width="340" /></a>
+      <a href="https://sccei.fsi.stanford.edu/reap"><img src="assets/stanford-reap-logo.png" alt="Stanford REAP · Center on China's Economy and Institutions" width="320" /></a>
     </td>
   </tr>
 </table>
 
-<strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research<br/>
-<sub>The full pipeline from data cleaning to top-journal submission — Paper-WorkFlow is its manuscript-level orchestrator</sub>
+<sub><strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research · Paper-WorkFlow is its manuscript-level orchestrator</sub>
 
 </div>
 
@@ -37,9 +60,13 @@ Paper-WorkFlow turns that system into:
 - Two hard gates: a Method Gate after Stage 3 and a Draft Quality Gate after Stage 7.
 - A resumable workspace controlled by `00_meta/workflow_state.json`.
 - A first-class analysis backend choice for Python/StatsPAI, Stata, or R.
+- A compact pipeline dashboard plus a claim-integrity audit for citation, number, and wording faithfulness.
 - A replication contract tracked through `REPLICATION.md`, `DAS.md`, `run_all.sh`, and `workflow_state.json.replication_pack`.
 
 The core rule is simple: call existing skills instead of rewriting them. The orchestrator is valuable because it gives each skill the right input, at the right time, with the right context boundary.
+
+> [!IMPORTANT]
+> **Two hard gates, not vibes.** A Method Gate fires after Stage 3 (identification + robustness) and a Draft Quality Gate after Stage 7 (writing + reproducibility). Either failure routes back to the weakest stage automatically — passing both is what "submission-ready" means here.
 
 ## From Lecture Map To Executable Workflow
 
@@ -62,9 +89,9 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 
 | Layer | Responsibility | Key artifacts |
 |---|---|---|
-| Orchestration | Entry routing, resumability, handoff, subagent dispatch, stage gates | `workflow_state.json`, `entry_routing.md`, `stage_passport.md`, `handoff/`, `logs/stage_<N>.md` |
+| Orchestration | Entry routing, resumability, dashboard, handoff, subagent dispatch, stage gates | `workflow_state.json`, `entry_routing.md`, `stage_passport.md`, `pipeline_status.md`, `handoff/`, `logs/stage_<N>.md` |
 | Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence, claim governance | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `evidence_ledger.md`, `main_results.json`, `robustness/` |
-| Manuscript | Exhibits, draft, polish, de-slop, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `response_letter.md`, `journal_shortlist.md` |
+| Manuscript | Exhibits, draft, polish, de-slop, claim/citation integrity audit, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `claim_integrity_audit.md`, `response_letter.md`, `journal_shortlist.md` |
 
 The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules. [design-gate-cards.md](references/design-gate-cards.md) converts those requirements into reviewer-facing gate cards with required artifacts, hard fails, and claim-downgrade rules.
 
@@ -97,6 +124,7 @@ Finishing stages is not enough. The workflow enforces explicit standards that re
 | Method evidence | Identification registry, method-specific diagnostics, robustness matrix, reproducible scripts | Stage 3 Method Gate | [research-grade-methods.md](references/research-grade-methods.md) |
 | Design risk ledger | Whether OVB, selection, bad controls, spillovers/SUTVA, external validity, attrition, specification search, and selective reporting are closed or downgraded | Stages 1/3/5/8 Method Gate / Quality Gate | [design-risk-ledger.md](references/design-risk-ledger.md) + `03_analysis/design_risk_ledger.md` |
 | Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
+| Claim integrity audit | Whether numbers, citations, causal wording, and forbidden wording in the manuscript are faithful to the evidence ledger, source text, and project estimates | Stage 7-8 / Stage 9 Quality Gate / final submission check | [integrity-and-claim-audit.md](references/integrity-and-claim-audit.md) + `00_meta/claim_integrity_audit.md` |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
 | Review and submission | Simulated review, response letter, journal decision order, cover letter | Stages 8, 9 | [peer-review-and-submission.md](references/peer-review-and-submission.md) |
@@ -123,6 +151,9 @@ You do not need to start from an empty idea.
 | A finished manuscript for submission | Stage 9: journal selection and submission |
 
 ## Quickstart
+
+> [!TIP]
+> Board at whatever station you arrive at — just tell it what you already have.
 
 Use it from Claude Code with a research idea, proposal, dataset, results folder, or draft:
 
@@ -156,11 +187,13 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/workflow_state.json
 ├── 00_meta/entry_routing.md
 ├── 00_meta/stage_passport.md
+├── 00_meta/pipeline_status.md
 ├── 00_meta/handoff/
 ├── 00_meta/analysis_backend.md
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
 ├── 00_meta/evidence_ledger.md
+├── 00_meta/claim_integrity_audit.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md + sample_audit.md
 ├── 03_analysis/design_register.md + design_risk_ledger.md + method_gate.md
@@ -231,6 +264,8 @@ Paper-WorkFlow/
 │   ├── sample_audit.md
 │   ├── method_gate.md
 │   ├── evidence_ledger.md
+│   ├── claim_integrity_audit.md
+│   ├── pipeline_status.md
 │   ├── quality_scorecard.md
 │   ├── data_governance.md
 │   ├── DAS.md
@@ -240,6 +275,7 @@ Paper-WorkFlow/
 │   ├── FINAL_REPORT.md
 │   ├── entry_routing.md
 │   ├── stage_passport.md
+│   ├── pipeline_status.md
 │   ├── handoff_card.md
 │   ├── handoff_prompt.md
 │   └── run_all.sh
@@ -260,6 +296,7 @@ Paper-WorkFlow/
 │   ├── reproducibility-pack.md
 │   ├── peer-review-and-submission.md
 │   ├── quality-rubric.md
+│   ├── integrity-and-claim-audit.md
 │   ├── data-governance.md
 │   ├── runtime-fallbacks.md
 │   ├── orchestration-and-handoff.md
@@ -281,7 +318,8 @@ Paper-WorkFlow/
 
 - [SKILL.md](SKILL.md): entrypoint and full execution protocol.
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
-- [references/orchestration-and-handoff.md](references/orchestration-and-handoff.md): Stage 0 routing, stage passport, fresh evidence, and handoff protocol.
+- [references/orchestration-and-handoff.md](references/orchestration-and-handoff.md): Stage 0 routing, stage passport, pipeline status, fresh evidence, and handoff protocol.
+- [references/integrity-and-claim-audit.md](references/integrity-and-claim-audit.md): claim, citation, number, and wording-faithfulness audit.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
 - [references/design-risk-ledger.md](references/design-risk-ledger.md): design-risk ledger for identification threats, selective reporting, external validity, spillovers, and attrition.
@@ -328,6 +366,14 @@ This package is released under the [MIT License](LICENSE). Child skills from mix
 ---
 
 <div align="center">
+
+<br/>
+
+### From a one-line idea to a submission-ready manuscript
+
+<sub>Let the pipeline run the hundred steps in between. If it helps, please drop a ⭐ Star.</sub>
+
+<br/>
 
 <table>
   <tr>
