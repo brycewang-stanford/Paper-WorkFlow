@@ -190,6 +190,8 @@
    不是数据细节，是识别威胁，blocking 时 Method Gate 不得 `PASS`。
 3. **选源即定 vintage**：凡会修订的源（FRED、WDI、PWT、IBES、专利），DAS 与复现包必须记录
    **提取日期 / 版本号 / vintage**，否则复现不可达（见 [`computational-reproducibility.md`](computational-reproducibility.md)）。
+   vintage 不只是复现问题——用 final 修订值冒充「当时可知」就是 **look-ahead**：real-time vs final、
+   公布滞后、生存偏差回填的时序纪律见 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md) §2.2。
 4. **受限源走治理**：订阅/受限/含 PII 的源按 [`data-governance.md`](data-governance.md) 处理公开复现包边界——
    只发代码 + 键列表 + 取数脚本，不发原始受限面板。
 5. **跨库口径要钉死**：同一变量多源不一致时，固定单一权威源或交叉核对，并把口径写进
