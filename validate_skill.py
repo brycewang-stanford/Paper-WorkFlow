@@ -293,6 +293,8 @@ def check_assets() -> None:
         "assets/workflow.svg",
         "assets/init_workspace.sh",
         "assets/workflow_state.template.json",
+        "_verification_log/README.md",
+        "_verification_log/methods-claims.md",
         "references/stage-playbook.md",
         "references/skill-map.md",
         "references/research-grade-methods.md",
@@ -320,6 +322,7 @@ def check_assets() -> None:
         "scripts/smoke_workspace.py",
         "scripts/check_workspace_gates.py",
         "scripts/check_skillopt_packet.py",
+        "scripts/check_verification_log.py",
     ]
     required.extend(REQUIRED_TEMPLATES)
     for rel in required:
@@ -406,6 +409,7 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "smoke_workspace.py",
         ROOT / "scripts" / "check_workspace_gates.py",
         ROOT / "scripts" / "check_skillopt_packet.py",
+        ROOT / "scripts" / "check_verification_log.py",
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -421,6 +425,17 @@ def check_gate_verifier() -> None:
 def check_skillopt_packet_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_skillopt_packet.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_verification_log() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_verification_log.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_verification_log.py")],
         check=True,
     )
 
@@ -442,6 +457,7 @@ def main() -> None:
     check_smoke_workspace()
     check_gate_verifier()
     check_skillopt_packet_checker()
+    check_verification_log()
     print("OK: Paper-WorkFlow skill checks passed")
 
 
