@@ -15,6 +15,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 TEMPLATE_OUTPUTS = {
+    "templates/entry_routing.md": "00_meta/entry_routing.md",
+    "templates/stage_passport.md": "00_meta/stage_passport.md",
+    "templates/handoff_card.md": "00_meta/handoff/S00-template.md",
+    "templates/handoff_prompt.md": "00_meta/handoff_prompt.md",
     "templates/analysis_backend.md": "00_meta/analysis_backend.md",
     "templates/design_risk_ledger.md": "03_analysis/design_risk_ledger.md",
     "templates/sample_audit.md": "02_data/sample_audit.md",
@@ -31,6 +35,10 @@ TEMPLATE_OUTPUTS = {
 }
 
 ARTIFACTS = {
+    "entry_routing": "00_meta/entry_routing.md",
+    "stage_passport": "00_meta/stage_passport.md",
+    "handoff_template": "00_meta/handoff/S00-template.md",
+    "handoff_prompt": "00_meta/handoff_prompt.md",
     "analysis_backend": "00_meta/analysis_backend.md",
     "design_risk_ledger": "03_analysis/design_risk_ledger.md",
     "sample_audit": "02_data/sample_audit.md",
@@ -108,6 +116,20 @@ def build_workspace(tmp_root: Path) -> Path:
             "version_report": "00_meta/analysis_backend.md",
         }
     )
+    state["orchestration"].update(
+        {
+            "status": "active",
+            "entry_routing": "00_meta/entry_routing.md",
+            "stage_passport": "00_meta/stage_passport.md",
+            "handoff_dir": "00_meta/handoff",
+            "latest_handoff": "00_meta/handoff/S00-template.md",
+            "fresh_evidence_required": True,
+            "last_recovery_probe": "smoke fixture only; git/passport/current artifacts not probed",
+            "self_review_gate": "pending",
+            "ethics_gate": "pending",
+            "revision_rounds_cap": 2,
+        }
+    )
     state["empirical_audit"].update(
         {
             "status": "pending",
@@ -162,7 +184,7 @@ def build_workspace(tmp_root: Path) -> Path:
     state["decisions"].append(
         {
             "stage": 0,
-            "decision": "Smoke fixture instantiated governance, gate, replication, and submission templates",
+            "decision": "Smoke fixture instantiated orchestration, governance, gate, replication, and submission templates",
             "at": "2026-06-20 18:30",
         }
     )
@@ -173,12 +195,16 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 8:
-        fail("smoke state schema_version must remain 8")
+    if state.get("schema_version") != 9:
+        fail("smoke state schema_version must remain 9")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
         fail("smoke state analysis backend was not populated")
+    if state["orchestration"]["stage_passport"] != "00_meta/stage_passport.md":
+        fail("smoke state orchestration passport was not populated")
+    if state["orchestration"]["latest_handoff"] != "00_meta/handoff/S00-template.md":
+        fail("smoke state latest handoff was not populated")
     if state["empirical_audit"]["sample_audit"] != "02_data/sample_audit.md":
         fail("smoke state empirical audit was not populated")
     if state["replication_pack"]["status"] != "not_ready":
@@ -210,6 +236,18 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Backend Choice", "Environment Check", "Output Contract"]:
         if marker not in backend:
             fail(f"analysis backend template missing marker: {marker}")
+    routing = (workspace / "00_meta" / "entry_routing.md").read_text(encoding="utf-8")
+    for marker in ["Entry Routing", "Route Examples", "Decision Points"]:
+        if marker not in routing:
+            fail(f"entry routing template missing marker: {marker}")
+    passport = (workspace / "00_meta" / "stage_passport.md").read_text(encoding="utf-8")
+    for marker in ["Stage Passport", "Fresh Evidence", "Revision Budget"]:
+        if marker not in passport:
+            fail(f"stage passport template missing marker: {marker}")
+    handoff = (workspace / "00_meta" / "handoff" / "S00-template.md").read_text(encoding="utf-8")
+    for marker in ["Handoff Card", "Current Stage", "Completed Artifacts", "Do Not"]:
+        if marker not in handoff:
+            fail(f"handoff template missing marker: {marker}")
     sample_audit = (workspace / "02_data" / "sample_audit.md").read_text(encoding="utf-8")
     for marker in ["Estimand Alignment", "Sample Construction Flow", "Missingness, Balance, and Overlap"]:
         if marker not in sample_audit:

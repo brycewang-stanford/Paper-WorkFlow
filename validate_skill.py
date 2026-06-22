@@ -29,6 +29,7 @@ EXPECTED_STAGE_KEYS = [
 ]
 EXPECTED_WORKSPACE_DIRS = [
     "00_meta",
+    "00_meta/handoff",
     "01_proposal/candidates",
     "02_data/raw",
     "03_analysis/results",
@@ -45,6 +46,10 @@ EXPECTED_WORKSPACE_DIRS = [
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]+\]\(([^)]+)\)")
 REQUIRED_TEMPLATES = {
     "templates/analysis_backend.md": ["Backend Choice", "Environment Check", "Fallback"],
+    "templates/entry_routing.md": ["Entry Routing", "Route Examples", "Decision Points", "Fallback"],
+    "templates/stage_passport.md": ["Stage Passport", "Fresh Evidence", "Revision Budget", "Known Limitations"],
+    "templates/handoff_card.md": ["Handoff Card", "Current Stage", "Completed Artifacts", "Do Not"],
+    "templates/handoff_prompt.md": ["Handoff Prompt", "Fresh Reality Check", "Completion Criteria"],
     "templates/design_risk_ledger.md": ["Design Risk Ledger", "Threat Register", "Claim Consequence", "External Validity and Transport", "Blocking Threats"],
     "templates/design_register.md": ["Target estimand", "Claim Boundary", "Bad-control screen", "Fallback Plan"],
     "templates/method_gate.md": ["Required Artifact Table", "Design Gate Card", "Decision: PASS / NOT PASS", "Hard Flags"],
@@ -102,6 +107,14 @@ REQUIRED_REFERENCES = {
         "bounded patch",
         "check_skillopt_packet.py",
     ],
+    "references/orchestration-and-handoff.md": [
+        "Orchestration & Handoff",
+        "Entry Routing",
+        "Stage Passport",
+        "Fresh Evidence",
+        "Handoff Card",
+        "schema_version 9",
+    ],
 }
 
 
@@ -136,12 +149,13 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 8:
-        fail("workflow_state.template.json schema_version must be 8")
+    if data.get("schema_version") != 9:
+        fail("workflow_state.template.json schema_version must be 9")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
         "project",
+        "orchestration",
         "analysis_backend",
         "empirical_audit",
         "method_gate",
@@ -155,6 +169,25 @@ def load_template() -> dict:
     ]:
         if key not in data:
             fail(f"workflow_state.template.json missing top-level key: {key}")
+    orchestration = data["orchestration"]
+    for key in [
+        "status",
+        "entry_routing",
+        "stage_passport",
+        "handoff_dir",
+        "latest_handoff",
+        "fresh_evidence_required",
+        "last_recovery_probe",
+        "self_review_gate",
+        "ethics_gate",
+        "revision_rounds_cap",
+    ]:
+        if key not in orchestration:
+            fail(f"orchestration missing key: {key}")
+    if orchestration.get("fresh_evidence_required") is not True:
+        fail("orchestration.fresh_evidence_required must default to true")
+    if orchestration.get("revision_rounds_cap") != 2:
+        fail("orchestration.revision_rounds_cap must default to 2")
     backend = data["analysis_backend"]
     for key in [
         "primary",
@@ -276,6 +309,7 @@ def check_assets() -> None:
         "references/workspace-and-state.md",
         "references/threats-to-validity.md",
         "references/design-transparency.md",
+        "references/orchestration-and-handoff.md",
         "references/inference-and-uncertainty.md",
         "references/mechanism-and-channels.md",
         "references/literature-and-positioning.md",
@@ -347,6 +381,14 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh copied a workflow_state.json that differs from template")
         if not (workspace / "00_meta" / "intake.md").exists():
             fail("init_workspace.sh did not create 00_meta/intake.md")
+        if not (workspace / "00_meta" / "entry_routing.md").exists():
+            fail("init_workspace.sh did not create 00_meta/entry_routing.md")
+        if not (workspace / "00_meta" / "stage_passport.md").exists():
+            fail("init_workspace.sh did not create 00_meta/stage_passport.md")
+        if not (workspace / "00_meta" / "handoff" / "HANDOFF_TEMPLATE.md").exists():
+            fail("init_workspace.sh did not create 00_meta/handoff/HANDOFF_TEMPLATE.md")
+        if not (workspace / "00_meta" / "handoff_prompt.md").exists():
+            fail("init_workspace.sh did not create 00_meta/handoff_prompt.md")
         if not (workspace / "00_meta" / "analysis_backend.md").exists():
             fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
         if not (workspace / "00_meta" / "evidence_ledger.md").exists():

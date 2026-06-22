@@ -1,5 +1,5 @@
 {
-  "schema_version": 8,
+  "schema_version": 9,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -7,6 +7,18 @@
     "mode": "",
     "target_journal": "",
     "language": ""
+  },
+  "orchestration": {
+    "status": "pending",
+    "entry_routing": "00_meta/entry_routing.md",
+    "stage_passport": "00_meta/stage_passport.md",
+    "handoff_dir": "00_meta/handoff",
+    "latest_handoff": "",
+    "fresh_evidence_required": true,
+    "last_recovery_probe": "",
+    "self_review_gate": "pending",
+    "ethics_gate": "pending",
+    "revision_rounds_cap": 2
   },
   "analysis_backend": {
     "primary": "",

@@ -103,16 +103,47 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     rep = Report()
 
     # --- top-level shape (soft: schema may evolve) ---------------------------
-    for key in ("project", "stages", "method_gate", "design_risk", "quality_gate", "replication_pack"):
+    for key in ("project", "orchestration", "stages", "method_gate", "design_risk", "quality_gate", "replication_pack"):
         if key not in state:
             rep.add(WARN, f"schema:{key}", "missing top-level block (schema drift?)")
 
+    orchestration = state.get("orchestration", {}) if isinstance(state.get("orchestration"), dict) else {}
+    stages = state.get("stages", {}) if isinstance(state.get("stages"), dict) else {}
     empirical = state.get("empirical_audit", {}) if isinstance(state.get("empirical_audit"), dict) else {}
     evidence = state.get("evidence_governance", {}) if isinstance(state.get("evidence_governance"), dict) else {}
     design_risk = state.get("design_risk", {}) if isinstance(state.get("design_risk"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
     replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
+
+    # --- orchestration and continuation ------------------------------------
+    if "orchestration" in state:
+        completed_stage = any(_norm(v) in {"done", "skipped"} for v in stages.values())
+        routing = _gate_artifact(orchestration, "entry_routing", "00_meta/entry_routing.md")
+        passport = _gate_artifact(orchestration, "stage_passport", "00_meta/stage_passport.md")
+        latest_handoff = str(orchestration.get("latest_handoff") or "").strip()
+        if _exists(workspace, routing):
+            rep.add(OKAY, "orchestration:routing", f"entry routing present: {routing}")
+        else:
+            rep.add(WARN, "orchestration:routing", f"missing {routing} (Stage 0 route not recorded)")
+        if _exists(workspace, passport):
+            rep.add(OKAY, "orchestration:passport", f"stage passport present: {passport}")
+        elif completed_stage:
+            rep.add(FAIL, "orchestration:passport", f"stage completed but missing {passport}")
+        else:
+            rep.add(WARN, "orchestration:passport", f"missing {passport}")
+        if latest_handoff:
+            if _exists(workspace, latest_handoff):
+                rep.add(OKAY, "orchestration:handoff", f"latest handoff present: {latest_handoff}")
+            else:
+                rep.add(FAIL, "orchestration:handoff", f"latest_handoff set but missing {latest_handoff}")
+        elif completed_stage:
+            rep.add(WARN, "orchestration:handoff", "stage completed but latest_handoff is empty")
+        if orchestration.get("fresh_evidence_required") is not True:
+            rep.add(WARN, "orchestration:evidence", "fresh_evidence_required is not true")
+        cap = orchestration.get("revision_rounds_cap")
+        if isinstance(cap, int) and cap < 1:
+            rep.add(WARN, "orchestration:revision_cap", f"revision_rounds_cap={cap}")
 
     # --- empirical (sample/estimand) audit -----------------------------------
     if _passed(empirical.get("status")):
@@ -339,6 +370,9 @@ def _selftest() -> int:
         # --- good workspace: every declared gate is backed by evidence -------
         good = root / "good"
         for rel in (
+            "00_meta/entry_routing.md",
+            "00_meta/stage_passport.md",
+            "00_meta/handoff/S01-ready.md",
             "02_data/sample_audit.md",
             "03_analysis/design_register.md",
             "03_analysis/method_gate.md",
@@ -353,6 +387,15 @@ def _selftest() -> int:
             touch(good, rel)
         write_state(good, {
             "project": {}, "stages": {}, "artifacts": {}, "decisions": [],
+            "orchestration": {
+                "status": "active",
+                "entry_routing": "00_meta/entry_routing.md",
+                "stage_passport": "00_meta/stage_passport.md",
+                "handoff_dir": "00_meta/handoff",
+                "latest_handoff": "00_meta/handoff/S01-ready.md",
+                "fresh_evidence_required": True,
+                "revision_rounds_cap": 2,
+            },
             "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md", "open_discrepancies": []},
             "design_risk": {
@@ -383,7 +426,14 @@ def _selftest() -> int:
         # --- bad workspace A: method gate claims pass without evidence -------
         bad_a = root / "bad_a"
         write_state(bad_a, {
-            "project": {}, "stages": {},
+            "project": {}, "stages": {"0_intake_setup": "done"},
+            "orchestration": {
+                "entry_routing": "00_meta/entry_routing.md",
+                "stage_passport": "00_meta/stage_passport.md",
+                "latest_handoff": "00_meta/handoff/S99-missing.md",
+                "fresh_evidence_required": False,
+                "revision_rounds_cap": 0,
+            },
             "empirical_audit": {"status": "not_pass", "sample_audit": "02_data/sample_audit.md"},
             "evidence_governance": {"status": "pass", "evidence_ledger": "00_meta/evidence_ledger.md"},
             "design_risk": {"status": "pass", "risk_ledger": "03_analysis/design_risk_ledger.md", "blocking_threats": ["bad control"]},
@@ -399,6 +449,8 @@ def _selftest() -> int:
             "design_risk",            # status=pass but risk ledger missing on disk
             "design_risk:blocking",   # status=pass but blocking threat recorded
             "replication_pack",       # ready but no master script / rebuild check
+            "orchestration:passport",  # completed stage but no passport
+            "orchestration:handoff",   # latest handoff set but missing
         }
         assert expect_a <= hit_a, f"bad_a should flag {expect_a - hit_a}; got {hit_a}"
 
