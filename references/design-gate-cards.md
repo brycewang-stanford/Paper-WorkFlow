@@ -250,14 +250,49 @@
 
 ---
 
-## 9. Method Gate 填写规则
+## 9. Time Series / VAR / 协整 / 单位根
+
+**适用**：宏观或金融时间序列、VAR/SVAR、脉冲响应、Granger 因果、协整/VECM、预测辅助实证。
+对应路由 `67/time-series`（StatsPAI `var`/`irf`/`arima`/`johansen`/`vecm`）。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| Stationarity / unit-root test | `03_analysis/results/unit_root.*` | 每条序列的 ADF/PP/KPSS 与单整阶数 `I(d)`；差分决策是否一致 |
+| Lag-order selection | `03_analysis/results/lag_select.*` | AIC/BIC/HQ 选阶过程是否报告，而非默认拍脑袋 |
+| Cointegration check | `03_analysis/results/cointegration.*` | 若序列 `I(1)`，是否做 Johansen/Engle-Granger 并据此选 VAR-in-diff vs VECM |
+| Model stability | `03_analysis/results/stability.*` | 伴随矩阵特征根是否在单位圆内；系统是否平稳可逆 |
+| Residual diagnostics | `03_analysis/robustness/residual_diag.*` | 残差自相关(LM)、异方差、正态是否检验并通过 |
+| Shock identification | `03_analysis/design_register.md` | IRF 的识别方案（Cholesky 排序 / 符号或零约束）及其制度理由 |
+| Ordering / scheme sensitivity | `03_analysis/robustness/irf_ordering.*` | 改变排序或识别约束后 IRF 结论是否稳健 |
+| Structural break screen | `03_analysis/robustness/structural_break.*` | 全样本是否含 Bai-Perron/Zivot-Andrews 断点，是否分段或控制 |
+| IRF/forecast inference | `04_results/irf_plot.*` | 脉冲响应/预测的 bootstrap 或解析置信带是否报告 |
+
+**Hard fail**
+
+- 对 `I(1)` 且不协整的序列直接跑水平 VAR（伪回归风险）。
+- 报告 IRF 却无任何识别方案或排序理由，把 reduced-form 相关写成结构冲击。
+- 完全未做单位根/平稳性检验就建模。
+- 系统不稳定（特征根在单位圆外）仍按常规区间做推断。
+- 样本跨越明显结构断点却既不分段也不控制。
+- 把 Granger 因果（预测性）直接写成结构性/政策性因果。
+
+**允许 claim**
+
+- `causal`：仅限识别可信的结构冲击（SVAR 的零/符号约束有制度或文献支撑）且系统稳定、诊断通过。
+- `qualified_causal`：reduced-form IRF，排序/识别敏感性已显式披露且方向稳健。
+- `descriptive`：Granger 因果、动态相关、预测表现——不得用结构性因果措辞。
+- `exploratory`：系统不稳、协整结论摇摆或诊断不过。
+
+---
+
+## 10. Method Gate 填写规则
 
 `03_analysis/method_gate.md` 必须把本文件对应设计卡复制或摘要成一张表：
 
 ```markdown
 ## Design Gate Card
 
-Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted
+Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / Time Series-VAR
 
 | Gate item | Required artifact | Path | Present? | Pass? | Claim consequence |
 |---|---|---|---:|---:|---|

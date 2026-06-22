@@ -291,13 +291,27 @@ def _selftest() -> int:
         assert "evidence=" in line, "packet checker requires evidence="
         assert score_re.search(line), "packet checker requires a score= field"
 
-    # A scenario whose gate card is intentionally absent must lose gate credit,
-    # proving the scorer is not rubber-stamping.
-    ts = next((r for r in report["results"] if r["id"] == "time_series_var"), None)
-    if ts is not None:
-        assert ts["dimensions"]["gate_integrity"] < 1.0, (
-            "time_series_var has no Design Gate Card; gate_integrity must reflect it"
-        )
+    # The scorer must discriminate, independent of current skill content: a
+    # scenario whose routing anchor and gate card are both absent loses exactly
+    # those credits; a fully-present one keeps them. Tested on synthetic corpora
+    # so this invariant does not break when the skill legitimately closes a gap.
+    g = {"context_protection": 1.0, "reproducibility": 1.0, "user_burden": 1.0,
+         "_gate_selftest_ok": True}
+    miss = score_scenario(
+        {"id": "_miss", "split": "selection",
+         "routing_anchors": ["__NO_SUCH_ANCHOR__"],
+         "gate_card_keyword": "__NO_SUCH_CARD__"},
+        routing_corpus="", gate_card_corpus="", globals_=g)
+    assert miss["dimensions"]["routing_fidelity"] == 0.0, "absent anchor must zero routing"
+    assert miss["dimensions"]["gate_integrity"] == 0.5, "absent card must halve gate credit"
+    hit = score_scenario(
+        {"id": "_hit", "split": "selection",
+         "routing_anchors": ["ANCHOR_X"],
+         "gate_card_keyword": "CARD_Y"},
+        routing_corpus="lead ANCHOR_X trail", gate_card_corpus="lead CARD_Y trail",
+        globals_=g)
+    assert hit["dimensions"]["routing_fidelity"] == 1.0, "present anchor must score routing"
+    assert hit["dimensions"]["gate_integrity"] == 1.0, "present card + selftest must full gate"
 
     print("selftest OK: eval harness invariants hold")
     return 0
