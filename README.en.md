@@ -89,12 +89,13 @@ Paper-WorkFlow orchestrates the research action; the underlying action comes fro
 
 ## Research Standards
 
-Finishing stages is not enough. The workflow enforces four standards that reviewers care about:
+Finishing stages is not enough. The workflow enforces explicit standards that reviewers care about:
 
 | Standard | What it governs | Where it applies | Reference |
 |---|---|---|---|
 | Sample and estimand audit | Sample attrition, variable construction, missingness/balance/overlap, cluster/weights | Stage 2-3 Method Gate | [empirical-audit.md](references/empirical-audit.md) |
 | Method evidence | Identification registry, method-specific diagnostics, robustness matrix, reproducible scripts | Stage 3 Method Gate | [research-grade-methods.md](references/research-grade-methods.md) |
+| Design risk ledger | Whether OVB, selection, bad controls, spillovers/SUTVA, external validity, attrition, specification search, and selective reporting are closed or downgraded | Stages 1/3/5/8 Method Gate / Quality Gate | [design-risk-ledger.md](references/design-risk-ledger.md) + `03_analysis/design_risk_ledger.md` |
 | Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
@@ -159,7 +160,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/evidence_ledger.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md + sample_audit.md
-├── 03_analysis/design_register.md + method_gate.md
+├── 03_analysis/design_register.md + design_risk_ledger.md + method_gate.md
 ├── 03_analysis/results/ + robustness/
 ├── 04_results/*.{tex,docx,xlsx} + *.pdf + *.png
 ├── 05_draft/main.tex + ref.bib
@@ -172,7 +173,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 └── FINAL_REPORT.md
 ```
 
-The final report links the proposal, cleaned data and codebook, analysis code, exhibits, draft, response letter, journal shortlist, cover letter, replication README, data availability statement, and rebuild command.
+The final report links the proposal, cleaned data and codebook, design-risk ledger, analysis code, exhibits, draft, response letter, journal shortlist, cover letter, replication README, data availability statement, and rebuild command.
 
 ## DiD Demo
 
@@ -219,6 +220,7 @@ Paper-WorkFlow/
 │   └── smoke_workspace.py
 ├── templates/
 │   ├── design_register.md
+│   ├── design_risk_ledger.md
 │   ├── analysis_backend.md
 │   ├── sample_audit.md
 │   ├── method_gate.md
@@ -235,6 +237,7 @@ Paper-WorkFlow/
 │   ├── skill-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
+│   ├── design-risk-ledger.md
 │   ├── design-gate-cards.md
 │   ├── empirical-audit.md
 │   ├── analysis-backends.md
@@ -267,6 +270,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
+- [references/design-risk-ledger.md](references/design-risk-ledger.md): design-risk ledger for identification threats, selective reporting, external validity, spillovers, and attrition.
 - [references/design-gate-cards.md](references/design-gate-cards.md): design-specific required artifacts, hard fails, and claim-downgrade rules.
 - [references/empirical-audit.md](references/empirical-audit.md): sample, construct, and estimand audit requirements.
 - [references/analysis-backends.md](references/analysis-backends.md): Python/StatsPAI, Stata, and R backend routing for Stages 3-4.
