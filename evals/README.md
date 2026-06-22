@@ -24,7 +24,8 @@ whoever owns `validate_skill.py`.)
 
 A skill is a *document*, so the "rollout outcome" that matters is whether the
 documented procedure still satisfies its own contracts on each task archetype.
-The five dimensions are the ones named in the improvement loop:
+The dimensions are the ones named in the improvement loop plus the ARS-inspired
+claim-integrity checkpoint added for long paper workflows:
 
 | Dimension | Scope | Signal |
 |---|---|---|
@@ -33,6 +34,7 @@ The five dimensions are the ones named in the improvement loop:
 | `context_protection` | global | subagent contract present: write outputs to disk, return a concise summary |
 | `reproducibility` | global | a fresh workspace passes `scripts/smoke_workspace.py --quiet` |
 | `user_burden` | global | `SKILL.md` documents autonomy gears + a minimal-question / authorization discipline |
+| `integrity_checkpoint` | global | `SKILL.md`, `references/integrity-and-claim-audit.md`, the template, and the gate checker preserve the Stage 7 `pre-review` and Stage 9 `final-check` claim-integrity contract |
 
 A scenario's total is the mean of the five dimensions in `[0, 1]`. A scenario
 is `success` at `total >= 0.70` (the rubric's "meets bar"). The **selection-split

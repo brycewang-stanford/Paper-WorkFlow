@@ -23,6 +23,9 @@ checkable signal:
   reproducibility    global       : a fresh workspace passes the smoke test.
   user_burden        global       : SKILL.md documents autonomy gears and a
                                     minimal-question / authorization discipline.
+  integrity_checkpoint global     : the document, template, and checker expose
+                                    the Stage 7 pre-review and Stage 9 final
+                                    claim-integrity audit contract.
 
 A scenario's total is the mean of the five dimension scores in [0, 1]. The
 selection-split mean is the gate number. Run with --help for options.
@@ -71,6 +74,19 @@ USER_BURDEN_GROUPS = [
     ["授权", "authoriz"],                       # respects standing authorization
     ["只问", "必要", "minimal", "确认"],        # minimal-question discipline
 ]
+INTEGRITY_CHECKPOINT_FILES = [
+    "SKILL.md",
+    "references/integrity-and-claim-audit.md",
+    "templates/claim_integrity_audit.md",
+    "scripts/check_workspace_gates.py",
+]
+INTEGRITY_CHECKPOINT_GROUPS = [
+    ["Claim Integrity Audit", "claim 忠实度", "claim integrity"],
+    ["pre-review"],
+    ["final-check"],
+    ["integrity_audit"],
+    ["quality_gate:integrity", "replication_pack"],
+]
 
 DIMENSIONS = [
     "routing_fidelity",
@@ -78,6 +94,7 @@ DIMENSIONS = [
     "context_protection",
     "reproducibility",
     "user_burden",
+    "integrity_checkpoint",
 ]
 SUCCESS_THRESHOLD = 0.70  # per the rubric: >=0.7 is "meets bar"
 
@@ -117,6 +134,7 @@ def compute_global_scores(run_scripts: bool) -> dict:
     """Dimensions that do not vary by scenario."""
     context_corpus = "\n".join(_read(f) for f in CONTEXT_PROTECTION_FILES)
     burden_corpus = "\n".join(_read(f) for f in USER_BURDEN_FILES)
+    integrity_corpus = "\n".join(_read(f) for f in INTEGRITY_CHECKPOINT_FILES)
 
     if run_scripts:
         smoke_ok = _run_script_ok("scripts/smoke_workspace.py", ["--quiet"])
@@ -135,6 +153,9 @@ def compute_global_scores(run_scripts: bool) -> dict:
         ),
         "reproducibility": 1.0 if smoke_ok else 0.0,
         "user_burden": _fraction_groups_present(burden_corpus, USER_BURDEN_GROUPS),
+        "integrity_checkpoint": _fraction_groups_present(
+            integrity_corpus, INTEGRITY_CHECKPOINT_GROUPS
+        ),
         "_gate_selftest_ok": gate_selftest_ok,
     }
 
@@ -163,6 +184,7 @@ def score_scenario(scenario: dict, routing_corpus: str, gate_card_corpus: str,
         "context_protection": globals_["context_protection"],
         "reproducibility": globals_["reproducibility"],
         "user_burden": globals_["user_burden"],
+        "integrity_checkpoint": globals_["integrity_checkpoint"],
     }
     total = round(sum(dims[d] for d in DIMENSIONS) / len(DIMENSIONS), 4)
     notes = []
