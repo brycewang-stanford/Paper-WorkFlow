@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "description": "Frozen held-out scenario suite for the Paper-WorkFlow SkillOpt-style improvement loop. Each scenario is a research-task archetype that exercises a documented routing path and design gate. The scorer in score_skill.py measures whether the skill DOCUMENT satisfies its own routing / gate / context / reproducibility / user-burden contracts on these scenarios. Splits mirror SkillOpt: train scenarios may inspire edits; the selection split gates acceptance; the regression split guards against silent breakage. Do not move a scenario between splits to make a number look better.",
+  "split_policy": {
+    "train": "May be used to motivate a proposed edit. Never gate an edit on train scenarios alone.",
+    "selection": "Held-out. The mean selection-split total score is the number a candidate edit must strictly beat.",
+    "regression": "Held-out. Must not drop versus baseline; protects designs not targeted by the current edit."
+  },
+  "scenarios": [
+    {
+      "id": "did_staggered",
+      "split": "train",
+      "prompt": "Staggered treatment rollout across U.S. states; user wants an event-study with a clean parallel-trends check and a heterogeneity-robust ATT (not naive TWFE).",
+      "routing_anchors": ["DiD", "67/did-analysis", "callaway_santanna", "sun_abraham"],
+      "gate_card_keyword": "DiD"
+    },
+    {
+      "id": "iv_2sls",
+      "split": "train",
+      "prompt": "Endogenous regressor with a plausibly exogenous instrument; user needs first-stage strength, exclusion narrative, and weak-IV-robust inference.",
+      "routing_anchors": ["IV/2SLS", "67/iv-estimation", "anderson_rubin"],
+      "gate_card_keyword": "IV"
+    },
+    {
+      "id": "rdd_sharp",
+      "split": "train",
+      "prompt": "Sharp regression discontinuity around an eligibility cutoff; user needs bandwidth selection, robust bias-corrected CIs, and a density manipulation test.",
+      "routing_anchors": ["RDD", "67/rdd-analysis", "rdrobust", "rddensity"],
+      "gate_card_keyword": "RDD"
+    },
+    {
+      "id": "synthetic_control",
+      "split": "train",
+      "prompt": "Single treated unit with a long pre-period and a donor pool; user wants synthetic control with placebo/leave-one-out inference, possibly SDID.",
+      "routing_anchors": ["合成控制", "67/synthetic-control", "sdid"],
+      "gate_card_keyword": "Synthetic Control"
+    },
+    {
+      "id": "panel_fe",
+      "split": "selection",
+      "prompt": "Observational panel with high-dimensional fixed effects; user needs HDFE OLS with cluster-robust (and small-cluster-aware) inference.",
+      "routing_anchors": ["面板", "67/panel-data", "feols", "hdfe_ols"],
+      "gate_card_keyword": "Panel FE"
+    },
+    {
+      "id": "ml_hte",
+      "split": "selection",
+      "prompt": "Heterogeneous treatment effects with many covariates; user wants a causal forest / DML estimate with cross-fitting and nuisance diagnostics.",
+      "routing_anchors": ["ML 因果", "67/ml-causal", "causal_forest", "dml"],
+      "gate_card_keyword": "DML"
+    },
+    {
+      "id": "time_series_var",
+      "split": "selection",
+      "prompt": "Macro time-series with several variables; user wants a VAR with impulse responses and a cointegration check.",
+      "routing_anchors": ["时间序列", "67/time-series", "irf", "johansen"],
+      "gate_card_keyword": "Time Series"
+    },
+    {
+      "id": "dml_highdim",
+      "split": "regression",
+      "prompt": "Average treatment effect with high-dimensional controls and possible model misspecification; user wants orthogonal-score DML with sensitivity analysis.",
+      "routing_anchors": ["DML", "67/ml-causal", "DoubleML"],
+      "gate_card_keyword": "DML"
+    },
+    {
+      "id": "causal_graph",
+      "split": "regression",
+      "prompt": "User has a DAG and wants identification by backdoor/front-door plus refutation tests for an observational design.",
+      "routing_anchors": ["67/ml-causal", "refuter", "DoWhy"],
+      "gate_card_keyword": "Causal Graph"
+    }
+  ]
+}
