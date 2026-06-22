@@ -62,7 +62,7 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 
 | Layer | Responsibility | Key artifacts |
 |---|---|---|
-| Orchestration | Entry routing, resumability, subagent dispatch, stage gates | `workflow_state.json`, `logs/stage_<N>.md` |
+| Orchestration | Entry routing, resumability, handoff, subagent dispatch, stage gates | `workflow_state.json`, `entry_routing.md`, `stage_passport.md`, `handoff/`, `logs/stage_<N>.md` |
 | Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence, claim governance | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `evidence_ledger.md`, `main_results.json`, `robustness/` |
 | Manuscript | Exhibits, draft, polish, de-slop, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `response_letter.md`, `journal_shortlist.md` |
 
@@ -154,6 +154,9 @@ All outputs are written to a self-contained workspace:
 ```text
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/workflow_state.json
+├── 00_meta/entry_routing.md
+├── 00_meta/stage_passport.md
+├── 00_meta/handoff/
 ├── 00_meta/analysis_backend.md
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
@@ -235,6 +238,10 @@ Paper-WorkFlow/
 │   ├── SKILLOPT_PACKET.md
 │   ├── submission_checklist.md
 │   ├── FINAL_REPORT.md
+│   ├── entry_routing.md
+│   ├── stage_passport.md
+│   ├── handoff_card.md
+│   ├── handoff_prompt.md
 │   └── run_all.sh
 ├── references/
 │   ├── stage-playbook.md
@@ -255,6 +262,7 @@ Paper-WorkFlow/
 │   ├── quality-rubric.md
 │   ├── data-governance.md
 │   ├── runtime-fallbacks.md
+│   ├── orchestration-and-handoff.md
 │   ├── skillopt-improvement-loop.md
 │   ├── subagent-templates.md
 │   └── workspace-and-state.md
@@ -273,6 +281,7 @@ Paper-WorkFlow/
 
 - [SKILL.md](SKILL.md): entrypoint and full execution protocol.
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
+- [references/orchestration-and-handoff.md](references/orchestration-and-handoff.md): Stage 0 routing, stage passport, fresh evidence, and handoff protocol.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
 - [references/design-risk-ledger.md](references/design-risk-ledger.md): design-risk ledger for identification threats, selective reporting, external validity, spillovers, and attrition.

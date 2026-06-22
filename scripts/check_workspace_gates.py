@@ -12,6 +12,8 @@ enforced at runtime by a critic subagent reading prose. Prose judgement cannot
   - the replication pack is ``ready`` with no master script or no rebuild check.
   - a Method Gate is marked ``pass`` while the design-risk ledger still has
     blocking threats or is not passed.
+  - a stage is marked complete but the Stage 0 route / stage passport / latest
+    handoff pointer is missing.
 
 This script makes those invariants testable. It reads
 ``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is

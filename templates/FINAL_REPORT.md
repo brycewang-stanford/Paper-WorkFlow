@@ -21,6 +21,9 @@ Workspace: <paper_workspace/...>
 
 ## 2. Gate Results
 
+- Orchestration route: recorded / missing
+- Stage passport: current / stale / missing
+- Latest handoff: recorded / missing / not needed
 - Method gate: PASS / NOT PASS
 - Analysis backend: python-statspai / stata / r
 - Sample / estimand audit: PASS / NOT PASS
@@ -37,6 +40,9 @@ Workspace: <paper_workspace/...>
 | Deliverable | Path | Ready? |
 |---|---|---:|
 | Proposal | 01_proposal/proposal.md | no |
+| Entry routing | 00_meta/entry_routing.md | no |
+| Stage passport | 00_meta/stage_passport.md | no |
+| Latest handoff | 00_meta/handoff/ | no |
 | Analysis backend report | 00_meta/analysis_backend.md | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
 | Sample / estimand audit | 02_data/sample_audit.md | no |
@@ -67,6 +73,7 @@ Last rebuild check:
 - Citation:
 - Data access / IRB / DUA:
 - Journal formatting:
+- Handoff / continuation:
 
 ## 6. Next Actions
 
