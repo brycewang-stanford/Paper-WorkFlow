@@ -391,6 +391,9 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   `python-statspai` / `stata` / `r` 的选择规则、子 skill 调用路径、输出合同、环境记录、交叉验证与 fallback。
 - [`references/empirical-audit.md`](references/empirical-audit.md) — **样本、变量与 estimand 对齐层**：
   raw→clean→estimation sample 流失、变量构造、missingness/balance/overlap、cluster/weights 的审计标准。
+- [`references/dataset-cards.md`](references/dataset-cards.md) — **Stage 2 选源目录**：经管/社科常用数据源
+  （Compustat/CRSP/CSMAR/FRED-MD/IPUMS/PSID/PatentsView/Comtrade/EDGAR…）的覆盖、链接键、已知陷阱与
+  **触发的设计风险**；配 [`templates/dataset_card.md`](templates/dataset_card.md) 对每个实际用源实例化项目卡。
 - [`references/design-gate-cards.md`](references/design-gate-cards.md) — **设计分支证据卡**：
   DiD/IV/RDD/SC-SDID/Panel FE/DML-HTE/DAG/refuter/预测辅助实证的 required artifacts、hard fail 与 claim 降级规则。
 - [`references/quality-rubric.md`](references/quality-rubric.md) — **初稿质量门的 7 维评分卡**：每维
