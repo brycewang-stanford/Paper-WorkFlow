@@ -40,6 +40,7 @@ Claim Boundary:
 - External validity boundary:
 - Conditions that would force downgrade:
 - Evidence ledger row(s): 00_meta/evidence_ledger.md#claim-register
+- Design risk ledger: 03_analysis/design_risk_ledger.md
 
 ## 3. Variable Construction
 
@@ -67,6 +68,7 @@ Bad-control screen:
 | Diagnostic plot/table | yes | 03_analysis/results/<artifact> | missing / present |
 | Robustness matrix | yes | 03_analysis/robustness/ | missing / present |
 | Sensitivity / refuter | design-specific | 03_analysis/robustness/<artifact> | missing / present |
+| Design risk ledger | yes | 03_analysis/design_risk_ledger.md | missing / present |
 
 ## 5. Fallback Plan
 

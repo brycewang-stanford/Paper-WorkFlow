@@ -149,6 +149,7 @@ DiD 设计在质量门维度②拿到 8+ 的实质门槛（只有一张事件研
 | **Stage 1 末 / Stage 3 初** | 写预分析计划，登记 OSF/AEA registry（如适用），锁定设计 | `01_proposal/pre_analysis_plan.md` |
 | **Stage 3 估计** | 空结果算 MDE；DiD 跑 `pretrends`+`HonestDiD`；跑设定曲线 | `03_analysis/robustness/{mde,pretrends_power,honest_did,spec_curve}.*` |
 | **Stage 3 末** | 写研究者自由度披露表 | `03_analysis/researcher_dof.md`（进复现包附录） |
+| **Stage 3 设计风险总账** | 把 PAP/MDE、设定曲线、研究者自由度和选择性报告风险写入 design-risk ledger | `03_analysis/design_risk_ledger.md` |
 | **Stage 5 结果段** | 空结果报「能排除大于 X 的效应」；稳健性段引设定曲线 | `05_draft/main.tex` |
 | **Stage 5 方法段** | 写「Deviations from PAP」说明 | `05_draft/main.tex` |
 | **收尾 / 复现包** | 自由度表 + 种子登记并入 `REPLICATION.md` | 工作区根 `REPLICATION.md` |

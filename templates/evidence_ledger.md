@@ -45,6 +45,7 @@ Use the strongest level allowed by `03_analysis/method_gate.md` and
 ## 4. Data and Sample Provenance
 
 Primary sample audit: `02_data/sample_audit.md`
+Primary design risk ledger: `03_analysis/design_risk_ledger.md`
 
 | Sample step | Input | Output | N / units | Exclusion or transform | Script and line | Notes |
 |---|---|---|---:|---|---|---|
@@ -73,9 +74,9 @@ Required checks:
 
 ## 7. Robustness and Threat Matrix
 
-| Threat | Claim ID | Required test | Artifact path | Pass? | Does wording change? | Next action |
-|---|---|---|---|---:|---|---|
-| <parallel trends / weak IV / continuity / OVB / selection / p-hacking> | C1 | <test> | 03_analysis/robustness/<file> | no | yes / no | <fix> |
+| Threat | Claim ID | Required test | Artifact path | Pass? | Claim consequence | Does wording change? | Next action |
+|---|---|---|---|---:|---|---|---|
+| <parallel trends / weak IV / continuity / OVB / selection / p-hacking> | C1 | <test> | 03_analysis/robustness/<file> | no | causal / qualified_causal / descriptive / exploratory / no_claim | yes / no | <fix> |
 
 ## 8. Exhibit and Script Map
 

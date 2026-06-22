@@ -133,11 +133,12 @@ playbook 指定的工作区子目录落盘即可。
 | **默认估计 + 出表引擎** | **StatsPAI**：[`statspai-analysis.md`](statspai-analysis.md)——MCP 优先（`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex`），`statspai` 包做出版级三格式表图与 8 段 paper bundle；含三种领域模式、估计量路由、七块稳健性闸门、反模式清单 |
 | 方法增强包 | `69-Paper-WorkFlow/references/research-grade-methods.md`：design register、method gate、最低证据包 |
 | 识别威胁 / 审稿异议预案 | `69-Paper-WorkFlow/references/threats-to-validity.md`：威胁×诊断×预防×回应对照表（坏控制、预趋势功效、弱工具…，Stage 3/5/8） |
+| 设计风险总账 | `69-Paper-WorkFlow/references/design-risk-ledger.md`：OVB、选择、bad controls、spillover/SUTVA、external validity、attrition、specification search 与选择性报告的逐项状态表（Stage 1/3/5/8） |
 | 设计透明度 / 预分析 | `69-Paper-WorkFlow/references/design-transparency.md`：PAP/预注册、功效与 MDE、预趋势功效 + HonestDiD、设定曲线、研究者自由度披露（Stage 3） |
 | 文献检索与贡献定位 | `69-Paper-WorkFlow/references/literature-and-positioning.md`：滚雪球 + 引用图工具、文献矩阵、定位句式、引用真实性（Stage 1/5） |
 | 数据治理 / IRB / DUA | `69-Paper-WorkFlow/references/data-governance.md`：public/restricted/confidential/PII 分级、DAS、IRB/DUA、公开复现包边界（Stage 2/9/收尾） |
 | 运行时退化路径 | `69-Paper-WorkFlow/references/runtime-fallbacks.md`：Skill/Agent/网络/MCP/Stata/R/Python/Zotero 缺失时的 fallback、日志与质量封顶 |
-| 关键 artifact 模板 | `69-Paper-WorkFlow/templates/`：design register、method gate、quality scorecard、data governance、DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all |
+| 关键 artifact 模板 | `69-Paper-WorkFlow/templates/`：design register、design risk ledger、method gate、quality scorecard、data governance、DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all |
 | 端到端示例 trace | `69-Paper-WorkFlow/references/worked-example.md`：黄金路径逐阶段产物 + 两道闸门触发 + 回退循环（编排器填空范本） |
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |

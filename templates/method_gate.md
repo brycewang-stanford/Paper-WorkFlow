@@ -28,6 +28,7 @@ Auditor: method-gate critic subagent
 | Identification diagnostic | 03_analysis/results/<diagnostic> | no | no |  |
 | Robustness matrix | 03_analysis/robustness/ | no | no |  |
 | Sensitivity / refuter | 03_analysis/robustness/<sensitivity> | no | no |  |
+| Design risk ledger | 03_analysis/design_risk_ledger.md | no | no |  |
 | Evidence ledger | 00_meta/evidence_ledger.md | no | no |  |
 | Rebuild path | REPLICATION.md / run_all.sh | no | no |  |
 
@@ -45,6 +46,7 @@ Claim Downgrade:
 
 - Strongest allowed claim after this gate: causal / qualified_causal / descriptive / exploratory / no_claim
 - Claims that must be downgraded in `00_meta/evidence_ledger.md`:
+- Claims capped by `03_analysis/design_risk_ledger.md`:
 - Manuscript sections affected:
 
 ## 4. Hard Flags
@@ -55,6 +57,10 @@ Claim Downgrade:
 - Missingness, balance, or overlap:
 - Inference level, weights, or clustering:
 - P-hacking or researcher degrees of freedom:
+- External validity / transportability:
+- Spillover / SUTVA / interference:
+- Attrition or sample selection:
+- Design risk ledger blocking threats:
 - Data governance or access restriction:
 - Runtime fallback used:
 - Backend parity / cross-validation:

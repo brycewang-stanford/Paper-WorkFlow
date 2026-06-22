@@ -68,6 +68,8 @@
 - 关键 policy、citation、data source 未联网刷新：引用真实性或复现维度最高 7，且 Stage 9 checklist 不能
   标 `ready`。
 - 工具缺失导致缺少方法最低证据包：识别维度最高 6；若 `method_gate.md` 为 `NOT PASS`，识别维度最高 4。
+- 工具缺失导致 design-risk threat 无法关闭：`design_risk.status` 标 `not_pass` 或在 claim consequence 中降级；
+  不能把未知 spillover、attrition、external validity 或 specification-search 风险写成已排除。
 - 只能用合成/样例数据验证代码结构，不能访问真实数据：结果、稳健、复现维度均不得超过 6。
 - 无法执行 master script，也没有逐步复现命令：复现维度最高 6。
 - 退化路径没有写日志：相关维度最高 7；若影响主 claim 却未披露，最高 4。
@@ -82,5 +84,6 @@
 如果指定 Skill/MCP/软件不可用，不要凭记忆脑补结果。按
 skills/69-Paper-WorkFlow/references/runtime-fallbacks.md 选择 fallback：
 优先 Read 对应 SKILL.md 或用等价本地包复刻同等 artifact；把 fallback 写入 logs/stage_<N>.md；
-若最低证据包无法生成，把 method_gate 或 quality_gate 标 NOT PASS，并只回传阻断摘要。
+若最低证据包或 design-risk ledger 无法生成，把 method_gate / design_risk / quality_gate 标 NOT PASS，
+并只回传阻断摘要。
 ```

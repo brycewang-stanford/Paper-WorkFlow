@@ -70,6 +70,9 @@
   本维封顶 6。
 - ledger 的 claim strength 低于正文措辞（例如 ledger 只允许 descriptive，正文写 causal effect）：
   本维封顶 4。
+- 找不到 `03_analysis/design_risk_ledger.md`：本维封顶 6。
+- `workflow_state.json.design_risk.status = not_pass`，或 design risk ledger 仍有 blocking threat：本维封顶 4。
+- external validity / transport 边界未写清，但正文或 cover letter 写成一般政策结论：本维封顶 6。
 - 方法标签缺 [`research-grade-methods.md`](research-grade-methods.md) 对应最低证据包：本维最高 6。
 - 方法闸门记录了 runtime fallback，但缺 [`runtime-fallbacks.md`](runtime-fallbacks.md) 要求的等价 artifact：
   本维最高 6；若 fallback 影响主因果 claim 却未披露，本维最高 4。
@@ -106,6 +109,8 @@
 - `method_gate.md` 缺失：本维封顶 6。
 - `method_gate.md` 列出缺失必需 artifact 但正文仍说稳健：本维封顶 5。
 - 稳健性矩阵没有对应 `03_analysis/robustness/` 真实文件：本维封顶 5。
+- `design_risk_ledger.md` 命中的 OVB、选择、spillover/SUTVA、attrition、specification-search 或多重检验风险
+  缺对应诊断 artifact，且没有在 claim consequence 中降级：本维封顶 5。
 - `sample_audit.md` 的 final estimation sample、N、treated/control 数或 cluster level 与主结果/表图不一致：
   本维封顶 5。
 - 聚类口径换了显著性就翻却只报最有利的一个、或 few-cluster（G≲30–50）仍只报渐近 SE 无 wild bootstrap/CR2，
@@ -136,6 +141,7 @@
   Claim ID、allowed wording、primary evidence、exhibit 和 script。
 - `evidence_ledger.md` 的 Open Discrepancies 有 blocking 项且影响主结论：本维封顶 5。
 - 任何 policy implication 超过 Estimand-to-Claim Map 的 population/time/treatment boundary：本维封顶 6。
+- 任何 policy implication 超过 `design_risk_ledger.md` 的 external-validity 或 transport boundary：本维封顶 6。
 - 通篇只报星标、不报 CI、把统计显著当经济重要、用「marginally significant」当证据
   （[`inference-and-uncertainty.md`](inference-and-uncertainty.md) §7）：本维封顶 6。
 - 机制用因果措辞却无 sequential ignorability 说明/敏感性，或「系数下降即渠道」无 Gelbach 正式分解

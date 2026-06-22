@@ -19,6 +19,8 @@
 > [`worked-example.md`](worked-example.md)——它就是下面这套协议的填空范本。
 > 工具、网络、MCP 或统计软件不可用时按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 退化执行；
 > 涉及受限数据、PII、IRB/DUA 或 archive boundary 时按 [`data-governance.md`](data-governance.md) 先登记再推进。
+> 识别威胁、选择性报告、external validity、SUTVA/溢出和 attrition 风险按
+> [`design-risk-ledger.md`](design-risk-ledger.md) 写入 `03_analysis/design_risk_ledger.md`，作为 Method Gate 的上游硬约束。
 
 ---
 
@@ -58,6 +60,9 @@
   识别策略（DiD/IV/RDD/SC/...）、样本与政策冲击、目标期刊。这份 `proposal.md` 是后续所有阶段的合同。
 - 若已经能判断识别路线，顺手写一版 `03_analysis/design_register.md` 草稿；Stage 3 开始时再按
   [`research-grade-methods.md`](research-grade-methods.md) 补齐 estimand、诊断证据与回退方案。
+- 同时从 [`templates/design_risk_ledger.md`](../templates/design_risk_ledger.md) 起草
+  `03_analysis/design_risk_ledger.md`：至少列出 proposal 可能命中的 OVB、选择、bad controls、spillover/SUTVA、
+  external validity、attrition 和 specification-search 风险。此时可为 `pending`，但不能空白。
 
 **失败回退**：N 个候选全 < 9 分 → 扩大方向或换角度重跑一轮；查新发现已被做过 → 标红，回到 plan
 另寻差异化切口。
@@ -105,7 +110,8 @@
 **plan（先定设计，再定方法）**
 - 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`design-gate-cards.md`](design-gate-cards.md) +
   [`empirical-audit.md`](empirical-audit.md) + [`inference-and-uncertainty.md`](inference-and-uncertainty.md)（推断口径）+
-  [`mechanism-and-channels.md`](mechanism-and-channels.md)（机制主张分类）+ [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
+  [`mechanism-and-channels.md`](mechanism-and-channels.md)（机制主张分类）+
+  [`design-risk-ledger.md`](design-risk-ledger.md)（设计风险总账）+ [`analysis-backends.md`](analysis-backends.md)。先用 empirical audit 确认 estimation sample、变量构造、
   missingness/balance/overlap 与 estimand 对齐，再用 methods pack 定识别合同，最后用 backend 文件选择
   `python-statspai` / `stata` / `r`；若选
   `python-statspai` 或需要 StatsPAI 交叉验证，再读 [`statspai-analysis.md`](statspai-analysis.md)。StatsPAI 引擎（MCP 优先拍板/拟合/诊断，
@@ -114,6 +120,9 @@
   estimand、treatment、comparison group、识别假设、主估计量、必需诊断、替代估计量、失败回退。
   同时确定本研究使用哪张 design gate card，并在 `design_register.md` 写清最强目标 claim、样本/时窗/处理版本
   边界，以及触发降级的条件。
+  立刻刷新 `03_analysis/design_risk_ledger.md`：把 threats-to-validity 命中的威胁、design-transparency 的
+  PAP/MDE/设定曲线/研究者自由度要求、external validity/transport 边界、spillover/SUTVA 和 attrition 风险逐项
+  标为 `pending` / `pass` / `not_pass` / `not_applicable`，并写明每项的 claim consequence。
 - **分析后端分流**（analysis-backends）：默认 `workflow_state.json.analysis_backend.primary=python-statspai`。
   用户或既有脚本指定 Stata 时加载 `Full-empirical-analysis-skill-Stata`（not found 则
   `Read skills/00.2-Full-empirical-analysis-skill_Stata/SKILL.md`）并产出 `.do` + `.log`；指定 R 时加载
@@ -127,6 +136,7 @@
   回应」，并按 §3 给控制集标注前处理/混淆/中介/对撞、剔除坏控制）与
   [`design-transparency.md`](design-transparency.md)（估计前写预分析计划锁定设计；空结果报 MDE；DiD 跑
   预趋势功效 + HonestDiD、设定曲线，登记随机种子）。
+  这些透明度和识别威胁不是散文备注：适用项必须同步进入 `design_risk_ledger.md` 的 Threat Register。
 - 若估计工具、StatsPAI MCP、Stata/R/Python 包或网络不可用，按
   [`runtime-fallbacks.md`](runtime-fallbacks.md) 选择等价 route；若无法生成最低证据包，`method_gate.md`
   必须 `NOT PASS`，不得把 fallback 当作完整验证。
@@ -180,6 +190,8 @@
   同步写 `03_analysis/inference_report.md`（聚类层级与 cluster 数、few-cluster 修正、随机化推断、多重检验族与
   校正、弱工具区间，见 [`inference-and-uncertainty.md`](inference-and-uncertainty.md)）；有机制主张则按
   [`mechanism-and-channels.md`](mechanism-and-channels.md) 把它分类、把中介移出主设定、结果落 `03_analysis/mechanism/`。
+  同步更新 `03_analysis/design_risk_ledger.md`：每个适用 threat 必须指向真实诊断或 refuter artifact；仍未关闭的
+  blocking threat 写入 `Blocking Threats`，并同步到 `workflow_state.json.design_risk.blocking_threats`。
   还要按 `design-gate-cards.md` 填写 **Design Gate Card**：列出当前设计卡每个 required artifact 的路径、
   是否通过、以及对应 claim consequence（causal / qualified_causal / descriptive / exploratory / no_claim）。
   方法闸门给出的最强 claim 等级必须同步写入 `workflow_state.json.evidence_governance.claim_strength`。
@@ -187,17 +199,19 @@
 - 同步刷新 `00_meta/evidence_ledger.md`：为每个主结果写 claim row、estimand-to-claim map、result ID、
   robustness/threat matrix；若任何 claim 强于 design gate card 允许等级，把该行标成 `no_claim` 或降级，并在
   Open Discrepancies 中记录。
+  如果 `design_risk_ledger.md` 对某个 claim 的 consequence 更低，以更低者为准。
 
 **review**：派一个 `66-zheng-siyao-empirical-research-skills` 风格的 critic（`did-reviewer` /
 `econ-reviewer`）做对抗审阅——识别假设是否真的成立、SE 聚类是否正确、是否 p-hacking 嫌疑、methods
 pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit.md`，方法闸门判定写
-`03_analysis/method_gate.md`。若样本审计暴露 estimand 漂移、bad-control、overlap 或聚类层级问题，
+`03_analysis/method_gate.md`；设计风险判定写 `03_analysis/design_risk_ledger.md` 并刷新
+`workflow_state.json.design_risk`。若样本审计暴露 estimand 漂移、bad-control、overlap 或聚类层级问题，
 先回 Stage 2/3 修数据或设定，不得用更多稳健性表掩盖。
 
 **revise / 交付**：据审阅补检验、修设定，定稿 `03_analysis/results/main_results.json` 与一份
 `03_analysis/results/summary.md`（人话版结论）。置 `done` 前跑一次
 `python3 scripts/check_workspace_gates.py <workspace>` 机械核对（method_gate 标 PASS 时所需 artifact 必须真的在盘上）。
-只有 `method_gate.md` 为 `PASS`、且机械核对无 hard 不一致时，Stage 3 才能置
+只有 `method_gate.md` 为 `PASS`、`workflow_state.json.design_risk.status=pass`、且机械核对无 hard 不一致时，Stage 3 才能置
 `done` 并进入 Stage 4；否则按 `method_gate.md` 的 Next Action 回退。
 
 **失败回退（关键）**：平行趋势不过 / IV 弱工具 / 系数不显著 / 机制不成立 → **不要硬写成功**。
@@ -252,6 +266,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   `05_draft/main.tex` 与 `05_draft/ref.bib`。
   写作 prompt 必须附 `00_meta/evidence_ledger.md`，要求每个摘要、引言、结果和结论 claim 使用不高于 ledger
   允许等级的措辞；ledger 中 `descriptive` / `exploratory` / `no_claim` 的内容不得被包装成主因果发现。
+  还必须附 `03_analysis/design_risk_ledger.md`：识别段、稳健性段、政策含义和 cover letter 的外推边界不得
+  强于 design risk ledger 的 claim consequence。
 - 文献综述薄弱时，配合 `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、
   `59-shiquda-openalex-skill` 补做结构化综述；引用入库可配 Zotero MCP。
 - **写作标尺**：按 [`writing-craft.md`](writing-craft.md)（引言五段公式、解剖结构、量级纪律）写；识别段按
@@ -313,6 +329,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   （真实结果）+ `03_analysis/design_register.md` / `03_analysis/method_gate.md`（方法证据）+
   `00_meta/evidence_ledger.md`（claim strength 和表图/脚本追溯），**逐维打分写入
   `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
+  若存在 `03_analysis/design_risk_ledger.md`，critic 也必须读取；有 blocking threat 时识别/稳健/解读相关维度按
+  rubric 封顶，不能因为稿件写得顺就放行。
 - 7 维：① 贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 解读克制度 ⑤ 写作与结构 ⑥ 引用真实性 ⑦ 可复现性。
 
 **达标判定（三条同时满足才 `pass`）**：每维 ≥ 7 **且** 总分 ≥ 56/70 **且** ②③⑥ 无任何致命红旗。
@@ -337,6 +355,8 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - 加载 [`peer-review-and-submission.md`](peer-review-and-submission.md)（五维审稿 + Essential/Desirable
   分级、逐条可追溯的 response letter 模板）与 [`threats-to-validity.md`](threats-to-validity.md)（审稿命中
   识别威胁时，按其 §2 末列「被问到怎么回应」逐条回应、指向具体修改位置）。
+  同时加载 [`design-risk-ledger.md`](design-risk-ledger.md)，把 `03_analysis/design_risk_ledger.md` 中未完全关闭
+  或只允许降级措辞的风险转成模拟 reviewer objections 和主动回应。
 - `Skill` 调用 `67/referee-report` 生成审稿报告（可设 normal/high-level 档与意见条数；
   推荐先按 Major Revision 口吻拿到建设性意见），落 `08_review/referee_report.md`。
 - `Skill` 调用 `67/paper-referee-revise`，按审稿意见**逐条**修订 `main.tex`，并生成 response letter

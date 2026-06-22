@@ -31,6 +31,8 @@
 > 本层是**异议预案标尺**，不替代任何估计或写作 skill。诊断怎么跑见各估计 skill 与
 > [`research-grade-methods.md`](research-grade-methods.md)；逐条回应怎么写见
 > [`peer-review-and-submission.md`](peer-review-and-submission.md) §3。
+> **落盘合同**：Stage 3 还要按 [`design-risk-ledger.md`](design-risk-ledger.md) 把本文件命中的每个威胁写入
+> `03_analysis/design_risk_ledger.md`，不要只在正文里口头回应。
 
 ---
 
@@ -138,6 +140,7 @@ Roth (2022) 之后，**「pre-trend 检验没拒绝 → 平行趋势成立」已
 |---|---|---|
 | **Stage 3 设计注册** | 控制集按 §3 标注「前/混淆/中介/对撞」，后处理变量移出主设定 | `03_analysis/design_register.md` |
 | **Stage 3 稳健性矩阵** | 按 §2 命中行补齐对应诊断 artifact（与 method gate 联动） | `03_analysis/robustness/` |
+| **Stage 3 设计风险总账** | 把适用威胁、诊断路径、claim consequence 与 blocking threats 逐项登记 | `03_analysis/design_risk_ledger.md` |
 | **Stage 5 识别/稳健性段** | 按 §5 写「Threats to Identification」预防段 + 威胁导向的稳健性小节 | `05_draft/main.tex` |
 | **Stage 8 模拟评审** | critic 按 §2 对照表逐行找「哪个威胁没堵上」 | `08_review/referee_report.md` |
 | **Stage 8 回应信** | 被问到的威胁按 §2 末列 + [`peer-review-and-submission.md`](peer-review-and-submission.md) §3 逐条回应 | `08_review/response_letter.md` |

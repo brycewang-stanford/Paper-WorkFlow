@@ -82,6 +82,8 @@
 - 把系数/SE/p/样本量/必要图写盘到 {{WS}}/03_analysis/robustness/{{CHECK_NAME}}.json（图同名 .png）。
 - 若本检验属于 research-grade-methods.md 的最低证据包，把 artifact 路径追加到
   {{WS}}/03_analysis/method_gate.md 的对应行，并同步标注它对应的 design gate card item。
+- 若本检验关闭或暴露了某个 design-risk threat（OVB、spillover、attrition、specification search 等），同步更新
+  {{WS}}/03_analysis/design_risk_ledger.md 的对应行和 claim consequence。
 
 # 回传（≤6 行）
 做了什么 / 写到哪个文件 / 核心系数与 SE / 相对基准是否稳健（稳/不稳）/ 一句话判断。
@@ -92,8 +94,8 @@
 ## §MG · Stage 3 方法闸门审计（Stage 3 末强制派 1 个）
 
 > 这个 subagent 不改模型、不写论文，只检查 Stage 3 是否具备现代实证方法的最低证据包。它读
-> `research-grade-methods.md`、`design-gate-cards.md` 与 `empirical-audit.md` 后输出 `method_gate.md`，
-> 给 PASS / NOT PASS、最强 claim 等级与回退指令。
+> `research-grade-methods.md`、`design-gate-cards.md`、`empirical-audit.md` 与 `design-risk-ledger.md` 后输出
+> `method_gate.md` 和 `design_risk_ledger.md`，给 PASS / NOT PASS、最强 claim 等级与回退指令。
 
 ```text
 你是应用计量方法审计员。任务是审计 Stage 3 的方法证据包是否足够支撑论文的因果 claim。
@@ -102,6 +104,7 @@
 # 必读
 - 方法证据包与 method gate 规则：{{REPO_69}}/references/research-grade-methods.md
 - 设计分支证据卡与 claim 降级规则：{{REPO_69}}/references/design-gate-cards.md
+- 设计风险总账规则：{{REPO_69}}/references/design-risk-ledger.md
 - 样本、变量与 estimand 对齐规则：{{REPO_69}}/references/empirical-audit.md
 - 分析后端路由与输出合同：{{REPO_69}}/references/analysis-backends.md
 - 数据治理与运行时 fallback：{{REPO_69}}/references/data-governance.md、
@@ -114,6 +117,7 @@
 - 样本审计：{{WS}}/02_data/sample_audit.md（若缺失或 NOT PASS，列为 hard flag）
 - 分析后端：{{WS}}/00_meta/analysis_backend.md（若缺失，列为 hard flag）
 - 设计注册：{{WS}}/03_analysis/design_register.md
+- 设计风险总账：{{WS}}/03_analysis/design_risk_ledger.md（若缺失，先用模板生成草稿并标 pending）
 - 主结果：{{WS}}/03_analysis/results/main_results.json + {{WS}}/03_analysis/results/summary.md
 - Evidence ledger：{{WS}}/00_meta/evidence_ledger.md（若缺失，先用模板生成草稿并标 pending）
 - 稳健性目录：{{WS}}/03_analysis/robustness/
@@ -129,11 +133,16 @@
 - PASS / NOT PASS
 - Strongest allowed claim（causal / qualified_causal / descriptive / exploratory / no_claim）
 - Next Action（若 NOT PASS，明确回退到 Stage 1/2/3 的哪一步）
+按 design-risk-ledger.md 写/刷新 {{WS}}/03_analysis/design_risk_ledger.md：
+- Threat Register（每个适用威胁的 diagnostic/refuter artifact、status、claim consequence）
+- Specification search / selective reporting、external validity / transport、spillover/SUTVA、selection/attrition sections
+- Blocking Threats（若非空，Method Gate 不得 PASS）
 同时刷新 {{WS}}/00_meta/evidence_ledger.md 的 Claim Register、Estimand-to-Claim Map、Robustness and Threat Matrix
-与 Open Discrepancies，并更新 workflow_state.json.evidence_governance。
+与 Open Discrepancies，并更新 workflow_state.json.evidence_governance 和 workflow_state.json.design_risk。
 
 # 回传（≤8 行）
-主设计 / 主估计量 / PASS 或 NOT PASS / 最强允许 claim / 缺失 artifact 数量 / 最严重 blocker / 建议回退阶段。
+主设计 / 主估计量 / PASS 或 NOT PASS / design_risk pass/not_pass / 最强允许 claim / 缺失 artifact 数量 /
+最严重 blocker / 建议回退阶段。
 ```
 
 ---
@@ -185,6 +194,7 @@
 - 真实结果（对照表中数字）：{{WS}}/03_analysis/results/summary.md + main_results.json
 - 样本证据（对照 N、treated/control、cluster/weights）：{{WS}}/02_data/sample_audit.md
 - 方法证据（识别与稳健性对照）：{{WS}}/03_analysis/design_register.md + {{WS}}/03_analysis/method_gate.md
+- 设计风险总账：{{WS}}/03_analysis/design_risk_ledger.md（blocking threats、external-validity boundary、claim consequence）
 - Claim 证据总账：{{WS}}/00_meta/evidence_ledger.md（claim strength、allowed wording、open discrepancies）
 - 引用核验报告（若有）：{{WS}}/06_polish/ref_verify_report.xlsx
 - 复现证据：{{WS}}/00_meta/workflow_state.json 的 replication_pack、{{WS}}/REPLICATION.md、

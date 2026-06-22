@@ -33,6 +33,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 
 - Reference verification final pass:
 - Method gate still valid after revisions:
+- Design risk ledger still allows abstract / cover letter external-validity claims:
 - Evidence ledger supports abstract / highlights / cover letter claims:
 - Quality scorecard accepted:
 - No restricted data in public package:
