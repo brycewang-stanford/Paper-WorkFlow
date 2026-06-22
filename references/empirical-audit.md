@@ -14,6 +14,12 @@
 > **与测量层的分工**：本文件管**样本会计与 estimand 对齐**（流失、计数、聚类层级）；变量测得准不准、
 > 测量误差往哪偏、异常值/合并/缺失的处理纪律，由 [`measurement-and-data-quality.md`](measurement-and-data-quality.md)
 > 管。两者都在 Stage 2 末加载、都喂 `sample_audit.md` 与 `measurement_audit.md`，缺一条都会让「方法对、结论错」。
+>
+> **与选源层的分工**：本审计之前，先用 [`dataset-cards.md`](dataset-cards.md) 挑对数据源并识别它自带的
+> 坑——每个常用源（Compustat/CRSP/CSMAR/FRED-MD/IPUMS/PSID/PatentsView/Comtrade/EDGAR…）的覆盖、链接键、
+> 已知陷阱（survivorship/look-ahead/attrition/linkage error/vintage）和它**触发的设计风险**都成卡片。
+> 「选源即选样本、选源即选偏误」：卡片的覆盖喂本文件的 sample_audit，卡片的设计风险喂
+> `design_risk_ledger.md`。**选错源，后面所有审计都在补一个不该进门的样本。**
 
 最低标准：
 
