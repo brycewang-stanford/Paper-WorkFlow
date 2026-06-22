@@ -12,6 +12,11 @@
 
 > **本目录不是数据获取工具**：真正取数仍走 Stage 2 的 `data-fetcher` / WRDS / 官方接口。卡片只回答
 > 「该用哪个源、它能不能支撑这个 estimand、它会带进来什么偏误」。
+>
+> **从目录到项目工件**：本文件是**通用目录**（只读、按需查）；进入某个具体项目时，对**每个实际用到的源**
+> 用 [`../templates/dataset_card.md`](../templates/dataset_card.md) 实例化一张卡片到
+> `02_data/source_cards/<source>.md`，填上本项目的提取日期/vintage、匹配率与逐项陷阱状态，再把它的
+> 「触发的设计风险」抄进 `03_analysis/design_risk_ledger.md`。**目录给共性，项目卡给个案。**
 
 ---
 
