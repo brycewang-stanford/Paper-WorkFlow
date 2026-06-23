@@ -318,7 +318,7 @@ def _selftest() -> int:
     # those credits; a fully-present one keeps them. Tested on synthetic corpora
     # so this invariant does not break when the skill legitimately closes a gap.
     g = {"context_protection": 1.0, "reproducibility": 1.0, "user_burden": 1.0,
-         "_gate_selftest_ok": True}
+         "integrity_checkpoint": 1.0, "_gate_selftest_ok": True}
     miss = score_scenario(
         {"id": "_miss", "split": "selection",
          "routing_anchors": ["__NO_SUCH_ANCHOR__"],
