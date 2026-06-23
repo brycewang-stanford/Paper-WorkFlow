@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use Paper-WorkFlow in your research workflow, please cite it as below."
+title: "Paper-WorkFlow: an end-to-end meta-orchestrator for empirical economics & social-science papers"
+abstract: >-
+  Paper-WorkFlow is a Claude Code skill that orchestrates the full empirical-paper
+  pipeline (topic → design → data → identification & estimation → method gate →
+  exhibits → drafting → polishing → de-AI → draft-quality gate → simulated review &
+  revision → journal selection & submission → replication handoff) as a 10-stage,
+  twin-gate, resumable pipeline. It does not re-implement sub-skills; it routes to
+  existing skills and dispatches context-protected subagents at the right human
+  decision points, with research-grade credibility layers (method gate, design-risk
+  ledger, sample/estimand audit, claim-integrity audit, and citation-existence /
+  temporal-integrity checks).
+type: software
+authors:
+  - family-names: Wang
+    given-names: Bryce
+    email: brycewang2018@gmail.com
+repository-code: "https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills"
+url: "https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills/tree/main/skills/69-Paper-WorkFlow"
+license: MIT
+date-released: "2026-06-23"
+keywords:
+  - empirical economics
+  - causal inference
+  - research automation
+  - reproducibility
+  - claim integrity
+  - temporal integrity
+  - large language models
+  - claude code skill
