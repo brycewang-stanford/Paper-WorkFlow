@@ -431,6 +431,8 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh did not create 00_meta/evidence_ledger.md")
         if not (workspace / "00_meta" / "claim_integrity_audit.md").exists():
             fail("init_workspace.sh did not create 00_meta/claim_integrity_audit.md")
+        if not (workspace / "00_meta" / "citation_integrity_log.md").exists():
+            fail("init_workspace.sh did not create 00_meta/citation_integrity_log.md")
         if not (workspace / "03_analysis" / "design_risk_ledger.md").exists():
             fail("init_workspace.sh did not create 03_analysis/design_risk_ledger.md")
         second = subprocess.run(["bash", str(script), str(workspace)], capture_output=True)

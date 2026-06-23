@@ -31,6 +31,7 @@ requiring them to reread chat history or every stage log.
 | Latest handoff | `00_meta/handoff/` | no |  |
 | Evidence ledger | `00_meta/evidence_ledger.md` | no |  |
 | Claim integrity audit | `00_meta/claim_integrity_audit.md` | no |  |
+| Citation integrity log | `00_meta/citation_integrity_log.md` | no |  |
 | Method gate | `03_analysis/method_gate.md` | no |  |
 | Quality scorecard | `00_meta/quality_scorecard.md` | no |  |
 | Replication README | `REPLICATION.md` | no |  |

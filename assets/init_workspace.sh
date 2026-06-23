@@ -18,6 +18,7 @@ handoff_template="$script_dir/../templates/handoff_card.md"
 handoff_prompt_template="$script_dir/../templates/handoff_prompt.md"
 pipeline_status_template="$script_dir/../templates/pipeline_status.md"
 claim_integrity_template="$script_dir/../templates/claim_integrity_audit.md"
+citation_integrity_template="$script_dir/../templates/citation_integrity_log.md"
 
 if [[ -e "$workspace" ]]; then
   echo "refusing to overwrite existing path: $workspace" >&2
@@ -35,6 +36,7 @@ cp "$handoff_template" "$workspace/00_meta/handoff/HANDOFF_TEMPLATE.md"
 cp "$handoff_prompt_template" "$workspace/00_meta/handoff_prompt.md"
 cp "$pipeline_status_template" "$workspace/00_meta/pipeline_status.md"
 cp "$claim_integrity_template" "$workspace/00_meta/claim_integrity_audit.md"
+cp "$citation_integrity_template" "$workspace/00_meta/citation_integrity_log.md"
 printf '# Paper workflow workspace\n\nCreated for staged empirical-paper orchestration.\n' > "$workspace/README.md"
 cat > "$workspace/00_meta/intake.md" <<'EOF'
 # Intake
@@ -52,5 +54,6 @@ cat > "$workspace/00_meta/intake.md" <<'EOF'
 - Pipeline status: 00_meta/pipeline_status.md
 - Handoff directory: 00_meta/handoff/
 - Claim integrity audit: 00_meta/claim_integrity_audit.md
+- Citation integrity log: 00_meta/citation_integrity_log.md
 - Notes:
 EOF
