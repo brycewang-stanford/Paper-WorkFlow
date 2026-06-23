@@ -89,6 +89,8 @@ def validate_text(text: str, final: bool = False) -> list[str]:
 
     tables = _parse_tables(text)
     asserted_citations = 0
+    asserted_temporal = 0
+    seen_bibkeys: set[str] = set()
 
     for rows in tables:
         if not rows:
@@ -101,6 +103,7 @@ def validate_text(text: str, final: bool = False) -> list[str]:
 
         if status_col:
             note_col = _col(header, "note", "disposition")
+            bibkey_col = _col(header, "bibkey")
             for r in rows:
                 val = r.get(status_col, "").strip().strip("`")
                 if _is_placeholder(val):
@@ -109,6 +112,11 @@ def validate_text(text: str, final: bool = False) -> list[str]:
                     errors.append(f"citation row: invalid status {val!r}")
                     continue
                 asserted_citations += 1
+                key = r.get(bibkey_col, "").strip().strip("`") if bibkey_col else ""
+                if key and not _is_placeholder(key):
+                    if key in seen_bibkeys:
+                        errors.append(f"duplicate bibkey row in citation table: {key}")
+                    seen_bibkeys.add(key)
                 note = r.get(note_col, "").strip() if note_col else ""
                 if val == "flagged" and _is_placeholder(note):
                     errors.append("flagged citation must record a disposition")
@@ -138,11 +146,15 @@ def validate_text(text: str, final: bool = False) -> list[str]:
                     continue
                 if val not in CONCLUSIONS:
                     errors.append(f"temporal row: invalid conclusion {val!r}")
+                    continue
+                asserted_temporal += 1
                 if val == "risk" and conseq_col and _is_placeholder(r.get(conseq_col, "")):
                     errors.append("temporal risk row must record a consequence")
 
     if final and asserted_citations == 0:
         errors.append("--final: no verified citations asserted in the log")
+    if final and asserted_temporal == 0:
+        errors.append("--final: temporal-integrity audit not performed (no §2 conclusion recorded)")
 
     return errors
 
@@ -209,6 +221,27 @@ def selftest() -> None:
 
     # missing a required section is caught
     assert any("missing required section" in e for e in validate_text("## 1. Citation Verification\n"))
+
+    # a bibkey appearing twice in the citation table is a copy/paste error
+    dup = _GOOD.replace(
+        "| jones2019 | weak IV warning | 10.1/y | ok | wp | clean | flagged | 2026-06-22 | 换更权威源 done |",
+        "| smith2020 | weak IV warning | 10.1/y | ok | wp | clean | verified | 2026-06-22 | ok |",
+    )
+    assert any("duplicate bibkey" in e for e in validate_text(dup)), validate_text(dup)
+
+    # --final requires the temporal audit to have actually been performed (≥1 §2 conclusion)
+    no_temporal = (
+        "## 1. Citation Verification\n"
+        "| Bibkey | Cited claim | Identifier | Metadata match | Version | Retraction/erratum | Status | Checked | Note |\n"
+        "|---|---|---|---|---|---|---|---|---|\n"
+        "| smith2020 | x | 10.1/x | ok | published | clean | verified | 2026-06-22 | ok |\n\n"
+        "## 2. Temporal Integrity\n"
+        "| Check | Detail | Conclusion | Consequence if risk |\n"
+        "|---|---|---|---|\n"
+    )
+    assert not validate_text(no_temporal), validate_text(no_temporal)
+    assert any("temporal-integrity audit not performed" in e for e in validate_text(no_temporal, final=True))
+
     print("selftest OK: citation-integrity checker invariants hold")
 
 

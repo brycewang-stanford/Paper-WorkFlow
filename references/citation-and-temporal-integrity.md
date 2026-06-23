@@ -109,7 +109,9 @@
 - **机械校验**：`python3 scripts/check_citation_integrity.py <workspace>` 检查——
   - §1 Citation Verification 与 §2 Temporal Integrity 两个必备小节都在；
   - 每条引用 `status ∈ {verified, to-verify, flagged}`，`flagged` 必须写处置、`to-verify` 必须写缺什么；
-  - 终审模式 `--final`（Stage 9）下不得残留 `to-verify` 或未处置 `flagged`，且至少有一条已核引用；
+  - §1 同一 bibkey 不得在引用表里重复出现（防复制粘贴错位）；
+  - 终审模式 `--final`（Stage 9）下不得残留 `to-verify` 或未处置 `flagged`，且至少有一条已核引用、
+    时序审计已执行（≥1 条 §2 结论，证明没跳过时序审计）；
   - 时序清单每项有明确 `pass/na/risk` 结论，`risk` 必须连到 claim 后果。
   - 带 `--selftest` 自测校验器不变量。
 

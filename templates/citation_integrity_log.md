@@ -78,4 +78,5 @@ Hard rules (enforced by the checker and the rubric ⑥ gate):
 - `--final` (Stage 9) must show zero `to-verify` and zero un-dispositioned `flagged`.
 - Any unresolved look-ahead caps the related claim at `descriptive` (sync `evidence_ledger.md`).
 - Never upgrade a `to-verify` to `verified` because a tool was unavailable — log the degradation instead.
+- A bibkey must appear at most once in §1; `--final` also requires the §2 temporal audit to have been performed (≥1 conclusion).
 - Claim-to-evidence faithfulness verdicts live in `claim_integrity_audit.md`, not here.
