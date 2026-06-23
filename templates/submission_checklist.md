@@ -32,6 +32,8 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 ## 3. Final Gates
 
 - Reference verification final pass:
+- Citation integrity log `--final` clean (no to-verify, no un-dispositioned flagged, retraction screen done): `python3 scripts/check_citation_integrity.py <workspace> --final`
+- Temporal integrity: no unresolved look-ahead / vintage / survivorship leakage behind any causal claim:
 - Method gate still valid after revisions:
 - Design risk ledger still allows abstract / cover letter external-validity claims:
 - Evidence ledger supports abstract / highlights / cover letter claims:

@@ -174,6 +174,41 @@
 
 ---
 
+## §CT · 引用存在性 + 时序完整性 critic（Stage 8 派 1 个，Stage 9 终审 `--final` 复跑）
+
+> 这是 §CR/§QG 之外的**引文可信度专项**：核「引用是否真实存在且引对」+「论断有没有穿越时间偷看未来」。
+> claim↔证据忠实由独立的 claim-integrity 审计负责，本 critic 不重复其 verdict 流程。
+
+```text
+# 必读
+- skills/69-Paper-WorkFlow/references/citation-and-temporal-integrity.md（§1 引用存在性、§2 时序完整性）
+- skills/69-Paper-WorkFlow/references/dataset-cards.md（各源 vintage / 公布滞后 / 生存偏差）
+- {{WS}}/00_meta/citation_integrity_log.md（从 templates/citation_integrity_log.md 实例化；没有则先建）
+
+# 输入
+- 稿件 {{WS}}/07_dehumanize/main.tex（或当前最新稿）+ 参考文献 {{WS}}/05_draft/ref.bib
+- 设计与数据：{{WS}}/03_analysis/design_register.md、{{WS}}/02_data/codebook.md、各 dataset_card.md
+- 终审模式由主代理指定：pre-review（Stage 8，可抽样）/ final（Stage 9，central 引用全核）
+
+# 执行（不靠记忆，工具核验）
+1. §1 引用存在性：对每条（final 模式）或抽样（pre-review）bibkey，用 StatsPAI `bibtex` / zotero MCP
+   `search`+`fetch` / WebFetch 解析 DOI 核存在性、元数据匹配、版本；`scite_check_retractions` 筛撤稿/勘误；
+   标记掠夺刊、citation laundering、转述他人系数/引语的失真。每行落 status ∈ {verified, to-verify, flagged}。
+2. §2 时序完整性：对照 dataset-cards 与设计，逐项判 look-ahead / real-time vs final vintage / 事件窗口偷看 /
+   训练-测试时序切分 / 生存偏差 / 样本期 vs 论断期，每项写 pass/na/risk；risk 连到 claim 后果（同步 evidence ledger）。
+3. 运行 `python3 skills/69-Paper-WorkFlow/scripts/check_citation_integrity.py {{WS}}`（final 模式加 `--final`）。
+
+# 输出
+把核验结果写入 {{WS}}/00_meta/citation_integrity_log.md（§1 引用表、§2 时序清单）；把阻断项写入
+{{WS}}/08_review/citation_integrity_findings.md。**不要把全文/全 bib 读回主代理**。
+
+# 回传（≤8 行）
+核了几条引用 / flagged 几条（撤稿/幻觉/不匹配）/ §2 有几项 risk（哪类）/ checker 是否通过 /
+最致命的 2–3 条一句话 / 是否需回退（reference-verify 补核 or Stage 3 降 claim）。
+```
+
+---
+
 ## §QG · 初稿质量门评分器（Stage 7 之后强制派 1 个）
 
 > 这是兑现「高质量初稿」承诺的关键派发。critic 按 [`quality-rubric.md`](quality-rubric.md) 的 7 维

@@ -24,6 +24,8 @@
 | `Agent` 不可用 | 主代理串行执行，或缩小批次；大文件仍写盘只读摘要 | 哪些任务未并行 | 无，除非时间限制导致少做检验 |
 | 网络 / WebSearch / WebFetch 不可用 | 使用用户给定文件、本地文献库、已有 DOI/bib；把政策刷新标 `blocked` | 未能刷新的 URL | 引用/政策相关维度封顶，投稿前必须补 |
 | Zotero / 引用 MCP 不可用 | 跑 `reference-verify` 或手工 Crossref/OpenAlex 查验；保留核验报告 | 核验工具和覆盖率 | 引用维度按覆盖率评分 |
+| 撤稿筛查（scite）/ `bibtex` 核验不可用 | 手工查 Retraction Watch / 出版商勘误页 + Crossref/OpenAlex 解析 DOI；把 `citation_integrity_log.md` §1 对应行标 `to-verify` 并写明缺什么，**绝不**默认 `verified` | 缺失的核验工具、降级的 bibkey | 见 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md)；终审仍残留 `to-verify` 则 Stage 9 不得 `ready` |
+| real-time / vintage 数据源不可访问 | 用可得 vintage 跑代码结构、把 look-ahead 风险标 `risk`；真实 real-time 稳健性标 blocked | 缺失的 vintage、受影响特征 | look-ahead 无法排除时相关结论封顶 `descriptive`（同步 evidence ledger） |
 | 选定分析后端不可用 | 按 `analysis-backends.md` 切到能复刻同等 artifact 的另一后端；若用户硬性指定则暂停确认 | 原后端、替代后端、差异 | artifact parity 齐则可过；否则 Method Gate `NOT PASS` |
 | StatsPAI MCP 不可用 | 用 `statspai` 包或 Stata/R/Python 包复刻同等 artifact；写明包版本 | 缺失 MCP、替代 route | 若最低证据包齐，方法门可过 |
 | Stata 不可用 | 若 Stata 是用户指定主后端，先记录 blocked；可用 Python/R 等价实现做 fallback 或 secondary validation | Stata 版本缺失、替代包 | 关键 artifact 缺失则 Method Gate `NOT PASS` |
@@ -67,6 +69,9 @@
 
 - 关键 policy、citation、data source 未联网刷新：引用真实性或复现维度最高 7，且 Stage 9 checklist 不能
   标 `ready`。
+- 撤稿筛查或 `bibtex`/DOI 解析降级，`citation_integrity_log.md` §1 仍有 `to-verify`：引用真实性维度最高 7，
+  且 `python3 scripts/check_citation_integrity.py <workspace> --final` 不得通过；real-time/vintage 源不可访问
+  导致 look-ahead 无法排除时，相关结论封顶 `descriptive`（同步 evidence ledger）。
 - 工具缺失导致缺少方法最低证据包：识别维度最高 6；若 `method_gate.md` 为 `NOT PASS`，识别维度最高 4。
 - 工具缺失导致 design-risk threat 无法关闭：`design_risk.status` 标 `not_pass` 或在 claim consequence 中降级；
   不能把未知 spillover、attrition、external validity 或 specification-search 风险写成已排除。

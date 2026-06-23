@@ -167,7 +167,8 @@
 
 ## 维度 ⑥ 引用真实性与文献定位（Citation Fidelity & Positioning）
 
-**测什么**：引用是否真实存在、与论点匹配；文献综述是否准确定位本文贡献。
+**测什么**：引用是否真实存在、与论点匹配、是否引对（非撤稿、非二手转引）；论断是否存在**时序穿越**
+（look-ahead / 用 final 修订值冒充实时可得 / 训练-测试时序泄漏）；文献综述是否准确定位本文贡献。
 
 **评分锚点**
 - **9–10**：引用全部真实、年份/作者/出处准确，关键文献无遗漏，定位精准（说清相对谁前进了一步）。
@@ -177,7 +178,14 @@
 
 **致命红旗（命中即 ≤4）**
 - **存在编造/张冠李戴的引用**（幻觉文献、作者或年份错配、引用与论点不符）。
+- **引用了已撤稿 / 勘误后失效的结果**当作有效证据。
+- **时序穿越未排除却作主因果论断**（look-ahead / 用 final 修订值冒充实时可得 / 训练-测试时序泄漏）。
 - 关键对标文献缺席，导致贡献被高估。
+
+> 引用存在性（DOI / 撤稿 / 版本核验）与时序完整性的逐项标准见
+> [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md)，落 `00_meta/citation_integrity_log.md`，
+> 终审跑 `python3 scripts/check_citation_integrity.py <workspace> --final`。（claim↔证据忠实另由
+> [`integrity-and-claim-audit.md`](integrity-and-claim-audit.md) 审计。）
 
 **回退**：→ `reference-verify`（终审核验）+ Stage 5 文献综述（配 `36`/`52`/`59` 补做结构化综述）。
 
