@@ -75,6 +75,17 @@ _REPO_PATH_RE = re.compile(
 # Workspace artifact paths hard-coded as string literals in the gate checkers.
 _WS_ARTIFACT_RE = re.compile(r"['\"](\d\d_[A-Za-z0-9_]+(?:/[A-Za-z0-9_]+)*\.(?:md|json))['\"]")
 
+# Metavariable placeholder filename stems (e.g. `scripts/X.py`, `templates/Y.md`):
+# docs legitimately use these to illustrate a pattern, not to name a real file.
+_PLACEHOLDER_STEM_RE = re.compile(r"^[A-Z]$")
+
+
+def _is_placeholder_path(path: str) -> bool:
+    """A path that is obviously an illustrative metavariable, not a real file."""
+    if any(ch in path for ch in "<>") or "..." in path or "…" in path:
+        return True
+    return bool(_PLACEHOLDER_STEM_RE.match(Path(path).stem))
+
 
 class Report:
     def __init__(self) -> None:
@@ -169,7 +180,7 @@ def check_tree(root: Path) -> Report:
         text = path.read_text(encoding="utf-8")
         for m in _CMD_RE.finditer(text):
             target = _strip_repo_prefix(m.group(1))
-            if _is_workspace_runtime(target):
+            if _is_placeholder_path(target) or _is_workspace_runtime(target):
                 continue
             if not _is_repo_command_target(target):
                 continue
@@ -194,6 +205,8 @@ def check_tree(root: Path) -> Report:
             if target in seen:
                 continue
             seen.add(target)
+            if _is_placeholder_path(target):
+                continue
             path_checked += 1
             if not (root / target).exists():
                 path_problems.append(f"{rel}: `{target}` does not exist")
@@ -299,7 +312,8 @@ def _selftest() -> int:
             "Run `python3 scripts/check_workspace_gates.py`.\n"
             "Run `python3 scripts/missing_checker.py`.\n"
             "See `references/real.md` and `templates/ghost.md`.\n"
-            "The run executes `python3 03_analysis/estimate.py` and `bash run_all.sh`.\n",
+            "The run executes `python3 03_analysis/estimate.py` and `bash run_all.sh`.\n"
+            "Docs illustrate with `scripts/X.py`, `references/<name>.md`, `python3 templates/Y.py`.\n",
         )
         write("references/real.md", "real\n")
 
@@ -307,10 +321,13 @@ def _selftest() -> int:
         hits = {chk for lvl, chk, _ in rep.rows if lvl == FAIL}
         for expected in ("inline_commands", "repo_path_mentions", "workspace_paths", "harness_wiring"):
             assert expected in hits, f"selftest: expected {expected} to FAIL; got {hits}"
-        # the workspace-runtime command/path must NOT have been flagged
         blob = rep.render()
+        # the workspace-runtime command/path must NOT have been flagged
         assert "estimate.py" not in blob, "selftest: workspace-runtime command wrongly flagged"
         assert "run_all.sh" not in blob, "selftest: workspace-runtime script wrongly flagged"
+        # metavariable placeholders must NOT have been flagged
+        for ph in ("scripts/X.py", "<name>.md", "templates/Y.py"):
+            assert ph not in blob, f"selftest: placeholder {ph} wrongly flagged"
 
         # --- now repair every injected fault; the clean tree must pass --------
         write("scripts/missing_checker.py", "# now exists\n")
