@@ -19,6 +19,10 @@
 
 <br/>
 
+<samp><b>10</b>&nbsp;stages&nbsp;&nbsp;·&nbsp;&nbsp;<b>47</b>&nbsp;skills&nbsp;&nbsp;·&nbsp;&nbsp;<b>2</b>&nbsp;hard gates&nbsp;&nbsp;·&nbsp;&nbsp;<b>3</b>&nbsp;analysis backends&nbsp;&nbsp;·&nbsp;&nbsp;<b>1</b>&nbsp;auditable workspace</samp>
+
+<br/>
+
 [Mental Model](#mental-model)&nbsp;·&nbsp;[Research Standards](#research-standards)&nbsp;·&nbsp;[Quickstart](#quickstart)&nbsp;·&nbsp;[Outputs](#workspace-outputs)&nbsp;·&nbsp;[中文说明](README.md)
 
 <br/>
@@ -247,6 +251,11 @@ The checked-in demo outputs are:
 
 ## Repository Layout
 
+<details>
+<summary><b>Expand the full directory tree (SKILL · scripts · templates · references · assets)</b></summary>
+
+<br/>
+
 ```text
 Paper-WorkFlow/
 ├── SKILL.md
@@ -313,6 +322,8 @@ Paper-WorkFlow/
 ├── did_demo.ipynb
 └── LICENSE
 ```
+
+</details>
 
 ## Key References
 
