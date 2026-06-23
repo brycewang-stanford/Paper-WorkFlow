@@ -124,10 +124,54 @@ staged explicit paths only. `validate_skill.py` green after each commit.
 **Session total: 7 commits** (`91cb2b4`, `6c57c53`, `62707dd`, `fce5b01`, `a06192b`, `1fa0b8d`, `9da92a3`),
 zero collisions.
 
-## Remaining (next coordinated window, optional)
+## Third pass (same day) — checker hardening + an eval-harness crash fixed
 
-- **evals scenario** exercising a hallucinated-citation / look-ahead rollout — deferred because `evals/*`
-  is the parallel agent's territory (it just added an `integrity_checkpoint` scorer dimension); do it
-  coordinated to avoid colliding with that dimension.
-- A **specification-curve / multiple-testing** deepening only if the inference layer doesn't already cover it
-  (it largely does via `inference-and-uncertainty.md` + StatsPAI `romano_wolf`/`wild_cluster_bootstrap`).
+- **Checker hardened** (`3655226`): duplicate-bibkey guard in §1; `--final` now also requires the §2
+  temporal audit to have been performed (≥1 conclusion) — closing a doc-vs-code gap with the Stage 9 gate
+  I documented in `stage-playbook.md`. Reference §3 + template hard-rules synced; selftest expanded.
+- **Eval-harness crash fixed** (`e06480d`): the parallel agent's just-added `integrity_checkpoint` dimension
+  was read by `score_scenario` but missing from the synthetic globals dict in `score_skill.py`'s `_selftest`,
+  so `python3 evals/score_skill.py --selftest` crashed with `KeyError: 'integrity_checkpoint'`. Added the
+  missing key (1.0, like the other global dims). **Objective crash, one-line fix, no scoring/baseline change**
+  — collaborative repair, not a scope decision. `--selftest` and the full run are green again.
+
+## Division-of-labor decision on the evals dimension (deliberate, not deferred-by-omission)
+
+I evaluated adding a `citation_temporal_integrity` global dimension to the eval scorer and **decided against
+applying it myself**, because:
+
+1. `score_skill.py` totals are `sum(dims)/len(DIMENSIONS)` — adding a 7th dimension shifts the divisor (6→7),
+   moving **every** scenario total and split mean, which **invalidates the just-committed `baseline_scorecard.md`**.
+2. The harness README explicitly frames scope/dimension changes as the **loop owner's** call ("the harness
+   measures; it does not unilaterally expand the skill's scope"), and the harness is "standalone on purpose".
+3. My layer already has a **stronger** guarantee than an eval dimension: `validate_skill.py` CI runs
+   `check_citation_integrity.py --selftest` as a hard gate (`fce5b01`).
+
+**Drop-in spec for whoever owns the eval harness** (one coherent edit, then refresh the baseline):
+
+```python
+# add to score_skill.py
+CITATION_TEMPORAL_FILES = [
+    "SKILL.md", "references/citation-and-temporal-integrity.md",
+    "templates/citation_integrity_log.md", "scripts/check_citation_integrity.py",
+]
+CITATION_TEMPORAL_GROUPS = [
+    ["citation_integrity_log", "Citation Integrity Log"],
+    ["look-ahead", "时序穿越", "temporal integrity"],
+    ["check_citation_integrity"],
+    ["vintage", "real-time"],
+    ["--final"],
+]
+# then: append "citation_temporal_integrity" to DIMENSIONS, add it to compute_global_scores'
+# return (via _fraction_groups_present), add it to score_scenario's dims dict, AND add
+# "citation_temporal_integrity": 1.0 to the synthetic g dict in _selftest. Re-baseline.
+```
+
+## Remaining (genuinely optional, low priority)
+
+- Apply the eval dimension above (owner's scope call; needs a baseline refresh).
+- A **specification-curve / multiple-testing** deepening is **not needed** — already covered
+  (`inference-and-uncertainty.md` + StatsPAI `romano_wolf`/`wild_cluster_bootstrap`/`benjamini_hochberg`).
+
+**Session total: 9 commits** — the 7 above + `e06480d` (eval crash fix) + `3655226` (checker hardening).
+Zero collisions; every commit explicit-path staged.
