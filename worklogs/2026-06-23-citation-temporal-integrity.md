@@ -64,7 +64,7 @@ it with an explicit scope-boundary pointer. **No git-level collision: zero share
   both READMEs, `evals/*`, `assets/*`, `validate_skill.py`, `scripts/{check_workspace_gates,smoke_workspace,
   check_verification_log}.py`, `_verification_log/*`.
 
-## Deferred (do when the tree is clean)
+## Deferred → ALL RESOLVED same-day (see "Full hardening pass" at the bottom)
 
 - **SKILL.md wiring**: add one「进一步阅读」bullet + (optionally) one citation/temporal「关键约束」line, via the
   proven **exact-match Edit in a clean-tree window** (a contended region fails the match harmlessly). Deferred
@@ -94,3 +94,40 @@ it with an explicit scope-boundary pointer. **No git-level collision: zero share
 Net: one coherent ARS-inspired credibility layer (citation-existence + the previously-absent temporal-integrity)
 shipped end-to-end in 2 commits, **zero git collisions** after de-duplicating against the parallel claim-audit
 layer. Staged only explicit paths; never `git add -A`.
+
+---
+
+## Full hardening pass (same day, after the parallel agent pushed and the tree went clean)
+
+The parallel agent committed + pushed its whole change set (schema v10 claim-integrity audit,
+pipeline-status, README redesign, evals integrity dimension); the working tree went **clean** and
+`HEAD == origin/main` (its batched push carried my first 3 commits up too). That opened the clean
+window, so every deferred item was shipped and the layer was made **first-class across the whole skill
+surface**:
+
+| Commit | What |
+|---|---|
+| `fce5b01` | **Load-bearing**: wired `check_citation_integrity.py` into `validate_skill.py` (required-file list + py_compile + `--selftest` CI), and added the SKILL.md key-constraint + further-reading bullet (complementary to the claim-audit layer, anchored on its own line 391 "citation 存在不等于 claim 忠实"). |
+| `a06192b` | `CITATION.cff` (CFF 1.2.0; MIT / Bryce Wang; integrity keywords). |
+| `1fa0b8d` | Surface wiring: quality-rubric ⑥ (retraction + temporal red flags + checker pointer), runtime-fallbacks (scite/bibtex/DOI-down + real-time/vintage-down matrix rows + §4 cap rule), subagent-templates §CT (citation/temporal critic dispatch), submission_checklist §3 (`--final` + temporal final gates), worked-example (Stage 2 look-ahead NOT-PASS→fix loop + self-check bullet). |
+| `9da92a3` | Operational loop in stage-playbook: Stage 8 dispatches the §CT critic; Stage 9 adds the `--final` gate beside reference-verify. |
+
+**Integration now closed end-to-end:** Stage 1 init log → Stage 2 vintage (dataset-cards) → Stage 3
+look-ahead → quality-rubric ⑥ gate → Stage 8 §CT critic → Stage 9 `--final` → submission checklist.
+`check_citation_integrity.py` is exercised by CI (`validate_skill.py`).
+
+**Boundary held throughout:** claim↔evidence faithfulness stays the parallel agent's
+`integrity-and-claim-audit` layer; I own citation **existence/correctness** + **temporal integrity**.
+Every cross-reference between the two layers points outward by name; zero shared file paths; every commit
+staged explicit paths only. `validate_skill.py` green after each commit.
+
+**Session total: 7 commits** (`91cb2b4`, `6c57c53`, `62707dd`, `fce5b01`, `a06192b`, `1fa0b8d`, `9da92a3`),
+zero collisions.
+
+## Remaining (next coordinated window, optional)
+
+- **evals scenario** exercising a hallucinated-citation / look-ahead rollout — deferred because `evals/*`
+  is the parallel agent's territory (it just added an `integrity_checkpoint` scorer dimension); do it
+  coordinated to avoid colliding with that dimension.
+- A **specification-curve / multiple-testing** deepening only if the inference layer doesn't already cover it
+  (it largely does via `inference-and-uncertainty.md` + StatsPAI `romano_wolf`/`wild_cluster_bootstrap`).
