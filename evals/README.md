@@ -102,6 +102,31 @@ The active guardrail is now bidirectional: `validate_skill.py` runs
 unjustified growth of `SKILL.md` or the reference-file count. That ratchet keeps
 the saturated quality score from becoming an additive-only incentive.
 
+## Sibling harnesses in this directory (output-correctness, not procedure score)
+
+`score_skill.py` scores whether the *documented procedure* holds together. Two
+sibling harnesses, ported from the systems surveyed in the project's competitive
+analysis, measure things the procedure score structurally cannot see:
+
+- [`check_replication_accuracy.py`](check_replication_accuracy.py) — the **Stage 3
+  replication-accuracy benchmark** (after Econometrics-Agent, arXiv 2506.00856).
+  Scores a candidate's produced estimates against a frozen **gold truth** on three
+  nested rates — sign-correct / perfect / partial. This is the only eval here that
+  fails a run whose paperwork is immaculate but whose numbers are wrong. Cases live
+  in [`replication_cases/`](replication_cases/); the self-contained DiD case is
+  anchored on the demo's `TRUE_ATT = 2.0`.
+- [`check_quality_judge.py`](check_quality_judge.py) — the **reproducible
+  LLM-as-judge harness** for the Stage 7 quality gate (after open_deep_research's
+  gold-standard judge). Recomputes the PASS/NOT_PASS verdict deterministically
+  from the rubric rule and calibrates it against gold anchors in
+  [`quality_calibration.json`](quality_calibration.json), so a self-contradicting
+  scorecard (bad arithmetic, fudged verdict, red-flag-cap violation) is caught
+  mechanically.
+
+Both are wired into `validate_skill.py` via their `--selftest`, and both are
+standalone (import nothing from the skill), so they never collide with edits in
+flight on the core files.
+
 ## Extending the suite
 
 Add a scenario to `scenarios.json` with a distinctive (case-sensitive)

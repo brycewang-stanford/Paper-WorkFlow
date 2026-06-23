@@ -285,7 +285,39 @@
 
 ---
 
-## 10. Method Gate 填写规则
+## 10. 跨设计行为护栏（Behavioral Guardrails — 反模式黑名单）
+
+> 上面每张卡管「这个设计需要哪些证据」；本节管「**不管哪个设计，都不许犯的操作错误**」。
+> 思路来自 Econometrics-Agent（*Can AI Master Econometrics?* arXiv 2506.00856）的关键发现：
+> LLM 跑计量最容易翻车的不是估计器选错，而是把**机器学习/预测的习惯**带进**因果估计**——
+> 它在工具层硬编码了一批「行为护栏」（如禁止在计量任务里做 train/test split）。本节把这套护栏
+> 上移到闸门层：命中任意一条即按「claim 后果」列降级或 `NOT PASS`，并在
+> `03_analysis/method_gate.md` 的 **Hard Flags** 段逐条记 `clear/hit`。
+
+| # | 反模式（命中即触发） | 为什么在因果语境是错的 | 正确默认 | claim 后果 |
+|---|---|---|---|---|
+| G1 | 把估计样本做 **train/test split** 去"验证"因果系数 | 因果 estimand 不是预测精度；split 不检验识别，只检验拟合 | 唯一正当用法：DML 对 **nuisance 函数**做 cross-fitting（不是对目标系数）；其余一律不切 | 主因果 claim → `NOT PASS` 或降 `exploratory` |
+| G2 | 默认 **经典同方差 SE**（不报 robust/clustered） | 微观面板异方差/簇内相关几乎必然，经典 SE 系统性低估不确定性 | 默认 robust，聚类层级 **≥ 处理赋值层级**，并写进 `inference_report.md` | 显著性可疑 → 稳健性维度封顶；改聚类翻号未披露 → `NOT PASS` |
+| G3 | 按 **因变量** 删"异常值"/截尾 | 基于 outcome 选样本 = 选择性截断，直接偏误系数 | 只基于协变量/预处理量对称 winsorize；删样本走 `sample_audit.md` 记原因 | 主 claim 降 `qualified_causal`；影响主结果未披露 → `NOT PASS` |
+| G4 | **标准化/缩放 0/1 处理变量**（z-score treatment） | 破坏二元处理的可解释性与 LATE/ATT 含义，系数不再是"被处理 vs 未处理" | 处理 dummy 保持原始 0/1；只标准化连续协变量（若需要） | 解读维度封顶；量级解释失真 |
+| G5 | 回归前对 **outcome / treatment 无依据插补** | 均值/常数插补因变量或处理是在**制造方差**，稀释或伪造效应 | 先按 `empirical-audit.md` 诊断 missingness 机制，再决定删/插补/建模 | `empirical_audit.status=not_pass`；插补驱动结果 → `NOT PASS` |
+| G6 | 把 **post-treatment / mediator** 变量当 baseline control | 坏控制阻断或反转因果通道（见 `mechanism-and-channels.md` §3） | controls 必须 pre-treatment；中介移出主设定，单独做机制 | 主设定含坏控制 → 识别维度封顶 4 / `NOT PASS` |
+| G7 | **不声明 FE 维度**、依赖 PanelOLS/HDFE 默认 | 默认吸收维度可能错配 estimand，singleton drop 静默改样本 | 显式声明 entity/time/吸收维度与 singleton 处理，记 `design_register.md` | 复现维度封顶；variation 被吸收未披露 → `NOT PASS` |
+| G8 | 把 **高 R² / 拟合优度** 当因果或机制证据 | predictive fit ≠ identification；过拟合也能高 R² | 因果强度只由识别设计与稳健性决定，不引用 R² 作证 | 解读维度封顶；当主证据 → 降 `descriptive` |
+| G9 | 少簇（G≲30–50）仍只报 **渐近 p 值** | 渐近近似在少簇下崩坏，t 比虚高 | wild cluster bootstrap / CR2，见 `inference-and-uncertainty.md` §3 | 稳健性维度封顶 5；主显著性靠它 → `NOT PASS` |
+| G10 | 用同一数据 **既挑设定又做推断** 且不披露 | 研究者自由度 / specification search 制造假阳性 | 设定曲线 + 预指定主设定（`design-transparency.md`），进 `design_risk_ledger.md` | specification_search 为 blocking → Method Gate 不得 `PASS` |
+
+**强制联动**
+
+- 每条护栏在 `03_analysis/method_gate.md` 的 **Hard Flags** 段逐条记 `clear/hit/na`，命中项必须写缓解或降级。
+- G1/G5/G6 同时是 `empirical-audit.md` §2b 的**直接 NOT PASS** 条件——样本/数据审计层与方法闸门双重拦截。
+- 想把护栏从「规范」变成「可测」：Stage 3 估计出来后，用
+  `python3 evals/check_replication_accuracy.py` 对已知真值（自包含 DiD 案例或已发表复现包）打
+  **方向正确 / 完美复现 / 部分复现** 三档分——护栏防的是"方法对、数字错"，benchmark 量的就是数字对不对。
+
+---
+
+## 11. Method Gate 填写规则
 
 `03_analysis/method_gate.md` 必须把本文件对应设计卡复制或摘要成一张表：
 
