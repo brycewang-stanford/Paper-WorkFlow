@@ -366,6 +366,10 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   `audit_result(result_id)` 复跑「还缺哪些稳健性」，与 `03_analysis/method_gate.md` 对账（statspai-analysis §6）。
   审稿人还必须抽查 `00_meta/evidence_ledger.md`：摘要、贡献段、结果段、cover letter 的每个 claim 是否都有
   result/exhibit/script 支撑，且措辞没有超过 design gate card 允许等级。
+- **引用存在性 + 时序完整性专项**：派 [`subagent-templates.md`](subagent-templates.md) §CT critic（pre-review 模式）——
+  按 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md) 核引用真实存在/非撤稿/引对 +
+  审 look-ahead/vintage 时序，写 `00_meta/citation_integrity_log.md` 并跑 `check_citation_integrity.py`；
+  与并行的 claim-忠实度审计（[`integrity-and-claim-audit.md`](integrity-and-claim-audit.md)）分工互补。
 
 **review**：critic 核对——每条审稿意见是否都有实质回应、修订是否引入新矛盾（交叉引用、表号）。
 
@@ -384,6 +388,9 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   落 `09_submission/journal_shortlist.md`。结合 Stage 0 选定的目标期刊收敛到 1 主 + 2 备。
 - **终审引用**：再 `Skill` 调用一次 `67/reference-verify`（投稿前最后一次，确保此前所有修订没动坏
   引用），落 `09_submission/ref_verify_final.xlsx`。
+- **引用/时序终审闸门**：跑 `python3 scripts/check_citation_integrity.py <workspace> --final` —— 不得残留
+  `to-verify`、不得有未处置 `flagged`、撤稿筛查通过、§2 时序无未排除的 `risk`；不过则投稿包不得标 ready
+  （见 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md) §4）。
 - 生成 cover letter / highlights / 作者贡献声明等投稿材料到 `09_submission/`。
 - 从 `templates/submission_checklist.md` 生成 `09_submission/submission_checklist.md`，并按目标刊官网实时刷新：
   author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
