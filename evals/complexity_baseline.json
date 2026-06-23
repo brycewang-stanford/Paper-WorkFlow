@@ -1,0 +1,17 @@
+{
+  "recorded": "2026-06-23",
+  "note": "Initial ceiling recorded 2026-06-23 after the citation/temporal-integrity wave; stop further growth of the always-loaded layer and reference count pending a consolidation pass.",
+  "ceiling": {
+    "skill_md_bytes": 42873,
+    "skill_md_tokens_est": 10718,
+    "reference_count": 29,
+    "reference_bytes": 381513,
+    "template_count": 24,
+    "template_bytes": 62420
+  },
+  "targets": {
+    "skill_md_bytes": 32000
+  },
+  "tolerance_bytes": 1024,
+  "rationale": "Footprint ceiling for the SkillOpt complexity ratchet. Growth past this requires a deliberate update recording why. See evals/check_complexity_budget.py and evals/complexity_audit.md."
+}
