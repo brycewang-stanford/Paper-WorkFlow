@@ -167,11 +167,46 @@ CITATION_TEMPORAL_GROUPS = [
 # "citation_temporal_integrity": 1.0 to the synthetic g dict in _selftest. Re-baseline.
 ```
 
-## Remaining (genuinely optional, low priority)
+## Fourth pass — deep integration (user authorized finishing ALL remaining work)
 
-- Apply the eval dimension above (owner's scope call; needs a baseline refresh).
-- A **specification-curve / multiple-testing** deepening is **not needed** — already covered
-  (`inference-and-uncertainty.md` + StatsPAI `romano_wolf`/`wild_cluster_bootstrap`/`benjamini_hochberg`).
+With the parallel agent idle ~50 min and the user owning the repo and explicitly authorizing the
+remaining work, I did the deeper integration previously held back for collision-avoidance — but made
+a deliberate scope call on the schema.
 
-**Session total: 9 commits** — the 7 above + `e06480d` (eval crash fix) + `3655226` (checker hardening).
-Zero collisions; every commit explicit-path staged.
+**Decision: NO schema v11 bump.** A `citation_integrity` block in `workflow_state.json` would have
+been "symmetric" with the claim-audit `integrity_audit` block, but it couples the layer to the
+version-gated substrate across **~11 files** (`workflow_state.template.json`, `validate_skill.py` ×3,
+`smoke_workspace.py` ×2, `check_workspace_gates.py`, `orchestration-and-handoff.md`,
+`workspace-and-state.md`, both README badges, `SKILL.md`) for modest added substance — the
+`citation_integrity_log.md` artifact + the deterministic `check_citation_integrity.py` already carry
+the state, and the checker is a *stronger* guarantee than a hand-maintained JSON field. Senior call:
+maximal surface ≠ solid. Skipped it deliberately, documented here.
+
+**What I did instead (first-class without the bump):**
+
+| Commit | What |
+|---|---|
+| `8b16663` | `citation_integrity_log.md` is now **born at Stage 0** (`init_workspace.sh`), **enforced in CI** (`validate_skill.py` asserts init creates it), shown in the **dashboard** (`pipeline_status.md`), and **documented** (`workspace-and-state.md` init list + directory tree; `SKILL.md` Phase 0 artifact list). |
+| `53a1509` | **evals `citation_temporal_integrity` dimension** — the drop-in from the third pass, now applied: a global regression guard scoring 1.0 only while the layer is present (reference + template + checker + look-ahead/vintage + `--final`). `score_skill.py` (incl. the `_selftest` globals dict — the exact key the integrity_checkpoint dimension forgot, causing `e06480d`'s crash), `baseline_scorecard.md` re-baselined to 7 dims (means stay 1.000), `README.md` table + "mean of the seven dimensions" (was stale at "five"). |
+
+Stage 9 enforcement of the layer stays via `check_citation_integrity.py --final` (wired into
+`stage-playbook.md` + `submission_checklist.md` in the earlier passes), not a gate-checker block.
+
+**Final verification (all green):** `validate_skill.py`, `smoke_workspace.py --quiet`,
+`check_citation_integrity.py --selftest`, `check_workspace_gates.py --selftest`,
+`check_verification_log.py --selftest`, `evals/score_skill.py --selftest`, and a live
+`init_workspace.sh` run whose fresh workspace passes the citation checker.
+
+## Remaining
+
+- **Nothing required.** The layer is complete and first-class: standard, per-paper template, hardened
+  CI-wired checker, born-at-init artifact, dashboard + state docs, both gates (rubric ⑥ + Stage 9
+  `--final`), runtime fallbacks, subagent §CT critic, worked-example loop, evals regression guard,
+  CITATION.cff.
+- **Not needed:** specification-curve / multiple-testing (already covered by `inference-and-uncertainty.md`
+  + StatsPAI `romano_wolf`/`wild_cluster_bootstrap`/`benjamini_hochberg`); schema v11 bump (deliberate, above).
+
+**Session total: 11 commits** — the 9 prior + `8b16663` (born-at-init/first-class) + `53a1509` (evals
+dimension). Zero collisions across the whole effort; every commit explicit-path staged; the parallel
+agent's claim-audit layer and orchestration substrate untouched except the one objective crash fix
+(`e06480d`) and the symmetric additive rows that compose with — never overwrite — its work.
