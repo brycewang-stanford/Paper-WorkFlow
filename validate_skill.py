@@ -448,6 +448,7 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_skillopt_packet.py",
         ROOT / "scripts" / "check_verification_log.py",
         ROOT / "scripts" / "check_citation_integrity.py",
+        ROOT / "scripts" / "check_cross_references.py",
         ROOT / "evals" / "score_skill.py",
         ROOT / "evals" / "check_complexity_budget.py",
     ]
@@ -487,6 +488,17 @@ def check_citation_integrity_checker() -> None:
     )
 
 
+def check_cross_references_linter() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_cross_references.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_cross_references.py")],
+        check=True,
+    )
+
+
 def check_smoke_workspace() -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
 
@@ -521,6 +533,7 @@ def main() -> None:
     check_skillopt_packet_checker()
     check_verification_log()
     check_citation_integrity_checker()
+    check_cross_references_linter()
     check_maintenance_evals()
     print("OK: Paper-WorkFlow skill checks passed")
 
