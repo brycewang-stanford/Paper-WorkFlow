@@ -114,6 +114,9 @@
     时序审计已执行（≥1 条 §2 结论，证明没跳过时序审计）；
   - 时序清单每项有明确 `pass/na/risk` 结论，`risk` 必须连到 claim 后果。
   - 带 `--selftest` 自测校验器不变量。
+- **运行时闸门接线**：`scripts/check_workspace_gates.py` 直接调用同一个校验器；Draft Quality Gate
+  标 `pass` 前，`citation_integrity_log.md` 必须 pre-final clean；`replication_pack.status=ready`
+  前必须通过 `--final`。
 
 ---
 
@@ -126,7 +129,7 @@
 | **3 估计** | look-ahead / 训练-测试时序违规若不能排除，按 §2 降 claim 强度（同步 evidence ledger） | log §2 + `evidence_ledger.md` |
 | **5–6 写作打磨** | 每条引用进 §1 核验；`reference-verify` 跑一遍 | log §1 |
 | **8 模拟评审** | critic 抽查随机 N 条引用复核存在性与撤稿；命中假引用即 rubric ⑥ 致命红旗 | `referee_report.md` |
-| **9 投稿终审** | `--final` 跑校验器：无 `to-verify`、无未处置 `flagged`、撤稿筛查通过 | `ref_verify_final` + log 全绿 |
+| **9 投稿终审** | `--final` 跑校验器：无 `to-verify`、无未处置 `flagged`、撤稿筛查通过；`check_workspace_gates.py` 在 replication ready 时复核同一条件 | `ref_verify_final` + log 全绿 |
 
 **rubric 第⑥维致命红旗**（任一即封顶）：存在无法核验/幻觉引用、引用了撤稿结果、未排除的 look-ahead
 却作主因果论断。（论断 overclaim-beyond-source 的封顶由 `claim_integrity_audit.md` 触发。）

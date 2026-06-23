@@ -129,6 +129,7 @@ Finishing stages is not enough. The workflow enforces explicit standards that re
 | Design risk ledger | Whether OVB, selection, bad controls, spillovers/SUTVA, external validity, attrition, specification search, and selective reporting are closed or downgraded | Stages 1/3/5/8 Method Gate / Quality Gate | [design-risk-ledger.md](references/design-risk-ledger.md) + `03_analysis/design_risk_ledger.md` |
 | Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Claim integrity audit | Whether numbers, citations, causal wording, and forbidden wording in the manuscript are faithful to the evidence ledger, source text, and project estimates | Stage 7-8 / Stage 9 Quality Gate / final submission check | [integrity-and-claim-audit.md](references/integrity-and-claim-audit.md) + `00_meta/claim_integrity_audit.md` |
+| Citation and temporal integrity | Whether citations exist, match the intended source/version, avoid retracted results, and avoid look-ahead, vintage, or sample-period overreach | Stages 1/2/5/9 Quality Gate / final submission check | [citation-and-temporal-integrity.md](references/citation-and-temporal-integrity.md) + `00_meta/citation_integrity_log.md` |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
 | Review and submission | Simulated review, response letter, journal decision order, cover letter | Stages 8, 9 | [peer-review-and-submission.md](references/peer-review-and-submission.md) |
@@ -198,6 +199,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/data_governance.md
 ├── 00_meta/evidence_ledger.md
 ├── 00_meta/claim_integrity_audit.md
+├── 00_meta/citation_integrity_log.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md + sample_audit.md
 ├── 03_analysis/design_register.md + design_risk_ledger.md + method_gate.md

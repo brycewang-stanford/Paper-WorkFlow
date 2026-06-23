@@ -158,6 +158,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `integrity_audit.unverified_citations` | 最近一次审计中无法核到原文/原始结果的引用或来源数 |
 | `integrity_audit.blocking_findings` | 仍阻断质量门或投稿包的 claim 忠实度问题列表 |
 | `integrity_audit.last_audit` | 最近一次 claim integrity 审计时间/摘要 |
+| `00_meta/citation_integrity_log.md` | 引用存在性与时序完整性的 artifact-state（不新增顶层 state block）；`check_workspace_gates.py` 在质量门前跑 pre-final 校验，在 replication ready 前跑 `--final` 校验 |
 | `design_risk.status` | `pending` / `pass` / `not_pass`——识别威胁、选择性报告、外部效度、SUTVA/attrition 风险总账是否关闭 |
 | `design_risk.risk_ledger` | 设计风险总账路径（默认 `03_analysis/design_risk_ledger.md`） |
 | `design_risk.threats_reviewed` | 已审计的威胁清单，如 `["parallel_trends", "bad_controls", "external_validity"]` |
