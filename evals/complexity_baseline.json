@@ -1,11 +1,11 @@
 {
   "recorded": "2026-06-23",
-  "note": "Consolidation pass 2026-06-23: SKILL.md slimmed 42873->38733 by relocating duplicated detail (further-reading index, sub-skill protocol, Phase 0 enumerations, key-constraints prose) into the references that already own it; no information removed. New ceiling prevents regrowth.",
+  "note": "Deeper consolidation 2026-06-23 (worktree): Method/Quality gates + protocols + Overview callout + wrap-up relocated to references; all contracts kept, only duplicated prose removed. Final floor.",
   "ceiling": {
-    "skill_md_bytes": 38733,
-    "skill_md_tokens_est": 9683,
+    "skill_md_bytes": 35304,
+    "skill_md_tokens_est": 8826,
     "reference_count": 29,
-    "reference_bytes": 381513,
+    "reference_bytes": 381762,
     "template_count": 24,
     "template_bytes": 62420
   },
