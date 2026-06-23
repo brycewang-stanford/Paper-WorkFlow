@@ -75,6 +75,10 @@ checker itself.
 - Do not duplicate existing guidance; replace stale or misleading guidance.
 - Keep `SKILL.md` lean. Move detailed maintenance mechanics into references,
   templates, or scripts.
+- Run `python3 evals/check_complexity_budget.py` before adoption. Growth in
+  `SKILL.md` or the reference-file count requires a deliberate baseline update
+  with a recorded reason; prefer consolidation when the held-out score is
+  already saturated.
 - If `SKILL.md` frontmatter changes, refresh the parent repository catalog from
   the parent checkout after the child repo is stable.
 - If another agent is working in parallel, keep maintenance edits path-scoped
@@ -85,4 +89,3 @@ checker itself.
 When an edit is rejected, record the failure mode in the packet's Adoption
 Record. Rejected edits are useful negative evidence: they prevent the same
 overfit rule from being proposed again after future runs.
-

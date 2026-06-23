@@ -15,10 +15,11 @@ This directory supplies the missing half: a mechanical scorer over a frozen
 scenario suite, so the "held-out selection score" is a measured number instead
 of a vibe. It is the validation set, not a replacement for the loop's judgment.
 
-It is **standalone on purpose** — it imports nothing from the skill and is not
-wired into `validate_skill.py`, so it never collides with maintenance edits in
-flight on the core skill files. (Wiring it in is an optional follow-up for
-whoever owns `validate_skill.py`.)
+It is **standalone on purpose** — it imports nothing from the skill, so it never
+collides with maintenance edits in flight on the core skill files. The full
+scored run remains an explicit maintenance command, while `validate_skill.py`
+now runs the scorer self-test plus the complexity ratchet so the local gate
+catches broken eval machinery and always-loaded-layer regrowth.
 
 ## What it measures
 
@@ -85,16 +86,21 @@ than guessed ones.
 3. After the edit, run the scorer again on a clean tree. Adopt only if the
    **selection mean strictly increases** and the **regression mean does not
    drop** — then paste the before/after into the packet's Gate Decision.
+   When the score is already saturated at `1.000`, do not manufacture a score
+   increase; use the complexity ratchet, validation gates, and worklog evidence
+   to justify maintenance edits whose value is measurement or consolidation.
 
-## Current baseline & first finding
+## Current baseline & active guardrails
 
 See [`baseline_scorecard.md`](baseline_scorecard.md) for the captured baseline.
-The harness's first actionable signal: **`time_series_var` scores `0.50` on
-`gate_integrity`** because the skill routes time-series work to `67/time-series`
-but ships **no Design Gate Card for time series** (cards cover only the eight
-causal-identification designs). This is left as a surfaced finding for the loop
-owner to adopt or deliberately decline — the harness measures; it does not
-unilaterally expand the skill's scope.
+The first held-out miss has been resolved: `time_series_var` now has a matching
+Design Gate Card, and the current train / selection / regression means are all
+`1.000` under the seven-dimension scorer.
+
+The active guardrail is now bidirectional: `validate_skill.py` runs
+[`check_complexity_budget.py`](check_complexity_budget.py), which blocks
+unjustified growth of `SKILL.md` or the reference-file count. That ratchet keeps
+the saturated quality score from becoming an additive-only incentive.
 
 ## Extending the suite
 

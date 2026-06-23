@@ -33,9 +33,9 @@ Design notes
 ------------
 Standalone by construction: reads files only, imports nothing from the skill,
 writes nothing except complexity_baseline.json (and only under --update-baseline).
-It therefore cannot collide with maintenance in flight on the core skill files,
-and is not wired into validate_skill.py. A one-line wiring snippet for whoever
-owns that file lives in evals/complexity_audit.md.
+It therefore cannot collide with maintenance in flight on the core skill files.
+validate_skill.py runs this checker as a blocking maintenance gate, so ordinary
+local validation now catches regrowth of the always-loaded layer.
 
 The aspirational SKILL.md target is a pragmatic middle ground, not SkillOpt's
 literal 2000-token figure: this is a meta-orchestrator, legitimately heavier than

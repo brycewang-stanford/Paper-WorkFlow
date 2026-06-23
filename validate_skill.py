@@ -448,6 +448,8 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_skillopt_packet.py",
         ROOT / "scripts" / "check_verification_log.py",
         ROOT / "scripts" / "check_citation_integrity.py",
+        ROOT / "evals" / "score_skill.py",
+        ROOT / "evals" / "check_complexity_budget.py",
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -489,6 +491,21 @@ def check_smoke_workspace() -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
 
 
+def check_maintenance_evals() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "evals" / "score_skill.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py")],
+        check=True,
+    )
+
+
 def main() -> None:
     os.chdir(ROOT)
     template = load_template()
@@ -504,6 +521,7 @@ def main() -> None:
     check_skillopt_packet_checker()
     check_verification_log()
     check_citation_integrity_checker()
+    check_maintenance_evals()
     print("OK: Paper-WorkFlow skill checks passed")
 
 

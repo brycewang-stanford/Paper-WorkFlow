@@ -20,8 +20,8 @@ As of 2026-06-23:
 
 | Layer | Size | Note |
 |---|---|---|
-| SKILL.md (**always loaded**) | ~42.9 KB ≈ 10.7k tokens | ~5× the top of SkillOpt's compact range |
-| references | 29 files ≈ 95k tokens | on-demand; most were born within a few days |
+| SKILL.md (**always loaded**) | 38.7 KB ≈ 9.7k tokens | still above the local 32 KB target |
+| references | 29 files ≈ 95k tokens | on-demand; file count is now ratcheted |
 | templates | 24 files ≈ 15.6k tokens | on-demand |
 
 Trend across the recent waves:
@@ -77,7 +77,7 @@ python3 evals/check_complexity_budget.py --update-baseline --note "why this must
   the recorded ceiling ([`complexity_baseline.json`](complexity_baseline.json))
   without a justified `--update-baseline`.
 - It reports headroom toward an aspirational SKILL.md target (32 KB ≈ 8k tokens):
-  currently **~10.9 KB over**, which is the concrete goal for a consolidation pass.
+  currently **6.7 KB over**, which is the concrete goal for a consolidation pass.
 
 The ratchet is a brake, not a demand to shrink today — flat edits pass; only
 growth trips it. It stops the bleeding now; the slimming is a separate,
@@ -87,31 +87,21 @@ deliberate pass (see below).
 
 1. **Stop adding layers.** Make the next wave a **consolidation pass**, not a
    feature pass.
-2. **Wire the ratchet into CI** so growth is caught automatically (snippet below).
+2. **Keep the ratchet wired into local validation** so growth is caught before a
+   maintenance edit is adopted.
 3. **Slim SKILL.md toward the 32 KB target** by moving detail into the on-demand
    references it already owns — pure relocation, no information lost.
 4. **De-saturate the quality eval** by adding the parsimony dimension (snippet
    below) so the held-out score regains a gradient and gains subtraction-pressure.
 5. **Aim for ~4:1 add:consolidate**, not 20:1.
 
-## Wiring snippets — NOT applied here (they touch shared files)
+## Remaining wiring snippets — NOT applied here
 
-This pass adds only net-new files in `evals/`, so it cannot collide with
-maintenance in flight. The snippets below edit files other sessions own
-(`validate_skill.py`, `score_skill.py`, `skillopt-improvement-loop.md`); apply
-them deliberately, when no parallel edit is in flight.
+`validate_skill.py` now runs the ratchet. The remaining snippets change the
+scoring objective or policy text and should be applied deliberately, when no
+parallel edit owns those files.
 
-**(a) Enforce the ratchet in `validate_skill.py`** — add a check and call it from `main()`:
-
-```python
-def check_complexity_ratchet() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py")],
-        check=True,
-    )
-```
-
-**(b) Give the quality eval subtraction-pressure** — in `evals/score_skill.py`,
+**(a) Give the quality eval subtraction-pressure** — in `evals/score_skill.py`,
 add `"parsimony"` to `DIMENSIONS`, compute it in `compute_global_scores`, and
 surface it per scenario:
 
@@ -127,7 +117,7 @@ parsimony = round(min(1.0, 32_000 / max(1, skill_bytes)), 4)  # 1.0 iff within t
 This makes the score drop below 1.0 while SKILL.md is over target, and rise as it
 is slimmed — restoring the gradient the presence-only dimensions lost.
 
-**(c) Make the loop bidirectional** — add to the Adoption rules in
+**(b) Make the loop bidirectional** — add to the Adoption rules in
 `references/skillopt-improvement-loop.md`:
 
 ```markdown
