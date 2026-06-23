@@ -89,4 +89,19 @@ PASS workspace from the real templates plus synthesized analysis artifacts and a
 `check_workspace_gates` reports zero failures; (c) corrupts that real workspace three ways and asserts
 the right check goes red, then restores green. Wired into `validate_skill.py` (run + py_compile);
 the cross-reference linter's `harness_wiring` invariant now reports 6/6 `check_*.py` wired. Clean
-window, explicit-path staged, FF push. Roadmap items 2/3/5 remain for later passes.
+window, explicit-path staged, FF push. Roadmap items 2/3/5 are covered by the increment below.
+
+## Update — increment 3: dead-doc, stage, and state-block contracts
+
+The linter now covers the remaining low-conflict roadmap invariants:
+
+- `orphaned_references` walks from `SKILL.md`, `README.md`, and `README.en.md` through markdown links
+  and bare `references/*.md` mentions, then fails if any top-level reference doc is unreachable.
+- `stage_contract` compares the Stage table in `SKILL.md` with `assets/workflow_state.template.json`
+  so Stage 0-9 prose and state schema cannot drift silently.
+- `block_agreement` statically scans `scripts/check_workspace_gates.py` for top-level
+  `state[...]` / `state.get(...)` reads and fails if the template does not ship those blocks.
+
+`scripts/check_cross_references.py --selftest` now injects failures for all seven invariants and
+then repairs the synthetic tree back to green, so the new checks are regression-tested rather than
+only exercised on the currently clean live tree.

@@ -20,8 +20,12 @@ slices most likely to rot silently when the prose is edited:
     creates (so the checker would forever look in a place nothing populates);
   - a new ``scripts/check_*.py`` checker that was added but never wired into the
     master harness ``validate_skill.py`` (so it silently never runs in CI).
+  - a reference doc that exists on disk but is unreachable from SKILL.md or the
+    README roots (dead guidance future agents will not load);
+  - SKILL.md's Stage 0-9 table drifting away from the workflow-state template;
+  - a gate checker reading a top-level state block that the template never ships.
 
-This linter makes those four invariants mechanical. It is read-only and static
+This linter makes those seven invariants mechanical. It is read-only and static
 (no workspace, no network); it parses the skill's own tracked files. Two agents
 editing this tree in parallel is exactly the regime where this drift appears, so
 the check is preventive, not corrective: it should normally pass.
@@ -85,6 +89,20 @@ def _is_placeholder_path(path: str) -> bool:
     if any(ch in path for ch in "<>") or "..." in path or "…" in path:
         return True
     return bool(_PLACEHOLDER_STEM_RE.match(Path(path).stem))
+
+
+# Markdown link target: [label](target).
+_MD_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+
+# A mention of a reference/template doc (for reachability) — angle-bracket
+# placeholders like references/<name>.md cannot match (no <,> in the class).
+_DOC_MENTION_RE = re.compile(r"(?:references|templates)/[A-Za-z0-9_./\-]+\.md")
+
+# Stage-table rows in SKILL.md: `| **0** | ...`.
+_STAGE_ROW_RE = re.compile(r"^\|\s*\*\*(\d)\*\*\s*\|", re.MULTILINE)
+
+# Top-level state blocks a checker reads: state["X"] or state.get("X").
+_STATE_BLOCK_RE = re.compile(r'state(?:\.get\(|\[)\s*["\']([a-z_]+)["\']')
 
 
 class Report:
@@ -275,6 +293,90 @@ def check_tree(root: Path) -> Report:
         else:
             rep.add(OKAY, "harness_wiring", f"all {wired} scripts/check_*.py are wired into validate_skill.py")
 
+    # --- invariant 5: every reference doc is reachable from a root doc ---------
+    ref_dir = root / "references"
+    if ref_dir.is_dir():
+        root_abs = root.resolve()
+        all_refs = {(ref_dir / p.name).resolve() for p in ref_dir.glob("*.md")}
+        roots = [p for p in (root / "SKILL.md", root / "README.md", root / "README.en.md") if p.exists()]
+        # BFS through the doc link graph. Targets are resolved relative to the
+        # *containing* file (standard markdown semantics) so sibling links inside
+        # references/ (written bare, e.g. [x](other-ref.md)) traverse correctly.
+        reachable: set[Path] = set()
+        frontier = list(roots)
+        visited: set[Path] = set()
+        while frontier:
+            f = frontier.pop()
+            if f in visited or not f.exists():
+                continue
+            visited.add(f)
+            text = f.read_text(encoding="utf-8")
+            targets = [m.group(1) for m in _MD_LINK_RE.finditer(text)]
+            targets += [m.group(0) for m in _DOC_MENTION_RE.finditer(text)]
+            for tgt in targets:
+                tgt = tgt.strip().split()[0] if tgt.strip() else ""
+                tgt = tgt.split("#", 1)[0].strip("<>").strip()
+                if not tgt or tgt.startswith(("http://", "https://", "mailto:")):
+                    continue
+                cand = (f.parent / tgt).resolve()
+                try:
+                    cand.relative_to(root_abs)
+                except ValueError:
+                    continue
+                if cand.suffix != ".md":
+                    continue
+                if cand in all_refs:
+                    reachable.add(cand)
+                if cand.exists() and cand not in visited:
+                    frontier.append(cand)
+        orphan_refs = sorted(str(p.relative_to(root_abs)) for p in (all_refs - reachable))
+        if not roots:
+            rep.add(WARN, "orphaned_references", "no root doc (SKILL.md/README) found; cannot check reachability")
+        elif orphan_refs:
+            rep.add(FAIL, "orphaned_references", f"{len(orphan_refs)} reference doc(s) unreachable from "
+                    f"SKILL.md/README (dead docs): {', '.join(orphan_refs)}")
+        else:
+            rep.add(OKAY, "orphaned_references", f"all {len(all_refs)} reference docs reachable from a root")
+
+    # --- invariant 6 & 7: SKILL.md stage table + checker blocks vs the template
+    template_json = root / "assets" / "workflow_state.template.json"
+    tdata: dict = {}
+    if template_json.exists():
+        try:
+            tdata = json.loads(template_json.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            tdata = {}
+
+    # invariant 6: SKILL.md's stage table must enumerate the same stages as the template.
+    skill_md = root / "SKILL.md"
+    if skill_md.exists() and template_json.exists():
+        stage_nums = {int(d) for d in _STAGE_ROW_RE.findall(skill_md.read_text(encoding="utf-8"))}
+        tmpl_nums = {int(k[0]) for k in tdata.get("stages", {}) if k[:1].isdigit()}
+        if not stage_nums:
+            rep.add(WARN, "stage_contract", "no `| **N** |` stage table in SKILL.md; cannot cross-check stages")
+        elif not tmpl_nums:
+            rep.add(WARN, "stage_contract", "no parseable stages in workflow_state.template.json")
+        elif stage_nums != tmpl_nums:
+            rep.add(FAIL, "stage_contract", f"SKILL.md stage table {sorted(stage_nums)} != "
+                    f"template stages {sorted(tmpl_nums)}")
+        else:
+            rep.add(OKAY, "stage_contract", f"SKILL.md stage table matches template stages {sorted(stage_nums)}")
+
+    # invariant 7: every top-level state block the gate checker reads must ship in the template.
+    gate_checker = root / "scripts" / "check_workspace_gates.py"
+    if gate_checker.exists() and template_json.exists():
+        if not tdata:
+            rep.add(WARN, "block_agreement", "workflow_state.template.json not parseable; cannot check blocks")
+        else:
+            tkeys = set(tdata.keys())
+            blocks = set(_STATE_BLOCK_RE.findall(gate_checker.read_text(encoding="utf-8")))
+            missing_blocks = sorted(b for b in blocks if b not in tkeys)
+            if missing_blocks:
+                rep.add(FAIL, "block_agreement", f"{len(missing_blocks)} state block(s) read by "
+                        f"check_workspace_gates absent from the template: {', '.join(missing_blocks)}")
+            else:
+                rep.add(OKAY, "block_agreement", f"all {len(blocks)} gate-checker state blocks exist in the template")
+
     return rep
 
 
@@ -297,29 +399,41 @@ def _selftest() -> int:
             "assets/init_workspace.sh",
             'mkdir -p "$workspace"/{00_meta/handoff,02_data/raw,03_analysis/results,logs}\n',
         )
-        # a gate checker with one good path and one orphan path
+        # a 10-stage state template (for invariants 6 & 7); it ships method_gate but NOT ghost_block.
+        template = {
+            "schema_version": 10,
+            "stages": {f"{i}_s": "pending" for i in range(10)},
+            "method_gate": {}, "orchestration": {}, "design_risk": {}, "empirical_audit": {},
+            "evidence_governance": {}, "integrity_audit": {}, "quality_gate": {}, "replication_pack": {},
+        }
+        write("assets/workflow_state.template.json", json.dumps(template))
+        # a gate checker with: one good + one out-of-skeleton path; reads method_gate (ok) and
+        # ghost_block (absent from the template -> invariant 7 fires).
         write(
             "scripts/check_workspace_gates.py",
-            'A = "00_meta/stage_passport.md"\nB = "99_void/ghost.md"\n',
+            'A = "00_meta/stage_passport.md"\nB = "99_void/ghost.md"\n'
+            'g = state["method_gate"]\nh = state.get("ghost_block")\n',
         )
         # validate_skill.py wires check_workspace_gates.py but NOT check_orphan.py
         write("validate_skill.py", "subprocess.run(['check_workspace_gates.py'])\n")
         write("scripts/check_orphan.py", "# a checker nobody wired\n")
-        # SKILL.md with: a good command, a broken command, a good mention, a broken mention,
-        # and a workspace-runtime command that must be IGNORED.
-        write(
-            "SKILL.md",
+        # SKILL.md: a good + a broken command, a good + a broken mention, IGNORED workspace-runtime
+        # + placeholder paths, and a stage table that is MISSING stage 9 (template has 0-9).
+        base_skill = (
             "Run `python3 scripts/check_workspace_gates.py`.\n"
             "Run `python3 scripts/missing_checker.py`.\n"
             "See `references/real.md` and `templates/ghost.md`.\n"
             "The run executes `python3 03_analysis/estimate.py` and `bash run_all.sh`.\n"
-            "Docs illustrate with `scripts/X.py`, `references/<name>.md`, `python3 templates/Y.py`.\n",
+            "Docs illustrate with `scripts/X.py`, `references/<name>.md`, `python3 templates/Y.py`.\n"
         )
+        write("SKILL.md", base_skill + "".join(f"| **{i}** | s{i} |\n" for i in range(9)))
         write("references/real.md", "real\n")
+        write("references/orphan.md", "nobody links me\n")  # invariant 5 fires
 
         rep = check_tree(root)
         hits = {chk for lvl, chk, _ in rep.rows if lvl == FAIL}
-        for expected in ("inline_commands", "repo_path_mentions", "workspace_paths", "harness_wiring"):
+        for expected in ("inline_commands", "repo_path_mentions", "workspace_paths", "harness_wiring",
+                         "orphaned_references", "stage_contract", "block_agreement"):
             assert expected in hits, f"selftest: expected {expected} to FAIL; got {hits}"
         blob = rep.render()
         # the workspace-runtime command/path must NOT have been flagged
@@ -332,12 +446,13 @@ def _selftest() -> int:
         # --- now repair every injected fault; the clean tree must pass --------
         write("scripts/missing_checker.py", "# now exists\n")
         write("templates/ghost.md", "now real\n")
-        write("scripts/check_workspace_gates.py", 'A = "00_meta/stage_passport.md"\nB = "03_analysis/results/main.json"\n')
-        write(
-            "validate_skill.py",
-            "subprocess.run(['check_workspace_gates.py', 'check_orphan.py', "
-            "'missing_checker.py'])\n",
-        )
+        write("scripts/check_workspace_gates.py",
+              'A = "00_meta/stage_passport.md"\nB = "03_analysis/results/main.json"\ng = state["method_gate"]\n')
+        write("validate_skill.py",
+              "subprocess.run(['check_workspace_gates.py', 'check_orphan.py', 'missing_checker.py'])\n")
+        # full 0-9 stage table + a link to the previously-orphan reference
+        write("SKILL.md", base_skill + "".join(f"| **{i}** | s{i} |\n" for i in range(10))
+              + "Also see `references/orphan.md`.\n")
         rep2 = check_tree(root)
         assert not rep2.failures, f"selftest: repaired tree should pass, got {rep2.failures}"
 
