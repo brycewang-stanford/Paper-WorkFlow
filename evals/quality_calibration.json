@@ -1,0 +1,52 @@
+{
+  "_about": "Gold anchor scorecards for the reproducible LLM-as-judge quality gate. Each anchor pins the deterministic PASS/NOT_PASS verdict that the rubric rule MUST produce from a given set of dimension scores, red flags, and integrity status. check_quality_judge.py asserts compute_verdict() reproduces every expected_verdict here, so the gate's arithmetic is a measured invariant, not a vibe. The rule: PASS iff every dimension >= 7 AND total >= 56 AND dimensions 2/3/6 carry no fatal red flag AND the Stage 7 integrity pre-review is clean.",
+  "_rubric": "references/quality-rubric.md",
+  "_critical_dimensions": [2, 3, 6],
+  "anchors": [
+    {
+      "id": "rubric_worked_example",
+      "source": "references/quality-rubric.md scorecard example (total 54/70, stuck on dimension 3)",
+      "dimensions": {"1": 8, "2": 7, "3": 6, "4": 8, "5": 8, "6": 9, "7": 8},
+      "red_flags": {},
+      "integrity_clean": true,
+      "expected_verdict": "NOT_PASS",
+      "expected_reasons": ["dimension 3 below 7", "total 54 below 56"]
+    },
+    {
+      "id": "clean_pass",
+      "source": "minimal passing draft: every dimension at the 8 bar, no red flags, integrity clean",
+      "dimensions": {"1": 8, "2": 8, "3": 8, "4": 8, "5": 8, "6": 8, "7": 8},
+      "red_flags": {},
+      "integrity_clean": true,
+      "expected_verdict": "PASS",
+      "expected_reasons": []
+    },
+    {
+      "id": "boundary_total_55",
+      "source": "every dimension >= 7 but total 55 (< 56): must fail on the total threshold alone",
+      "dimensions": {"1": 8, "2": 8, "3": 8, "4": 8, "5": 8, "6": 8, "7": 7},
+      "red_flags": {},
+      "integrity_clean": true,
+      "expected_verdict": "NOT_PASS",
+      "expected_reasons": ["total 55 below 56"]
+    },
+    {
+      "id": "identification_red_flag_capped",
+      "source": "parallel-trends violation: dimension 2 (identification) capped at 4 with a fatal red flag in a critical dimension",
+      "dimensions": {"1": 9, "2": 4, "3": 8, "4": 9, "5": 9, "6": 9, "7": 9},
+      "red_flags": {"2": true},
+      "integrity_clean": true,
+      "expected_verdict": "NOT_PASS",
+      "expected_reasons": ["dimension 2 below 7", "fatal red flag in critical dimension 2"]
+    },
+    {
+      "id": "integrity_block",
+      "source": "all dimensions pass and total >= 56, but the Stage 7 claim-integrity pre-review has a blocking finding",
+      "dimensions": {"1": 8, "2": 8, "3": 8, "4": 8, "5": 8, "6": 8, "7": 8},
+      "red_flags": {},
+      "integrity_clean": false,
+      "expected_verdict": "NOT_PASS",
+      "expected_reasons": ["integrity pre-review not clean"]
+    }
+  ]
+}

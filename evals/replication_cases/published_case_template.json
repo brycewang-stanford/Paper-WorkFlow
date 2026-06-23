@@ -1,0 +1,26 @@
+{
+  "id": "published_case_template",
+  "status": "template",
+  "design": "<DiD | IV | RDD | SC-SDID | Panel FE | DML-HTE | Time Series>",
+  "title": "TEMPLATE — copy this to add a published-replication case",
+  "gold_source": "REQUIRED for an active case: cite the exact published table and column the gold value is read from, e.g. 'Card & Krueger (1994, AER) Table 3, DiD estimate of the NJ minimum-wage change on FTE employment'. The gold value is a transcribed FACT, never a guess; if you have not opened the table, leave status='template' and value=null.",
+  "description": "How to add a real case: (1) pick a published paper that ships a replication package (so the gold coefficient is an established fact, not your own re-estimate); (2) copy this file, set status='active', fill gold_source with the precise table/column, and set each primary coefficient's value to the published point estimate; (3) point Stage 3 at the same data and let it produce 03_analysis/results/estimates.json; (4) run check_replication_accuracy.py with --candidate to get the three rates. Keep tolerances honest: rel_tol tight enough that a wrong specification is caught, loose enough that legitimate solver/rounding differences are not flagged.",
+  "tolerances": {
+    "rel_tol": 0.05,
+    "partial_tol": 0.20,
+    "abs_floor": 1.0
+  },
+  "primary_coefficients": [
+    {
+      "name": "<coef_name e.g. did_estimate>",
+      "value": null,
+      "sign": "<+ | - | 0>",
+      "note": "Set value to the published point estimate ONLY after reading it from the cited table. Leave null while status='template'."
+    }
+  ],
+  "candidate_contract": {
+    "where": "03_analysis/results/estimates.json (or whatever Stage 3 writes).",
+    "format": "{\"coefficients\": {\"<coef_name>\": {\"value\": <float>, \"se\": <float optional>}}}",
+    "note": "Only primary_coefficients are scored. List the coefficients the paper's headline claim hinges on, not every number in the table."
+  }
+}

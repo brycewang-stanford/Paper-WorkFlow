@@ -1,0 +1,26 @@
+{
+  "id": "did_demo_self",
+  "status": "active",
+  "design": "DiD / staggered event study",
+  "title": "Self-contained staggered-DiD case anchored on the repo's own demo",
+  "gold_source": "Own simulation: did_demo.ipynb sets TRUE_ATT = 2.0 (per-period true treatment effect) as the data-generating ground truth; any faithful staggered estimator must recover it.",
+  "description": "This is the one case in the suite whose gold value we OWN rather than transcribe: the repo's DiD demo simulates a staggered-adoption panel with a known per-period treatment effect of 2.0. A faithful heterogeneity-robust estimator (Callaway-Sant'Anna, Sun-Abraham, or BJS imputation) must recover ~2.0; a naive TWFE estimate can be biased by negative weighting and is the standard cautionary contrast. Use this case to smoke-test that the benchmark scorer and a Stage 3 backend agree before pointing the harness at transcribed published cases.",
+  "tolerances": {
+    "rel_tol": 0.05,
+    "partial_tol": 0.20,
+    "abs_floor": 1.0
+  },
+  "primary_coefficients": [
+    {
+      "name": "att",
+      "value": 2.0,
+      "sign": "+",
+      "note": "Average per-period ATT. TRUE_ATT in did_demo.ipynb. The robust staggered estimator's overall ATT should land here; naive TWFE may not."
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/ (e.g. group_time_att.* / estimates.json).",
+    "format": "A JSON object {\"coefficients\": {\"att\": {\"value\": <float>}}} or the bare shorthand {\"att\": <float>}.",
+    "note": "The benchmark scores the produced number; it does not run the estimator."
+  }
+}
