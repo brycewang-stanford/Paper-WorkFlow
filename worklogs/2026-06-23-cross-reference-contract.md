@@ -76,3 +76,17 @@ stay green and fire only when a future edit breaks the contract.
 
 All five are additive, new-file or single-linter edits, and avoid the parallel agent's hot zones
 (`SKILL.md`, READMEs, `evals/*`, the ratchet).
+
+## Update — increment 2 (same session): roadmap item 4 shipped
+
+`scripts/check_gate_integration.py` (`23e7b37`) — the end-to-end gate integration test. The
+per-checker selftests run on synthetic stubs and `smoke_workspace.py` instantiates the real
+templates but never runs the gate checkers on them, so one contract was CI-unverified: do the real
+`init_workspace.sh` skeleton + real templates, driven to a genuine PASS, actually satisfy the
+checkers? The new test (a) asserts the born-at-init `citation_integrity_log.md` passes
+`check_citation_integrity` (non-final) — a contract a prior pass verified only by hand; (b) builds a
+PASS workspace from the real templates plus synthesized analysis artifacts and asserts
+`check_workspace_gates` reports zero failures; (c) corrupts that real workspace three ways and asserts
+the right check goes red, then restores green. Wired into `validate_skill.py` (run + py_compile);
+the cross-reference linter's `harness_wiring` invariant now reports 6/6 `check_*.py` wired. Clean
+window, explicit-path staged, FF push. Roadmap items 2/3/5 remain for later passes.
