@@ -87,6 +87,22 @@ INTEGRITY_CHECKPOINT_GROUPS = [
     ["integrity_audit"],
     ["quality_gate:integrity", "replication_pack"],
 ]
+# Citation-existence + temporal-integrity layer (complement to the claim-integrity
+# checkpoint above: "does the reference exist / is the timing honest", not "is the
+# claim faithful"). Each inner list is one credit, satisfied if ANY member is present.
+CITATION_TEMPORAL_FILES = [
+    "SKILL.md",
+    "references/citation-and-temporal-integrity.md",
+    "templates/citation_integrity_log.md",
+    "scripts/check_citation_integrity.py",
+]
+CITATION_TEMPORAL_GROUPS = [
+    ["citation_integrity_log", "Citation Integrity Log"],   # per-paper artifact exists
+    ["look-ahead", "时序穿越", "temporal integrity", "Temporal Integrity"],  # temporal layer
+    ["check_citation_integrity"],                            # deterministic checker
+    ["vintage", "real-time"],                                # real-time vs final discipline
+    ["--final"],                                             # Stage 9 terminal gate
+]
 
 DIMENSIONS = [
     "routing_fidelity",
@@ -95,6 +111,7 @@ DIMENSIONS = [
     "reproducibility",
     "user_burden",
     "integrity_checkpoint",
+    "citation_temporal_integrity",
 ]
 SUCCESS_THRESHOLD = 0.70  # per the rubric: >=0.7 is "meets bar"
 
@@ -135,6 +152,7 @@ def compute_global_scores(run_scripts: bool) -> dict:
     context_corpus = "\n".join(_read(f) for f in CONTEXT_PROTECTION_FILES)
     burden_corpus = "\n".join(_read(f) for f in USER_BURDEN_FILES)
     integrity_corpus = "\n".join(_read(f) for f in INTEGRITY_CHECKPOINT_FILES)
+    citation_temporal_corpus = "\n".join(_read(f) for f in CITATION_TEMPORAL_FILES)
 
     if run_scripts:
         smoke_ok = _run_script_ok("scripts/smoke_workspace.py", ["--quiet"])
@@ -155,6 +173,9 @@ def compute_global_scores(run_scripts: bool) -> dict:
         "user_burden": _fraction_groups_present(burden_corpus, USER_BURDEN_GROUPS),
         "integrity_checkpoint": _fraction_groups_present(
             integrity_corpus, INTEGRITY_CHECKPOINT_GROUPS
+        ),
+        "citation_temporal_integrity": _fraction_groups_present(
+            citation_temporal_corpus, CITATION_TEMPORAL_GROUPS
         ),
         "_gate_selftest_ok": gate_selftest_ok,
     }
@@ -185,6 +206,7 @@ def score_scenario(scenario: dict, routing_corpus: str, gate_card_corpus: str,
         "reproducibility": globals_["reproducibility"],
         "user_burden": globals_["user_burden"],
         "integrity_checkpoint": globals_["integrity_checkpoint"],
+        "citation_temporal_integrity": globals_["citation_temporal_integrity"],
     }
     total = round(sum(dims[d] for d in DIMENSIONS) / len(DIMENSIONS), 4)
     notes = []
@@ -318,7 +340,8 @@ def _selftest() -> int:
     # those credits; a fully-present one keeps them. Tested on synthetic corpora
     # so this invariant does not break when the skill legitimately closes a gap.
     g = {"context_protection": 1.0, "reproducibility": 1.0, "user_burden": 1.0,
-         "integrity_checkpoint": 1.0, "_gate_selftest_ok": True}
+         "integrity_checkpoint": 1.0, "citation_temporal_integrity": 1.0,
+         "_gate_selftest_ok": True}
     miss = score_scenario(
         {"id": "_miss", "split": "selection",
          "routing_anchors": ["__NO_SUCH_ANCHOR__"],

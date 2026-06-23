@@ -35,10 +35,12 @@ claim-integrity checkpoint added for long paper workflows:
 | `reproducibility` | global | a fresh workspace passes `scripts/smoke_workspace.py --quiet` |
 | `user_burden` | global | `SKILL.md` documents autonomy gears + a minimal-question / authorization discipline |
 | `integrity_checkpoint` | global | `SKILL.md`, `references/integrity-and-claim-audit.md`, the template, and the gate checker preserve the Stage 7 `pre-review` and Stage 9 `final-check` claim-integrity contract |
+| `citation_temporal_integrity` | global | the complementary citation-existence + temporal-integrity layer is present: `references/citation-and-temporal-integrity.md`, `templates/citation_integrity_log.md`, `scripts/check_citation_integrity.py`, the look-ahead/vintage discipline, and the `--final` gate |
 
-A scenario's total is the mean of the five dimensions in `[0, 1]`. A scenario
-is `success` at `total >= 0.70` (the rubric's "meets bar"). The **selection-split
-mean** is the number a candidate edit must strictly beat.
+A scenario's total is the mean of the seven dimensions in `[0, 1]` (two
+per-scenario + five global). A scenario is `success` at `total >= 0.70` (the
+rubric's "meets bar"). The **selection-split mean** is the number a candidate
+edit must strictly beat.
 
 ## Scenario splits
 
