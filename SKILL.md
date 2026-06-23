@@ -347,49 +347,22 @@ Stage 7→8 之间还要加载
 
 ## 关键约束（务必遵守）
 
-- **绝不替子 skill 重新发明轮子**。识别策略、表格规范、查新逻辑、审稿口吻……都在既有 skill 里，
-  本编排器只负责"在对的时点把对的 skill 喂对的输入"。
-- **绝不伪造数据 / 结果 / 文献**。引用核验交给 `reference-verify` / StatsPAI `bibtex`（`paper.bib` 为唯一
-  真源）；数据来源交给 `data-fetcher`；计量结论以真实运行结果为准。Stage 3–4 先按
-  [`references/analysis-backends.md`](references/analysis-backends.md) 选择 Python/StatsPAI、Stata 或 R 后端；
-  默认 Python/StatsPAI 路径见 [`references/statspai-analysis.md`](references/statspai-analysis.md)。
-- **绝不贴空方法标签**。DiD / IV / RDD / SDID / DML / causal forest 等标签必须对应
-  `research-grade-methods.md` 与 `design-gate-cards.md` 要求的证据包；缺 `method_gate.md`、闸门未过、
-  或 evidence ledger 不允许该 claim 强度，就不得把相关结果写成主因果发现。
-- **绝不让估计样本漂移**。`sample_audit.md` 未说明 raw→clean→estimation sample 的 N、drop 原因、
-  treated/control 数、missingness/balance/overlap 与聚类层级时，不得把结果写成已通过方法闸门。
-- **绝不让不确定性量化错位**。聚类层级要至少等于处理分配层级；cluster 少（G≲30–50）要 wild bootstrap /
-  CR2 / 随机化推断；多 outcome / 多子样本要预先指定或族内校正；弱工具要 AR/tF 区间——口径写进
-  `inference_report.md`，缺则按 [`references/inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 在质量门封顶。
-- **绝不把机制当主回归的赠品**。X→M→Y 是独立因果问题：按 [`references/mechanism-and-channels.md`](references/mechanism-and-channels.md)
-  分清「描述性分解 / 因果中介 / 异质性」，中介绝不进主设定，措辞退到证据支持的档位。
-- **绝不把识别威胁留在散文里**。OVB、反向因果、选择、坏控制、spillover/SUTVA、external validity、
-  attrition、specification search 和选择性报告风险必须进
-  [`references/design-risk-ledger.md`](references/design-risk-ledger.md) 与 `03_analysis/design_risk_ledger.md`；
-  有 blocking threat 时 Method Gate 不能 `PASS`。
-- **人类决策点不可跳过**（除非 `全自动` 档位且用户已显式授权）：选题定标题、定目标期刊、识别
-  策略拍板、投稿前终审——这些在阶段闸门处守住。
-- **数据治理不可绕过**：受限数据、PII、IRB/DUA、许可证、archive boundary 按
-  [`references/data-governance.md`](references/data-governance.md) 记录；公共复现包不得包含不可公开材料。
-- **运行时退化必须披露**：工具、网络、MCP 或统计软件缺失时按
-  [`references/runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化执行；影响最低证据包或复现的，
-  必须降低闸门状态/分数。
-- **claim 忠实度必须单独验**：citation 存在不等于 claim 忠实。Stage 7→8 与 Stage 9 按
-  [`references/integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 审计数字、引用、因果措辞和
-  forbidden wording；有 blocking finding 时质量门和投稿包都不能标 ready。
-- **引用存在性与时序完整性也必须单独验**：claim 忠实之外的互补半——先确认「引用真实存在且引对」（DOI 解析、
-  撤稿筛查、版本、无 citation laundering）与「没有时序穿越」（look-ahead / real-time vs final vintage / 训练-测试
-  时序切分 / 样本期 vs 论断期）。按 [`references/citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md)
-  逐项落 `00_meta/citation_integrity_log.md`，终审跑 `python3 scripts/check_citation_integrity.py <workspace> --final`；
-  未排除的 look-ahead 把相关结论封顶到 `descriptive`。
-- **上下文保护优先于一切**：任何会把大段文本灌回主代理的操作，改成"写盘 + 回传摘要"。
-- **断点交接必须可恢复**：阶段完成不只更新聊天摘要；必须更新 `00_meta/stage_passport.md`。长期暂停、
-  阶段切换或接手前写 `00_meta/handoff/`，并在续跑时用 fresh evidence 重新核当前事实。
-- **自我改进不靠训练集幻觉**：维护或改造本 skill 时，按
-  [`references/skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) 收集 rollout、拆分 train /
-  held-out selection、提出有界 patch、过 selection gate；不得只凭触发本次修改的样例接受改动。
-- **自检不靠感觉**：维护或改造本 skill 时，先后运行 `python3 validate_skill.py` 与仓库级验证；若有
-  SkillOpt-style 改进包，还要跑 `python3 scripts/check_skillopt_packet.py <packet>`。若自检失败，必须修到通过再宣称可交付。
+- **绝不替子 skill 重新发明轮子**：识别策略、表格规范、查新、审稿口吻都在既有 skill 里，本编排器只在对的时点把对的 skill 喂对的输入。
+- **绝不伪造数据 / 结果 / 文献**：引用核验交给 `reference-verify` / StatsPAI `bibtex`（`paper.bib` 唯一真源），数据交给 `data-fetcher`，计量结论以真实运行为准；后端选择见 [`analysis-backends.md`](references/analysis-backends.md)、默认路径见 [`statspai-analysis.md`](references/statspai-analysis.md)。
+- **绝不贴空方法标签**：DiD/IV/RDD/SDID/DML/causal forest 等必须对应 [`research-grade-methods.md`](references/research-grade-methods.md) 与 [`design-gate-cards.md`](references/design-gate-cards.md) 的证据包；缺 `method_gate.md`、闸门未过或 ledger 不允许该强度，就不得写成主因果发现。
+- **绝不让估计样本漂移**：`sample_audit.md` 未说明 raw→clean→estimation 的 N、drop 原因、treated/control 数、missingness/balance/overlap 与聚类层级时，不得宣称已过方法闸门。
+- **绝不让不确定性量化错位**：聚类层级 ≥ 处理分配层级；G≲30–50 用 wild bootstrap / CR2 / 随机化推断；多 outcome / 子样本要预指定或族内校正；弱工具用 AR/tF 区间——口径写进 `inference_report.md`，缺则按 [`inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 在质量门封顶。
+- **绝不把机制当主回归的赠品**：按 [`mechanism-and-channels.md`](references/mechanism-and-channels.md) 分清描述性分解 / 因果中介 / 异质性，中介绝不进主设定，措辞退到证据支持的档位。
+- **绝不把识别威胁留在散文里**：OVB、反向因果、选择、坏控制、spillover/SUTVA、外部效度、attrition、specification search、选择性报告必须进 [`design-risk-ledger.md`](references/design-risk-ledger.md) 与 `03_analysis/design_risk_ledger.md`；有 blocking threat 时 Method Gate 不能 `PASS`。
+- **人类决策点不可跳过**（除非 `全自动` 档位且已显式授权）：定标题、定目标期刊、识别策略拍板、投稿终审——在阶段闸门处守住。
+- **数据治理不可绕过**：受限数据、PII、IRB/DUA、许可证、archive boundary 按 [`data-governance.md`](references/data-governance.md) 记录；公共复现包不得含不可公开材料。
+- **运行时退化必须披露**：工具 / 网络 / MCP / 统计软件缺失时按 [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化执行；影响最低证据包或复现的必须降低闸门状态/分数，不得把工具缺失伪装成已验证。
+- **claim 忠实度必须单独验**：citation 存在 ≠ claim 忠实。Stage 7→8 与 Stage 9 按 [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 审计数字、引用、因果措辞与 forbidden wording；有 blocking finding 时质量门与投稿包都不得 ready。
+- **引用存在性与时序完整性也必须单独验**：先确认引用真实存在且引对（DOI 解析 / 撤稿筛查 / 版本 / 无 citation laundering）与无时序穿越（look-ahead / real-time vs final vintage / 训练-测试切分 / 样本期 vs 论断期），按 [`citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md) 逐项落 `00_meta/citation_integrity_log.md`，终审跑 `python3 scripts/check_citation_integrity.py <workspace> --final`；未排除的 look-ahead 把相关结论封顶到 `descriptive`。
+- **上下文保护优先于一切**：任何会把大段文本灌回主代理的操作，一律改成"写盘 + 回传摘要"。
+- **断点交接必须可恢复**：阶段完成必须更新 `00_meta/stage_passport.md`；长暂停 / 阶段切换 / 接手前写 `00_meta/handoff/`，续跑时用 fresh evidence 重核当前事实。
+- **自我改进不靠训练集幻觉**：维护本 skill 时按 [`skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) 收 rollout、拆 train / held-out、提有界 patch、过 selection gate；并守 [`evals/check_complexity_budget.py`](evals/check_complexity_budget.py) 体积棘轮，不让常驻层只增不减。
+- **自检不靠感觉**：维护后先跑 `python3 validate_skill.py` 与仓库级验证，再跑 [`evals/score_skill.py`](evals/score_skill.py) `--selftest`；有 SkillOpt 改进包还要跑 `python3 scripts/check_skillopt_packet.py <packet>`。自检失败必须修到通过再宣称可交付。
 
 ---
 
