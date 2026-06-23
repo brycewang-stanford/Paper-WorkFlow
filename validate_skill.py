@@ -449,6 +449,7 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_verification_log.py",
         ROOT / "scripts" / "check_citation_integrity.py",
         ROOT / "scripts" / "check_cross_references.py",
+        ROOT / "scripts" / "check_gate_integration.py",
         ROOT / "evals" / "score_skill.py",
         ROOT / "evals" / "check_complexity_budget.py",
     ]
@@ -503,6 +504,10 @@ def check_smoke_workspace() -> None:
     subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
 
 
+def check_gate_integration() -> None:
+    subprocess.run([sys.executable, str(ROOT / "scripts" / "check_gate_integration.py")], check=True)
+
+
 def check_maintenance_evals() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "evals" / "score_skill.py"), "--selftest"],
@@ -529,6 +534,7 @@ def main() -> None:
     check_init_workspace(template)
     check_python_compile()
     check_smoke_workspace()
+    check_gate_integration()
     check_gate_verifier()
     check_skillopt_packet_checker()
     check_verification_log()
