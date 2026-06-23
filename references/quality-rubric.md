@@ -12,6 +12,37 @@
 
 ---
 
+## L1 / L2 两级评审（这份 rubric 在第几层）
+
+质量门是**两级**的，本 rubric 是其中的 **L2**：
+
+- **L1 — 结构层（可执行）**：`scripts/check_workspace_gates.py` 等 checker 机械校验「闸门标了 pass，证据就必须
+  在盘上、上下游顺序不许颠倒」。L1 不判断好坏，只判断**结构自洽**。L1 不绿，L2 不得 PASS。
+- **L2 — 语义层（critic 判断）**：本 rubric——由「顶刊 AE」critic 判断脚本判断不了的可信度。
+
+> 对标 Orchestra 的「ARA 印章」也是结构/语义两级，但**它的两级都是 LLM 读清单自评**；我们的 L1 是真代码、
+> L2 的产出又被 `scripts/check_review_scorecard.py` 反过来机械校验（见下「评分卡机械校验」）。这就是差异化：
+> **严谨性可执行，而非自评散文。**
+
+**严重度三档（severity）**——每条 finding 必须归一档，对应本 rubric 既有的「致命红旗」：
+
+| 严重度 | 含义 | 闸门后果 |
+|---|---|---|
+| **blocking** | 致命红旗 / 硬不一致 | 该维封顶 ≤4；只要还在，**PASS 不可能** |
+| **major** | 投稿前必须修的实质缺陷 | 不单独逼停 PASS（若该维仍 ≥7） |
+| **minor** | 打磨项 | 不影响闸门 |
+
+**逐条 finding 必须带 verbatim 证据 span**：任何红旗 / 封顶 / blocking，都必须在评分卡的「Findings Register」里
+**原文引用它针对的那句稿件或 artifact 文本** + locator（file:line / 表号 / claim-id）。**没有 verbatim 引用的
+finding 不予采信**——这是反幻觉装置：critic 不能凭印象说「引言过度声称」，必须把那句话原样贴出来。
+
+**评分卡机械校验**：评分卡写成 [`templates/quality_scorecard.md`](../templates/quality_scorecard.md) 结构后，跑
+`python3 scripts/check_review_scorecard.py <workspace>`。它机械验证：7 维都给了 0–10 分、每条 finding 有
+severity + 非占位 verbatim + locator、blocking finding 的维度分必须 ≤4、声明 PASS 必须与分数自洽（每维 ≥7、
+总分 ≥56、register 无 blocking）。返回非零即评分卡内部不自洽，必须修正再放行。
+
+---
+
 ## 0. 评分尺度（所有维度通用锚点）
 
 | 分段 | 含义 | 顶刊语境下的画像 |
@@ -251,6 +282,13 @@
 | ⑦ 可复现性与治理 | 8 | 脚本齐、codebook 全、待补一键重跑命令 | 否 |
 | **总分** | **54 / 70** | — | — |
 
+## Findings Register（每条带 severity + verbatim span + locator）
+
+| ID | Severity | Dim | Verbatim evidence span | Locator | Required fix |
+|---|---|---|---|---|---|
+| F1 | major | 3 | "we cluster standard errors at the firm level" | main.tex:212 | 政策在省级，补省级聚类稳健性 |
+| F2 | minor | 5 | "Section 4 turns to the mechanism." | main.tex:188 | §4↔§5 衔接重写一段 |
+
 ## 达标判定
 - 每维 ≥ 7? **否**（③ = 6）
 - 总分 ≥ 56? **否**（54）
@@ -266,6 +304,42 @@
 - 本轮回退到: **Stage 3**（次要短板 ⑤⑦ 顺带在其回合处理）
 - 累计回退轮次: 1 / 2
 ```
+
+---
+
+## 可复现的 LLM-as-judge 协议（让"AE critic"不只是凭感觉）
+
+质量门本质是一个 **LLM-as-judge**：派一个 critic subagent 当"顶刊 AE"给初稿打分。裸 LLM 评审有两个
+硬伤——**不可复现**（两次跑可能给不同结论）和**可作弊**（一个心软的 critic 在分数不达标时照样写 PASS）。
+open_deep_research 给它的 Deep Research Bench 评审定了规矩才可信：固定 judge prompt + 冻结的 gold
+标准报告 + 当作 dataset 跑的打分脚本。本节把同样的工程搬到质量门，分两层：
+
+**第 1 层 · 判定是纯算术，可被独立重算。** 上面的达标线（每维 ≥7 且总分 ≥56 且 ②③⑥ 无致命红旗 且
+Stage 7 claim-integrity pre-review 干净）不依赖 critic 的"判断"，而是一条确定性规则。critic 写完
+`00_meta/quality_scorecard.md` 后跑：
+
+```bash
+python3 evals/check_quality_judge.py --scorecard 00_meta/quality_scorecard.md
+```
+
+它会**独立重算**总分与 PASS/NOT_PASS，并机械抓出三类"评分卡不守自己规矩"的情形：总分对不上各维之和、
+某维命中红旗（标"是"）却给了 >4 分（违反封顶规则）、以及 critic 写的结论与规则重算结果矛盾。任何一项
+不一致即非零退出——评分卡的**簿记**从此不可糊弄。（pre-review 有 blocking finding 时加
+`--integrity-not-clean`，让判定把诚信联锁也算进去。）
+
+**第 2 层 · 规则对照 gold 校准。** [`../evals/quality_calibration.json`](../evals/quality_calibration.json)
+冻结了一组**金标准锚点评分卡**（含本文件上面那张 total=54 的示例、一张刚好 55 分的边界卡、一张识别红旗
+封顶卡、一张诚信阻断卡），每张都标了规则**必须**给出的结论。`check_quality_judge.py` 的校准会断言确定性
+判定能复现每个锚点——也就是说，如果有人改了散文里的阈值（比如把 56 改成别的数），校准会立刻失败，逼你把
+规则和锚点重新对齐。这让"达标线"本身成为一个**被测量的不变量**，而不是会随手漂移的口号。
+
+```bash
+python3 evals/check_quality_judge.py --calibration   # 跑金标准校准
+python3 evals/check_quality_judge.py --selftest       # 验证判定器与解析逻辑本身
+```
+
+> 它**不替** critic 判分（读稿给每维打分仍是不可约的阅读任务）；它让**分数周围的一切**可复现：算术、
+> 红旗封顶、诚信联锁、最终结论。critic 仍要按本 rubric 逐维找证据给分，但它再也不能写出一张自相矛盾的卡。
 
 ---
 

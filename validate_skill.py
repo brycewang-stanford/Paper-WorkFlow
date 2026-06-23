@@ -56,11 +56,29 @@ REQUIRED_TEMPLATES = {
     "templates/method_gate.md": ["Required Artifact Table", "Design Gate Card", "Decision: PASS / NOT PASS", "Hard Flags"],
     "templates/sample_audit.md": ["Estimand Alignment", "Sample Construction Flow", "Inference-Level Check"],
     "templates/inference_report.md": ["Standard Errors and Clustering Decision", "Few-Cluster", "Multiple Hypothesis Testing"],
-    "templates/quality_scorecard.md": ["Draft Quality Gate Scorecard", "Reproducibility and governance", "Evidence ledger claim strength"],
+    "templates/quality_scorecard.md": [
+        "Draft Quality Gate Scorecard",
+        "L2 semantic",
+        "Findings Register",
+        "Verbatim evidence span",
+        "blocking",
+        "Review Grade",
+        "Reproducibility and governance",
+        "Evidence ledger claim strength",
+    ],
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
     "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
     "templates/evidence_ledger.md": ["Claim Register", "Estimand-to-Claim Map", "Claim Strength Ladder", "Exhibit and Script Map"],
     "templates/claim_integrity_audit.md": ["Claim Integrity Audit", "Audit Scope", "Claim Locator Manifest", "Verdict Taxonomy", "Blocking findings"],
+    "templates/preregistration.md": [
+        "Pre-Registration & Analysis Plan",
+        "Lock Status",
+        "locked_before_estimation",
+        "Confirmatory Hypotheses",
+        "Primary Specification Lock",
+        "Confirmatory vs Exploratory",
+        "Deviations from Plan",
+    ],
     "templates/submission_checklist.md": ["Journal Policy Refresh", "Final Gates"],
     "templates/data_governance.md": ["Data Classification", "Public replication package must not include", "IRB"],
     "templates/DAS.md": ["Restricted or Confidential Data", "Rights and Ethics"],
@@ -354,6 +372,9 @@ def check_assets() -> None:
         "scripts/check_skillopt_packet.py",
         "scripts/check_verification_log.py",
         "scripts/check_citation_integrity.py",
+        "scripts/check_preregistration.py",
+        "scripts/check_review_scorecard.py",
+        "scripts/generate_rigor_report.py",
     ]
     required.extend(REQUIRED_TEMPLATES)
     for rel in required:
@@ -450,8 +471,13 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_citation_integrity.py",
         ROOT / "scripts" / "check_cross_references.py",
         ROOT / "scripts" / "check_gate_integration.py",
+        ROOT / "scripts" / "check_preregistration.py",
+        ROOT / "scripts" / "check_review_scorecard.py",
+        ROOT / "scripts" / "generate_rigor_report.py",
         ROOT / "evals" / "score_skill.py",
         ROOT / "evals" / "check_complexity_budget.py",
+        ROOT / "evals" / "check_replication_accuracy.py",
+        ROOT / "evals" / "check_quality_judge.py",
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -489,6 +515,20 @@ def check_citation_integrity_checker() -> None:
     )
 
 
+def check_preregistration_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_preregistration.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_review_scorecard_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_review_scorecard.py"), "--selftest"],
+        check=True,
+    )
+
+
 def check_cross_references_linter() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_cross_references.py"), "--selftest"],
@@ -521,6 +561,14 @@ def check_maintenance_evals() -> None:
         [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py")],
         check=True,
     )
+    subprocess.run(
+        [sys.executable, str(ROOT / "evals" / "check_replication_accuracy.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "evals" / "check_quality_judge.py"), "--selftest"],
+        check=True,
+    )
 
 
 def main() -> None:
@@ -539,6 +587,8 @@ def main() -> None:
     check_skillopt_packet_checker()
     check_verification_log()
     check_citation_integrity_checker()
+    check_preregistration_checker()
+    check_review_scorecard_checker()
     check_cross_references_linter()
     check_maintenance_evals()
     print("OK: Paper-WorkFlow skill checks passed")

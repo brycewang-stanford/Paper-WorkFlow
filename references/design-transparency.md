@@ -72,8 +72,29 @@
 - **观察性**：在拿到结果数据前**锁定设计**（匹配方案、控制集、样本窗口），并在论文里声明哪些分析是
   预先指定、哪些是探索性。即便不正式预注册，这种「design-before-outcomes」的纪律也是可信度信号。
 
-**落盘**：PAP 副本或预注册链接放 `01_proposal/pre_analysis_plan.md`；论文方法段加一句「Deviations from
-PAP」说明任何偏离及原因。
+**落盘**：PAP 副本或外部预注册链接（OSF/AEA registry）放 `01_proposal/pre_analysis_plan.md`；论文方法段加
+一句「Deviations from PAP」说明任何偏离及原因。
+
+---
+
+## 2.1 可执行预注册锁（executable lock）——把「先定方案」变成机械闸门
+
+PAP 的全部价值在于**时间戳**：方案锁定在看结果之前。但散文承诺可被事后悄悄改写，因此本 skill 用一个
+**可执行的锁**把这条不变量做成 `exit 1`，而不是靠自觉。这正是相对 Orchestra「git 即预注册（纯散文自评）」
+的差异化——我们让它**可被脚本判定**。
+
+1. **实例化** `templates/preregistration.md` → 工作区 `00_meta/preregistration.md`（与其它治理锁同住 00_meta）。
+   填 Lock Status（`locked` 时间戳、`lock_commit`、`locked_before_estimation: yes`、analyst、primary_design）、
+   至少一条 **Confirmatory Hypotheses**（含 Y/estimand/主设定/预测符号）、Primary Specification Lock（含聚类、
+   多重检验方案）、Confirmatory vs Exploratory 与 Deviations from Plan。
+2. **锁定**：在跑出 `03_analysis/results/main_results.json` **之前**提交，记下 `lock_commit`。
+3. **校验**：`python3 scripts/check_preregistration.py <workspace>`。硬不变量——**有主结果却没锁、或
+   `locked_before_estimation` 非 yes，即研究者自由度违规，直接 FAIL**；未锁但还没有结果只是 INFO（未完成不算违规）。
+
+> **与 Method Gate 的硬挂钩**：DiD/IV/RDD 等确认性主张要写成「预先指定的检验」，前提是它在
+> `00_meta/preregistration.md` 锁内；**任何不在锁内的主结果一律降级为 exploratory（描述性/提示性措辞）**。
+> 锁未通过（`check_preregistration.py` 返回非零）→ 选择性报告风险未关 → Method Gate 不得 `PASS`
+> （记入 `03_analysis/design_risk_ledger.md` 的 specification_search / 选择性报告行）。
 
 ---
 
@@ -147,6 +168,7 @@ DiD 设计在质量门维度②拿到 8+ 的实质门槛（只有一张事件研
 | 接入点 | 本层做什么 | 落盘 / 判定 |
 |---|---|---|
 | **Stage 1 末 / Stage 3 初** | 写预分析计划，登记 OSF/AEA registry（如适用），锁定设计 | `01_proposal/pre_analysis_plan.md` |
+| **Stage 3 估计前（锁）** | 实例化 `templates/preregistration.md`，填锁 + 确认性假设，跑 `python3 scripts/check_preregistration.py <ws>` | `00_meta/preregistration.md`（FAIL 则 Method Gate 不得 PASS） |
 | **Stage 3 估计** | 空结果算 MDE；DiD 跑 `pretrends`+`HonestDiD`；跑设定曲线 | `03_analysis/robustness/{mde,pretrends_power,honest_did,spec_curve}.*` |
 | **Stage 3 末** | 写研究者自由度披露表 | `03_analysis/researcher_dof.md`（进复现包附录） |
 | **Stage 3 设计风险总账** | 把 PAP/MDE、设定曲线、研究者自由度和选择性报告风险写入 design-risk ledger | `03_analysis/design_risk_ledger.md` |
