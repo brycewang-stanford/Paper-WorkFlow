@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 11/11 green.**
+**Rigor checkers selftest: PASSING — 13/13 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -18,6 +18,8 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) | ✅ pass | A minimal workspace initialises and every template contract holds (templates instantiate with the fields the gates later require). |
 | [`scripts/check_preregistration.py`](scripts/check_preregistration.py) | ✅ pass | Pre-registration lock: the primary specification is committed before estimation, and any main result not pre-registered is labelled exploratory (researcher-degrees-of-freedom guard). |
 | [`scripts/check_review_scorecard.py`](scripts/check_review_scorecard.py) | ✅ pass | L2 review scorecard: all 7 dimensions scored, every finding carries a severity + verbatim evidence span + locator, a blocking finding caps its dimension <=4, and a declared PASS is consistent with the scores. |
+| [`evals/check_replication_accuracy.py`](evals/check_replication_accuracy.py) | ✅ pass | Stage 3 output correctness: candidate estimates are scored against sourced gold coefficients on sign-correct, perfect-reproduction, and partial-or-better metrics; template cases cannot be scored as truth. |
+| [`evals/check_quality_judge.py`](evals/check_quality_judge.py) | ✅ pass | Reproducible LLM-as-judge bookkeeping: the Draft Quality Gate verdict is recomputed from dimension scores, red flags, integrity status, and frozen calibration anchors. |
 
 ## Maintenance gates — verify this skill package
 
@@ -29,13 +31,6 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`evals/check_complexity_budget.py`](evals/check_complexity_budget.py) | ✅ pass | Complexity ratchet: the always-loaded SKILL.md and the reference-file count cannot grow past the recorded ceiling without a justified bump. |
 | [`evals/score_skill.py`](evals/score_skill.py) | ✅ pass | Held-out scoring-harness invariants for the SkillOpt selection gate (baseline vs candidate scored on the same rubric). |
 
-## Registry drift (advisory)
-
-These checkers exist on disk but are not registered above — often a sibling authored by parallel work still in flight. Advisory only: it does not fail this report or CI. Register each (in `generate_rigor_report.py`) once it stabilises so the report stays complete:
-
-- `evals/check_quality_judge.py`
-- `evals/check_replication_accuracy.py`
-
 ## How to reproduce
 
 ```bash
@@ -43,4 +38,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-06-23 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-06-24 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.

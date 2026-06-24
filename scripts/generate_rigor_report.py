@@ -118,6 +118,26 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "evals/check_replication_accuracy.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Stage 3 output correctness: candidate estimates are scored against "
+            "sourced gold coefficients on sign-correct, perfect-reproduction, and "
+            "partial-or-better metrics; template cases cannot be scored as truth."
+        ),
+    },
+    {
+        "path": "evals/check_quality_judge.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Reproducible LLM-as-judge bookkeeping: the Draft Quality Gate verdict "
+            "is recomputed from dimension scores, red flags, integrity status, and "
+            "frozen calibration anchors."
+        ),
+    },
+    {
         "path": "scripts/check_gate_integration.py",
         "argv": [],  # its bare run IS the end-to-end selftest (real init + real templates)
         "layer": MAINT,
