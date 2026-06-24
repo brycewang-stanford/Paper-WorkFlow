@@ -1,9 +1,9 @@
 {
   "recorded": "2026-06-24",
-  "note": "Consolidated always-loaded SKILL.md below 32KB after registering runtime citation and output-correctness gates; records the new post-hardening floor.",
+  "note": "Consolidated always-loaded SKILL.md below 32KB after registering runtime citation and output-correctness gates; records the final post-hardening floor with R/fixest discovery trigger preserved.",
   "ceiling": {
-    "skill_md_bytes": 30928,
-    "skill_md_tokens_est": 7732,
+    "skill_md_bytes": 30935,
+    "skill_md_tokens_est": 7734,
     "reference_count": 29,
     "reference_bytes": 395511,
     "template_count": 25,

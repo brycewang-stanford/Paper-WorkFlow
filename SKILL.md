@@ -6,7 +6,7 @@ description: >
   本 skill 不重复实现子能力，而是按阶段调用既有 skill 或并行 subagent，并在 Stage 3–4
   路由 Python/StatsPAI、Stata、R 三种分析后端。触发：/paper-workflow、帮我写一篇实证论文、
   从选题到投稿、端到端 empirical paper、已有 proposal/数据/初稿要推进到投稿，或明确要求
-  用 Stata / R / Python-StatsPAI 完整复现。
+  用 Stata / R/fixest / Python-StatsPAI 完整复现。
 allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch, NotebookEdit
 argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [目标期刊(可选)]"
 ---
