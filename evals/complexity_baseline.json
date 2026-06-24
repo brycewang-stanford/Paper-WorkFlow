@@ -1,13 +1,13 @@
 {
-  "recorded": "2026-06-23",
-  "note": "Deeper consolidation 2026-06-23 (worktree): Method/Quality gates + protocols + Overview callout + wrap-up relocated to references; all contracts kept, only duplicated prose removed. Final floor.",
+  "recorded": "2026-06-24",
+  "note": "Consolidated always-loaded SKILL.md below 32KB after registering runtime citation and output-correctness gates; records the new post-hardening floor.",
   "ceiling": {
-    "skill_md_bytes": 35304,
-    "skill_md_tokens_est": 8826,
+    "skill_md_bytes": 30928,
+    "skill_md_tokens_est": 7732,
     "reference_count": 29,
-    "reference_bytes": 381762,
-    "template_count": 24,
-    "template_bytes": 62420
+    "reference_bytes": 395511,
+    "template_count": 25,
+    "template_bytes": 67223
   },
   "targets": {
     "skill_md_bytes": 32000
