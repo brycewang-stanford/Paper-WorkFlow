@@ -16,6 +16,8 @@ enforced at runtime by a critic subagent reading prose. Prose judgement cannot
     handoff pointer is missing.
   - a Draft Quality Gate or ready replication pack is declared while the claim
     integrity audit is missing, stale, or blocking.
+  - a Draft Quality Gate or ready replication pack is declared while the
+    citation/temporal-integrity log is missing, malformed, or not final-clean.
 
 This script makes those invariants testable. It reads
 ``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is
@@ -42,6 +44,12 @@ import re
 import sys
 import tempfile
 from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+import check_citation_integrity
 
 FAIL = "FAIL"   # hard inconsistency -> non-zero exit
 WARN = "WARN"   # worth surfacing, does not fail the run
@@ -120,6 +128,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
     replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
+    citation_errors = check_citation_integrity.validate_workspace(workspace, final=False)
 
     # --- orchestration and continuation ------------------------------------
     if "orchestration" in state:
@@ -208,6 +217,18 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     elif "integrity_audit" in state:
         rep.add(INFO, "integrity_audit", f"status={integrity.get('status', 'absent')}")
 
+    # --- citation existence + temporal integrity ----------------------------
+    citation_log = check_citation_integrity.LOG_RELPATH
+    if citation_errors:
+        level = FAIL if _passed(quality.get("status")) else WARN
+        rep.add(
+            level,
+            "citation_integrity",
+            f"{citation_log} not pre-final clean: " + "; ".join(citation_errors[:3]),
+        )
+    else:
+        rep.add(OKAY, "citation_integrity", f"pre-final log passes: {citation_log}")
+
     # --- design risk ledger -------------------------------------------------
     if _passed(design_risk.get("status")):
         ledger = _gate_artifact(design_risk, "risk_ledger", "03_analysis/design_risk_ledger.md")
@@ -290,6 +311,13 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 f"status=pass but integrity_audit.status={integrity.get('status', 'absent')} "
                 "(claim integrity audit must pass or pass_with_notes before Draft Quality Gate can pass)",
             )
+        if citation_errors:
+            rep.add(
+                FAIL,
+                "quality_gate:citation_integrity",
+                f"status=pass but {citation_log} is not pre-final clean "
+                "(citation existence and temporal integrity must be checked before Draft Quality Gate can pass)",
+            )
     else:
         rep.add(INFO, "quality_gate", f"status={quality.get('status', 'absent')}")
 
@@ -309,6 +337,11 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             problems.append("last_rebuild_check empty")
         if "integrity_audit" in state and not integrity_ready_for_delivery:
             problems.append(f"integrity_audit.status={integrity.get('status', 'absent')} (must be pass for delivery)")
+        citation_final_errors = check_citation_integrity.validate_workspace(workspace, final=True)
+        if citation_final_errors:
+            problems.append(
+                f"{citation_log} not final-clean ({'; '.join(citation_final_errors[:3])})"
+            )
         if problems:
             rep.add(FAIL, "replication_pack", "status=ready but " + "; ".join(problems))
         else:
@@ -416,6 +449,24 @@ def _selftest() -> int:
             (ws / "00_meta").mkdir(parents=True, exist_ok=True)
             (ws / "00_meta" / "workflow_state.json").write_text(json.dumps(state), encoding="utf-8")
 
+        def write_citation_log(ws: Path, final_clean: bool = True) -> None:
+            (ws / "00_meta").mkdir(parents=True, exist_ok=True)
+            status = "verified" if final_clean else "to-verify"
+            note = "ok" if final_clean else "needs DOI check"
+            (ws / check_citation_integrity.LOG_RELPATH).write_text(
+                f"""## 1. Citation Verification
+| Bibkey | Cited claim | Identifier | Metadata match | Version | Retraction/erratum | Status | Checked | Note |
+|---|---|---|---|---|---|---|---|---|
+| smith2020 | baseline citation | 10.1/example | ok | published | clean | {status} | 2026-06-23 | {note} |
+
+## 2. Temporal Integrity
+| Risk | Source | Requirement met? | Conclusion | Consequence if risk |
+|---|---|---|---|---|
+| Feature look-ahead | Compustat | yes | pass | na |
+""",
+                encoding="utf-8",
+            )
+
         # --- good workspace: every declared gate is backed by evidence -------
         good = root / "good"
         for rel in (
@@ -436,6 +487,7 @@ def _selftest() -> int:
             "run_all.sh",
         ):
             touch(good, rel)
+        write_citation_log(good)
         write_state(good, {
             "project": {}, "stages": {}, "artifacts": {}, "decisions": [],
             "orchestration": {
@@ -530,6 +582,9 @@ def _selftest() -> int:
         hit_b = {chk for lvl, chk, det in run(bad_b, reconcile=False).rows if lvl == FAIL}
         assert "quality_gate:ordering" in hit_b, f"bad_b should flag quality_gate:ordering; got {hit_b}"
         assert "quality_gate:integrity" in hit_b, f"bad_b should flag quality_gate:integrity; got {hit_b}"
+        assert "quality_gate:citation_integrity" in hit_b, (
+            f"bad_b should flag quality_gate:citation_integrity; got {hit_b}"
+        )
 
         # --- bad workspace C: method gate skips unresolved design risk -------
         bad_c = root / "bad_c"

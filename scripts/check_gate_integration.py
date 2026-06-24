@@ -69,6 +69,22 @@ def _copy_template(src_rel: str, dst: Path) -> None:
     dst.write_text(text, encoding="utf-8")
 
 
+def _write_final_citation_log(workspace: Path) -> None:
+    (workspace / "00_meta" / "citation_integrity_log.md").write_text(
+        """## 1. Citation Verification
+| Bibkey | Cited claim | Identifier | Metadata match | Version | Retraction/erratum | Status | Checked | Note |
+|---|---|---|---|---|---|---|---|---|
+| smith2020 | baseline citation | 10.1/example | ok | published | clean | verified | 2026-06-23 | ok |
+
+## 2. Temporal Integrity
+| Risk | Source | Requirement met? | Conclusion | Consequence if risk |
+|---|---|---|---|---|
+| Feature look-ahead | Compustat | yes | pass | na |
+""",
+        encoding="utf-8",
+    )
+
+
 def _passing_state() -> dict:
     """A state where every gate is legitimately PASS / ready, backed by files we write."""
     return {
@@ -139,6 +155,7 @@ def build_passing_workspace(tmp_root: Path) -> Path:
         "# Inference report\nClustering at state level; wild bootstrap for G=20.\n", encoding="utf-8")
     handoff = workspace / "00_meta" / "handoff" / "S09-ready.md"
     handoff.write_text("# Handoff Card\nCurrent Stage 9. Completed Artifacts. Do Not edit data.\n", encoding="utf-8")
+    _write_final_citation_log(workspace)
 
     state_path = workspace / "00_meta" / "workflow_state.json"
     state_path.write_text(json.dumps(_passing_state(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -199,6 +216,14 @@ def run_integration(workspace: Path) -> None:
     state_path.write_text(json.dumps(st), encoding="utf-8")
     if "integrity_audit:blocking" not in _gate_failures(workspace):
         fail("integrity_audit=pass with a blocking finding was NOT caught")
+
+    # 3d: replication ready but citation log no longer final-clean -> replication_pack
+    citation = workspace / "00_meta" / "citation_integrity_log.md"
+    citation_saved = citation.read_text(encoding="utf-8")
+    citation.write_text(citation_saved.replace("verified | 2026-06-23 | ok", "to-verify | 2026-06-23 | needs DOI"), encoding="utf-8")
+    if "replication_pack" not in _gate_failures(workspace):
+        fail("replication_pack=ready with a non-final citation log was NOT caught")
+    citation.write_text(citation_saved, encoding="utf-8")
 
     state_path.write_text(saved, encoding="utf-8")  # restore clean PASS
     if _gate_failures(workspace):
