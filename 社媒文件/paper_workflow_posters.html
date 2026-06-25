@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1080, initial-scale=1">
+  <title>Paper-WorkFlow Social Posters</title>
+  <script>
+    document.documentElement.dataset.poster = new URLSearchParams(location.search).get("poster") || "1";
+  </script>
+  <style>
+    @font-face {
+      font-family: "Work Sans Local";
+      src: url("file:///Users/brycewang/.codex/skills/canvas-design/canvas-fonts/WorkSans-Regular.ttf") format("truetype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "Work Sans Local";
+      src: url("file:///Users/brycewang/.codex/skills/canvas-design/canvas-fonts/WorkSans-Bold.ttf") format("truetype");
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: "Bricolage Local";
+      src: url("file:///Users/brycewang/.codex/skills/canvas-design/canvas-fonts/BricolageGrotesque-Bold.ttf") format("truetype");
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: "JetBrains Mono Local";
+      src: url("file:///Users/brycewang/.codex/skills/canvas-design/canvas-fonts/JetBrainsMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 1080px;
+      height: 1920px;
+      margin: 0;
+      overflow: hidden;
+      background: #061b2d;
+    }
+
+    body {
+      font-family: "Work Sans Local", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    .poster {
+      --navy: #061b2d;
+      --navy-2: #101a2c;
+      --sky: #e8f6ff;
+      --sky-2: #f8fcff;
+      --blue: #1594f6;
+      --blue-2: #0e79d8;
+      --maroon: #7b1e3a;
+      --orange: #e87345;
+      --gold: #f5c04c;
+      --ink: #092034;
+      --ink-2: #173a54;
+      --muted: #567489;
+      --line: rgba(9, 32, 52, .16);
+      --panel: rgba(255, 255, 255, .78);
+      display: none;
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--navy);
+      isolation: isolate;
+    }
+
+    html[data-poster="1"] .p1,
+    html[data-poster="2"] .p2,
+    html[data-poster="3"] .p3,
+    html[data-poster="4"] .p4,
+    html[data-poster="5"] .p5 { display: block; }
+
+    .header,
+    .footer {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: var(--navy);
+      color: #f4fbff;
+      z-index: 10;
+    }
+
+    .header { top: 0; height: 154px; }
+    .footer { bottom: 0; height: 178px; }
+
+    .stage {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 154px;
+      height: 1588px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0) 36%),
+        radial-gradient(circle at 18% 28%, rgba(21, 148, 246, .12), transparent 28%),
+        radial-gradient(circle at 78% 72%, rgba(232, 115, 69, .08), transparent 30%),
+        var(--sky);
+      z-index: 1;
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 72px;
+      height: 1px;
+      background: rgba(9, 32, 52, .09);
+    }
+
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(21, 148, 246, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 148, 246, .055) 1px, transparent 1px);
+      background-size: 72px 72px;
+      opacity: .55;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .brand {
+      position: absolute;
+      left: 78px;
+      top: 43px;
+      height: 78px;
+      min-width: 424px;
+      display: flex;
+      align-items: center;
+      padding: 0 26px;
+      border-radius: 8px;
+      background: #101a2c;
+      box-shadow: 0 1px 0 rgba(255,255,255,.06) inset;
+    }
+
+    .brand-text {
+      font-size: 36px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .series {
+      position: absolute;
+      right: 78px;
+      top: 52px;
+      font-family: "JetBrains Mono Local", monospace;
+      font-size: 24px;
+      line-height: 1.35;
+      color: rgba(244,251,255,.72);
+      text-align: right;
+      letter-spacing: 0;
+    }
+
+    .series strong {
+      display: block;
+      color: #f4fbff;
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+
+    .footer .url {
+      position: absolute;
+      left: 78px;
+      top: 43px;
+      max-width: 820px;
+      font-family: "JetBrains Mono Local", monospace;
+      font-size: 28px;
+      line-height: 1.2;
+      color: #ffffff;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .footer .cmd {
+      position: absolute;
+      left: 78px;
+      top: 96px;
+      max-width: 830px;
+      font-family: "JetBrains Mono Local", monospace;
+      font-size: 25px;
+      line-height: 1.28;
+      color: #b7cede;
+      letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .footer .mark {
+      position: absolute;
+      right: 78px;
+      top: 51px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .footer .mark span {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .footer .mark span:nth-child(2) { background: var(--maroon); }
+    .footer .mark span:nth-child(3) { background: var(--orange); }
+
+    .wrap {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 0;
+      bottom: 0;
+      z-index: 2;
+    }
+
+    .mono,
+    .kicker,
+    .chip,
+    .node,
+    .metric strong,
+    .ledger .cell,
+    .code-line,
+    .pack-list span {
+      font-family: "JetBrains Mono Local", monospace;
+      letter-spacing: 0;
+    }
+
+    .kicker {
+      position: absolute;
+      left: 0;
+      top: 118px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 14px;
+      border-radius: 8px;
+      background: rgba(21, 148, 246, .12);
+      color: var(--blue-2);
+      font-size: 20px;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .kicker.maroon {
+      background: rgba(123, 30, 58, .12);
+      color: var(--maroon);
+    }
+
+    .title {
+      position: absolute;
+      left: 0;
+      margin: 0;
+      font-family: "Bricolage Local", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .title strong {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    .subtitle {
+      position: absolute;
+      left: 0;
+      margin: 0;
+      color: #183c55;
+      font-size: 40px;
+      line-height: 1.32;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .panel {
+      border-radius: 8px;
+      background: var(--panel);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 18px 36px rgba(6, 27, 45, .08);
+    }
+
+    .dark-panel {
+      border-radius: 8px;
+      background: var(--navy);
+      color: #f4fbff;
+      box-shadow: 0 22px 46px rgba(6, 27, 45, .18);
+    }
+
+    .blue-panel {
+      border-radius: 8px;
+      background: var(--blue);
+      color: #ffffff;
+      box-shadow: 0 22px 45px rgba(21, 148, 246, .24);
+    }
+
+    .maroon-panel {
+      border-radius: 8px;
+      background: var(--maroon);
+      color: #ffffff;
+      box-shadow: 0 22px 45px rgba(123, 30, 58, .20);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 54px;
+      padding: 0 18px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 2px solid rgba(21, 148, 246, .32);
+      color: #12324b;
+      font-size: 20px;
+      white-space: nowrap;
+    }
+
+    .arrow {
+      position: relative;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(21, 148, 246, .12), rgba(21, 148, 246, .82));
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -7px;
+      width: 16px;
+      height: 16px;
+      border-top: 2px solid rgba(21, 148, 246, .82);
+      border-right: 2px solid rgba(21, 148, 246, .82);
+      transform: rotate(45deg);
+    }
+
+    /* Poster 1 */
+    .p1 .title {
+      top: 206px;
+      width: 940px;
+      font-size: 94px;
+      line-height: .92;
+    }
+
+    .p1 .subtitle {
+      top: 336px;
+      width: 880px;
+      font-size: 45px;
+      line-height: 1.28;
+    }
+
+    .flow-board {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 594px;
+      height: 462px;
+      overflow: hidden;
+    }
+
+    .flow-board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 18% 34%, rgba(21, 148, 246, .14), transparent 30%),
+        radial-gradient(circle at 80% 68%, rgba(123, 30, 58, .08), transparent 34%),
+        rgba(255,255,255,.58);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 24px 54px rgba(6, 27, 45, .09);
+    }
+
+    .flow-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .node {
+      position: absolute;
+      z-index: 2;
+      width: 148px;
+      height: 126px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 12px;
+      background: var(--navy);
+      color: #f4fbff;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,.08);
+      box-shadow: 0 20px 42px rgba(6, 27, 45, .20);
+    }
+
+    .node strong {
+      display: block;
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 400;
+    }
+
+    .node span {
+      display: block;
+      margin-top: 13px;
+      color: #f4fbff;
+      font-family: "Work Sans Local", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 700;
+      text-shadow: 0 0 14px rgba(21, 148, 246, .54);
+    }
+
+    .node.n1 { left: 26px; top: 208px; }
+    .node.n2 { left: 212px; top: 112px; }
+    .node.n3 { left: 398px; top: 208px; }
+    .node.n4 { left: 584px; top: 112px; }
+    .node.n5 { left: 770px; top: 208px; }
+
+    .gate-label {
+      position: absolute;
+      z-index: 3;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0 16px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 2px solid rgba(21, 148, 246, .30);
+      color: var(--blue-2);
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 400;
+      box-shadow: 0 12px 26px rgba(6, 27, 45, .08);
+    }
+
+    .gate-label.g1 { left: 320px; top: 75px; }
+    .gate-label.g2 { left: 650px; top: 354px; }
+
+    .metrics {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1132px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .metric {
+      min-height: 132px;
+      padding: 23px 20px 20px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .72);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 16px 32px rgba(6, 27, 45, .07);
+    }
+
+    .metric strong {
+      display: block;
+      color: #061b2d;
+      font-size: 52px;
+      line-height: .9;
+      font-weight: 700;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 16px;
+      color: #12324b;
+      font-size: 24px;
+      line-height: 1.18;
+      font-weight: 700;
+    }
+
+    .stage-map {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1324px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+    }
+
+    .stage-map div {
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(9, 32, 52, .06);
+      border: 2px solid rgba(9, 32, 52, .08);
+      color: #183c55;
+      font-size: 22px;
+      line-height: 1.08;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Poster 2 */
+    .p2 .title {
+      top: 202px;
+      width: 920px;
+      font-size: 128px;
+      line-height: .95;
+    }
+
+    .p2 .subtitle {
+      top: 374px;
+      width: 890px;
+      font-size: 40px;
+    }
+
+    .gate-board {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 604px;
+      height: 514px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .gate-card {
+      position: relative;
+      padding: 44px 38px;
+      overflow: hidden;
+    }
+
+    .gate-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 16px;
+      background: var(--blue);
+    }
+
+    .gate-card:nth-child(2)::before { background: var(--maroon); }
+
+    .gate-no {
+      font-family: "JetBrains Mono Local", monospace;
+      color: rgba(244,251,255,.58);
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .gate-title {
+      margin-top: 126px;
+      font-size: 52px;
+      line-height: 1.02;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .gate-copy {
+      position: absolute;
+      left: 38px;
+      right: 38px;
+      bottom: 42px;
+      display: grid;
+      gap: 16px;
+      color: rgba(244,251,255,.77);
+      font-size: 26px;
+      line-height: 1.18;
+      font-weight: 700;
+    }
+
+    .loop {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 1180px;
+      display: grid;
+      grid-template-columns: 168px 1fr 168px 1fr 168px;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .loop span {
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 2px solid rgba(9, 32, 52, .10);
+      color: #12324b;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .gate-notes {
+      position: absolute;
+      left: 70px;
+      right: 70px;
+      top: 1302px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .gate-note {
+      min-height: 156px;
+      padding: 25px 22px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.70);
+      border: 2px solid rgba(9, 32, 52, .10);
+    }
+
+    .gate-note strong {
+      display: block;
+      color: var(--maroon);
+      font-size: 28px;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .gate-note span {
+      display: block;
+      margin-top: 16px;
+      color: #183c55;
+      font-size: 24px;
+      line-height: 1.22;
+      font-weight: 700;
+    }
+
+    /* Poster 3 */
+    .p3 .title {
+      top: 202px;
+      width: 900px;
+      font-size: 122px;
+      line-height: .95;
+    }
+
+    .p3 .subtitle {
+      top: 364px;
+      width: 880px;
+      font-size: 39px;
+    }
+
+    .ledger {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 548px;
+      height: 690px;
+      display: grid;
+      grid-template-rows: 78px repeat(5, 1fr);
+      overflow: hidden;
+      border-radius: 8px;
+      background: rgba(255,255,255,.72);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 22px 46px rgba(6, 27, 45, .09);
+    }
+
+    .ledger .row {
+      display: grid;
+      grid-template-columns: 1.08fr .85fr 1.18fr .62fr;
+      border-top: 1px solid rgba(9, 32, 52, .12);
+    }
+
+    .ledger .row:first-child { border-top: 0; }
+
+    .ledger .cell {
+      display: flex;
+      align-items: center;
+      padding: 18px 18px;
+      border-left: 1px solid rgba(9, 32, 52, .12);
+      color: #12324b;
+      font-size: 21px;
+      line-height: 1.16;
+      overflow-wrap: anywhere;
+    }
+
+    .ledger .cell:first-child { border-left: 0; }
+
+    .ledger .head .cell {
+      background: var(--navy);
+      color: #f4fbff;
+      font-size: 19px;
+      text-transform: uppercase;
+    }
+
+    .ledger .pass { color: var(--blue-2); font-weight: 700; }
+    .ledger .bound { color: var(--maroon); font-weight: 700; }
+
+    .claim-cards {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1300px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .claim-card {
+      min-height: 162px;
+      padding: 25px 22px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #f4fbff;
+      box-shadow: 0 20px 38px rgba(6, 27, 45, .16);
+    }
+
+    .claim-card strong {
+      display: block;
+      color: #ffffff;
+      font-size: 30px;
+      line-height: 1.08;
+      font-weight: 700;
+    }
+
+    .claim-card span {
+      display: block;
+      margin-top: 15px;
+      color: #b7cede;
+      font-size: 21px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    /* Poster 4 */
+    .p4 .title {
+      top: 206px;
+      width: 940px;
+      font-size: 86px;
+      line-height: .98;
+    }
+
+    .p4 .title strong {
+      color: #1594f6;
+      text-shadow: 0 0 18px rgba(21, 148, 246, .28);
+    }
+
+    .p4 .subtitle {
+      top: 352px;
+      width: 900px;
+      font-size: 39px;
+    }
+
+    .backend-grid {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 556px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .backend {
+      min-height: 560px;
+      padding: 30px 26px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.72);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 20px 38px rgba(6, 27, 45, .08);
+    }
+
+    .backend strong {
+      display: block;
+      color: var(--ink);
+      font-size: 38px;
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .backend small {
+      display: block;
+      margin-top: 15px;
+      min-height: 62px;
+      color: #42657a;
+      font-size: 21px;
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .code-lines {
+      margin-top: 42px;
+      display: grid;
+      gap: 15px;
+    }
+
+    .code-line {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 13px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #d9edf8;
+      font-size: 17px;
+      line-height: 1.14;
+      overflow-wrap: anywhere;
+    }
+
+    .common-gate {
+      position: absolute;
+      left: 98px;
+      right: 98px;
+      top: 1206px;
+      height: 128px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      border-radius: 8px;
+      background: var(--navy);
+      color: #f4fbff;
+      box-shadow: 0 22px 42px rgba(6, 27, 45, .16);
+    }
+
+    .common-gate .seal {
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--blue);
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .common-gate .copy {
+      font-size: 34px;
+      line-height: 1.12;
+      font-weight: 700;
+    }
+
+    .route-strip {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1404px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    /* Poster 5 */
+    .p5 .title {
+      top: 200px;
+      width: 940px;
+      font-size: 94px;
+      line-height: .97;
+    }
+
+    .p5 .subtitle {
+      top: 352px;
+      width: 890px;
+      font-size: 39px;
+    }
+
+    .pack {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      top: 526px;
+      height: 552px;
+      overflow: hidden;
+      transform: rotate(-.6deg);
+    }
+
+    .pack::before {
+      content: "";
+      position: absolute;
+      left: 40px;
+      right: 40px;
+      top: 38px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), var(--maroon), var(--orange));
+    }
+
+    .pack-title {
+      position: absolute;
+      left: 44px;
+      top: 90px;
+      color: var(--ink);
+      font-size: 48px;
+      line-height: 1.08;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .pack-list {
+      position: absolute;
+      left: 50px;
+      right: 50px;
+      bottom: 42px;
+      display: grid;
+      gap: 17px;
+    }
+
+    .pack-list div {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(9, 32, 52, .14);
+      color: #12324b;
+      font-size: 25px;
+      line-height: 1.14;
+      font-weight: 700;
+    }
+
+    .pack-list span {
+      flex: 0 0 auto;
+      color: #527084;
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .number-strip {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1150px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .p5 .metric {
+      background: var(--navy);
+      border-color: rgba(255,255,255,.08);
+    }
+
+    .p5 .metric strong { color: #ffffff; }
+    .p5 .metric span { color: #b7cede; }
+
+    .brand-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 1342px;
+      display: grid;
+      grid-template-columns: 1fr 176px;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .partner-card {
+      height: 176px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 26px;
+      padding: 24px 28px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.78);
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 18px 36px rgba(6, 27, 45, .08);
+    }
+
+    .partner-card img {
+      display: block;
+      object-fit: contain;
+      max-height: 86px;
+      max-width: 330px;
+    }
+
+    .qr {
+      width: 176px;
+      height: 176px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 2px solid rgba(9, 32, 52, .10);
+      box-shadow: 0 18px 36px rgba(6, 27, 45, .08);
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <section class="poster p1">
+    <div class="header">
+      <div class="brand"><div class="brand-text">Paper-WorkFlow</div></div>
+      <div class="series">XHS POSTER<strong>01/05</strong></div>
+    </div>
+    <div class="stage">
+      <div class="wrap">
+        <div class="kicker">research-grade orchestration</div>
+        <h1 class="title">Paper-<strong>WorkFlow</strong></h1>
+        <p class="subtitle">把实证论文跑成工程：从一句研究方向，到可审计、可复跑、可投稿的论文工作区。</p>
+
+        <div class="flow-board">
+          <svg class="flow-svg" viewBox="0 0 940 462" aria-hidden="true">
+            <defs>
+              <linearGradient id="flowLine" x1="0" y1="0" x2="940" y2="0">
+                <stop offset="0%" stop-color="#1594f6"/>
+                <stop offset="50%" stop-color="#88cdfb"/>
+                <stop offset="100%" stop-color="#7b1e3a"/>
+              </linearGradient>
+              <filter id="flowGlow" x="-20%" y="-80%" width="140%" height="260%">
+                <feGaussianBlur stdDeviation="7" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <marker id="flowArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                <path d="M2,2 L10,6 L2,10 Z" fill="#1594f6"/>
+              </marker>
+            </defs>
+            <path d="M98 268 C162 176 216 170 284 170 C352 170 390 268 470 268 C550 268 588 170 656 170 C724 170 778 268 842 268"
+              fill="none" stroke="url(#flowLine)" stroke-width="12" stroke-linecap="round" marker-end="url(#flowArrow)" filter="url(#flowGlow)" opacity=".88"/>
+            <path d="M98 268 C162 176 216 170 284 170 C352 170 390 268 470 268 C550 268 588 170 656 170 C724 170 778 268 842 268"
+              fill="none" stroke="#061b2d" stroke-width="2" stroke-dasharray="11 20" stroke-linecap="round" opacity=".34"/>
+            <path d="M142 385 H798" fill="none" stroke="#1594f6" stroke-width="1.5" stroke-dasharray="2 16" opacity=".42"/>
+          </svg>
+          <div class="node n1"><strong>IDEA</strong><span>方向</span></div>
+          <div class="node n2"><strong>DESIGN</strong><span>设计</span></div>
+          <div class="node n3"><strong>EVIDENCE</strong><span>证据</span></div>
+          <div class="node n4"><strong>DRAFT</strong><span>初稿</span></div>
+          <div class="node n5"><strong>SUBMIT</strong><span>投稿</span></div>
+          <div class="gate-label g1 mono">METHOD GATE</div>
+          <div class="gate-label g2 mono">QUALITY GATE</div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric"><strong>10</strong><span>阶段主线</span></div>
+          <div class="metric"><strong>47</strong><span>技能编排</span></div>
+          <div class="metric"><strong>2</strong><span>硬闸门</span></div>
+          <div class="metric"><strong>3</strong><span>分析后端</span></div>
+        </div>
+        <div class="stage-map">
+          <div>intake<br>setup</div>
+          <div>idea<br>design</div>
+          <div>data<br>evidence</div>
+          <div>draft<br>review</div>
+          <div>submission<br>pack</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="url">github.com/brycewang-stanford/Paper-WorkFlow</div>
+      <div class="cmd">auditable empirical-paper engine</div>
+      <div class="mark"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="poster p2">
+    <div class="header">
+      <div class="brand"><div class="brand-text">Paper-WorkFlow</div></div>
+      <div class="series">XHS POSTER<strong>02/05</strong></div>
+    </div>
+    <div class="stage">
+      <div class="wrap">
+        <div class="kicker maroon">method gate + quality gate</div>
+        <h1 class="title">两道硬闸门</h1>
+        <p class="subtitle">方法没过，不准进入漂亮表图；初稿没过，不准叫投稿级。</p>
+
+        <div class="gate-board">
+          <div class="gate-card dark-panel">
+            <div class="gate-no">GATE 01</div>
+            <div class="gate-title">Method<br>Gate</div>
+            <div class="gate-copy">
+              <div>识别设计</div>
+              <div>最低诊断证据</div>
+              <div>稳健性矩阵</div>
+            </div>
+          </div>
+          <div class="gate-card dark-panel">
+            <div class="gate-no">GATE 02</div>
+            <div class="gate-title">Draft<br>Quality</div>
+            <div class="gate-copy">
+              <div>7 维评分卡</div>
+              <div>claim 忠实度</div>
+              <div>复现与引用终审</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loop">
+          <span>NOT PASS</span>
+          <div class="arrow"></div>
+          <span>回退阶段</span>
+          <div class="arrow"></div>
+          <span>补证据</span>
+        </div>
+
+        <div class="gate-notes">
+          <div class="gate-note"><strong>设计先行</strong><span>先固定估计量与识别假设，再跑模型。</span></div>
+          <div class="gate-note"><strong>诊断最低线</strong><span>平衡、缺失、重叠、趋势先过关。</span></div>
+          <div class="gate-note"><strong>语言受证据约束</strong><span>主张强度不超过证据强度。</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="url">github.com/brycewang-stanford/Paper-WorkFlow</div>
+      <div class="cmd">method_gate.md -> quality_scorecard.md</div>
+      <div class="mark"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="poster p3">
+    <div class="header">
+      <div class="brand"><div class="brand-text">Paper-WorkFlow</div></div>
+      <div class="series">XHS POSTER<strong>03/05</strong></div>
+    </div>
+    <div class="stage">
+      <div class="wrap">
+        <div class="kicker">evidence ledger</div>
+        <h1 class="title">证据先于<strong>语言</strong></h1>
+        <p class="subtitle">每个 claim 连到估计量、脚本、表图和引用版本，避免“写得漂亮但证据断线”。</p>
+
+        <div class="ledger">
+          <div class="row head">
+            <div class="cell">claim</div>
+            <div class="cell">estimand</div>
+            <div class="cell">artifact</div>
+            <div class="cell">status</div>
+          </div>
+          <div class="row">
+            <div class="cell">摘要主张</div>
+            <div class="cell">目标样本</div>
+            <div class="cell">main_results.json</div>
+            <div class="cell pass">PASS</div>
+          </div>
+          <div class="row">
+            <div class="cell">因果措辞</div>
+            <div class="cell">设计卡</div>
+            <div class="cell">method_gate.md</div>
+            <div class="cell bound">BOUND</div>
+          </div>
+          <div class="row">
+            <div class="cell">表图数字</div>
+            <div class="cell">回归脚本</div>
+            <div class="cell">tables + figures</div>
+            <div class="cell pass">TRACE</div>
+          </div>
+          <div class="row">
+            <div class="cell">引用定位</div>
+            <div class="cell">source version</div>
+            <div class="cell">citation log</div>
+            <div class="cell pass">REAL</div>
+          </div>
+          <div class="row">
+            <div class="cell">投稿承诺</div>
+            <div class="cell">复现包</div>
+            <div class="cell">REPLICATION.md</div>
+            <div class="cell pass">READY</div>
+          </div>
+        </div>
+
+        <div class="claim-cards">
+          <div class="claim-card"><strong>claim</strong><span>结论必须能回到证据台账。</span></div>
+          <div class="claim-card"><strong>number</strong><span>数字必须能回到脚本与输出。</span></div>
+          <div class="claim-card"><strong>citation</strong><span>引用必须保留版本和时间边界。</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="url">github.com/brycewang-stanford/Paper-WorkFlow</div>
+      <div class="cmd">evidence_ledger.md -> claim_integrity_audit.md</div>
+      <div class="mark"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="poster p4">
+    <div class="header">
+      <div class="brand"><div class="brand-text">Paper-WorkFlow</div></div>
+      <div class="series">XHS POSTER<strong>04/05</strong></div>
+    </div>
+    <div class="stage">
+      <div class="wrap">
+        <div class="kicker maroon">backend router</div>
+        <h1 class="title"><strong>Python</strong> / <strong>Stata</strong> / <strong>R</strong></h1>
+        <p class="subtitle">后端可以换，研究标准不能降。同一份方法闸门约束所有分析路线。</p>
+
+        <div class="backend-grid">
+          <div class="backend">
+            <strong>Python<br>StatsPAI</strong>
+            <small>默认 agent-native 路线</small>
+            <div class="code-lines">
+              <div class="code-line">detect_design()</div>
+              <div class="code-line">preflight()</div>
+              <div class="code-line">fit(as_handle=True)</div>
+              <div class="code-line">audit_result()</div>
+            </div>
+          </div>
+          <div class="backend">
+            <strong>Stata<br>.do pack</strong>
+            <small>reghdfe / ivreg2 / csdid</small>
+            <div class="code-lines">
+              <div class="code-line">00_master.do</div>
+              <div class="code-line">esttab</div>
+              <div class="code-line">outreg2</div>
+              <div class="code-line">replication log</div>
+            </div>
+          </div>
+          <div class="backend">
+            <strong>R<br>Quarto</strong>
+            <small>fixest / did / grf</small>
+            <div class="code-lines">
+              <div class="code-line">targets</div>
+              <div class="code-line">modelsummary</div>
+              <div class="code-line">etable</div>
+              <div class="code-line">render qmd</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="common-gate">
+          <div class="seal">=</div>
+          <div class="copy">共享 Method Gate · 共享复现口径</div>
+        </div>
+        <div class="route-strip">
+          <div class="chip">analysis_backend.md</div>
+          <div class="chip">workspace state</div>
+          <div class="chip">replication log</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="url">github.com/brycewang-stanford/Paper-WorkFlow</div>
+      <div class="cmd">analysis_backend.md -> Python / Stata / R</div>
+      <div class="mark"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <section class="poster p5">
+    <div class="header">
+      <div class="brand"><div class="brand-text">Paper-WorkFlow</div></div>
+      <div class="series">XHS POSTER<strong>05/05</strong></div>
+    </div>
+    <div class="stage">
+      <div class="wrap">
+        <div class="kicker">submission pack</div>
+        <h1 class="title">从研究方向到投稿包</h1>
+        <p class="subtitle">把想法、数据、设计、结果、初稿和复现材料收束成一个可审计交付物。</p>
+
+        <div class="pack panel">
+          <div class="pack-title">Paper-WorkFlow<br>交付清单</div>
+          <div class="pack-list">
+            <div>proposal.md <span>Stage 1</span></div>
+            <div>clean data + codebook <span>Stage 2</span></div>
+            <div>design register + method gate <span>Stage 3</span></div>
+            <div>tables + figures <span>Stage 4</span></div>
+            <div>main.tex + response letter <span>Stage 5-9</span></div>
+          </div>
+        </div>
+
+        <div class="number-strip">
+          <div class="metric"><strong>10</strong><span>Stage 0-9</span></div>
+          <div class="metric"><strong>47</strong><span>skills orchestrated</span></div>
+          <div class="metric"><strong>2</strong><span>hard gates</span></div>
+          <div class="metric"><strong>1</strong><span>auditable workspace</span></div>
+        </div>
+
+        <div class="brand-row">
+          <div class="partner-card">
+            <img src="../assets/copaper-logo.png" alt="CoPaper.AI">
+            <img src="../assets/stanford-reap-logo.png" alt="Stanford REAP">
+          </div>
+          <img class="qr" src="repo-qrcode.png" alt="Paper-WorkFlow repo QR">
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="url">github.com/brycewang-stanford/Paper-WorkFlow</div>
+      <div class="cmd">Stanford REAP x CoPaper.AI · empirical workflow</div>
+      <div class="mark"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+</body>
+</html>
