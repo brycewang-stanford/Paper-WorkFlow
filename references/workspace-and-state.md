@@ -32,6 +32,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── handoff/                   # 长任务/换 agent/阶段切换时的交接卡
 │   ├── handoff_prompt.md          # 新对话续跑提示词模板
 │   ├── analysis_backend.md        # ★Python/StatsPAI、Stata、R 后端选择与环境检查
+│   ├── backend_capabilities.json  # ★本机后端能力与缺失依赖探测报告
 │   ├── backend_parity.json        # ★三后端 fallback / secondary validation 结果等价性报告
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   ├── data_governance.md         # ★数据分级、PII、IRB/DUA、公开包边界
@@ -129,6 +130,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `analysis_backend.child_skill` | 选定后端调用的 child skill 或 Read 回退路径 |
 | `analysis_backend.environment_status` | `pending` / `available` / `fallback` / `blocked` |
 | `analysis_backend.version_report` | 后端选择、版本检查和 fallback 记录路径（`00_meta/analysis_backend.md`） |
+| `analysis_backend.capability_report` | 本机后端能力、缺失依赖和 fallback 可用性的结构化报告（默认 `00_meta/backend_capabilities.json`） |
 | `analysis_backend.backend_parity_report` | fallback 或 secondary validation 的结果等价性报告路径（默认 `00_meta/backend_parity.json`） |
 | `empirical_audit.status` | `pending` / `pass` / `not_pass`——样本、变量构造、missingness/balance/overlap 审计状态 |
 | `empirical_audit.sample_audit` | 样本审计报告路径（默认 `02_data/sample_audit.md`） |

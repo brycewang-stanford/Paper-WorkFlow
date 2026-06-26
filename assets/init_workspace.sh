@@ -10,6 +10,7 @@ workspace=$1
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 template="$script_dir/workflow_state.template.json"
 backend_template="$script_dir/../templates/analysis_backend.md"
+backend_capabilities_template="$script_dir/../templates/backend_capabilities.json"
 backend_parity_template="$script_dir/../templates/backend_parity.json"
 ledger_template="$script_dir/../templates/evidence_ledger.md"
 risk_template="$script_dir/../templates/design_risk_ledger.md"
@@ -30,6 +31,7 @@ fi
 mkdir -p "$workspace"/{00_meta/handoff,01_proposal/candidates,02_data/raw,03_analysis/results,03_analysis/robustness,04_results,05_draft,06_polish,07_dehumanize,08_review,09_submission,logs,backups}
 cp "$template" "$workspace/00_meta/workflow_state.json"
 cp "$backend_template" "$workspace/00_meta/analysis_backend.md"
+cp "$backend_capabilities_template" "$workspace/00_meta/backend_capabilities.json"
 cp "$backend_parity_template" "$workspace/00_meta/backend_parity.json"
 cp "$ledger_template" "$workspace/00_meta/evidence_ledger.md"
 cp "$risk_template" "$workspace/03_analysis/design_risk_ledger.md"

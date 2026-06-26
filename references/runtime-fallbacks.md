@@ -47,6 +47,7 @@
 - Tried:
 - Fallback used:
 - Analysis backend before / after:
+- Backend capability report: 00_meta/backend_capabilities.json
 - Output files affected:
 - Research claim affected: no / yes, describe
 - Gate impact:

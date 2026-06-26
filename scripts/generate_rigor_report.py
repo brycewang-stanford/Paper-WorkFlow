@@ -91,6 +91,16 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_backend_capabilities.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Backend capability reports: Python/StatsPAI, Stata, R, and export "
+            "stack availability must be recorded as structured status, missing "
+            "dependencies, fallback backend, and probe timestamp before execution."
+        ),
+    },
+    {
         "path": "scripts/check_backend_parity.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

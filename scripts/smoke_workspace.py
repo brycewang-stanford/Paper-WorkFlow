@@ -21,6 +21,7 @@ TEMPLATE_OUTPUTS = {
     "templates/handoff_prompt.md": "00_meta/handoff_prompt.md",
     "templates/pipeline_status.md": "00_meta/pipeline_status.md",
     "templates/analysis_backend.md": "00_meta/analysis_backend.md",
+    "templates/backend_capabilities.json": "00_meta/backend_capabilities.json",
     "templates/backend_parity.json": "00_meta/backend_parity.json",
     "templates/design_risk_ledger.md": "03_analysis/design_risk_ledger.md",
     "templates/sample_audit.md": "02_data/sample_audit.md",
@@ -44,6 +45,7 @@ ARTIFACTS = {
     "handoff_prompt": "00_meta/handoff_prompt.md",
     "pipeline_status": "00_meta/pipeline_status.md",
     "analysis_backend": "00_meta/analysis_backend.md",
+    "backend_capability_report": "00_meta/backend_capabilities.json",
     "backend_parity_report": "00_meta/backend_parity.json",
     "design_risk_ledger": "03_analysis/design_risk_ledger.md",
     "sample_audit": "02_data/sample_audit.md",
@@ -120,6 +122,7 @@ def build_workspace(tmp_root: Path) -> Path:
             "child_skill": "StatsPAI MCP / statspai package",
             "environment_status": "pending",
             "version_report": "00_meta/analysis_backend.md",
+            "capability_report": "00_meta/backend_capabilities.json",
             "backend_parity_report": "00_meta/backend_parity.json",
         }
     )
@@ -272,6 +275,9 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Backend Choice", "Environment Check", "Output Contract"]:
         if marker not in backend:
             fail(f"analysis backend template missing marker: {marker}")
+    backend_capabilities = load_json(workspace / "00_meta" / "backend_capabilities.json")
+    if backend_capabilities.get("status") != "pending":
+        fail("backend capability template must default to pending")
     backend_parity = load_json(workspace / "00_meta" / "backend_parity.json")
     if backend_parity.get("status") != "pending":
         fail("backend parity template must default to pending")

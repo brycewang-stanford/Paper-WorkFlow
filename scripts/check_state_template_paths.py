@@ -43,6 +43,7 @@ BOOTSTRAP_FILES = {
     "00_meta/pipeline_status.md",
     "00_meta/handoff_prompt.md",
     "00_meta/analysis_backend.md",
+    "00_meta/backend_capabilities.json",
     "00_meta/backend_parity.json",
     "00_meta/evidence_ledger.md",
     "00_meta/claim_integrity_audit.md",

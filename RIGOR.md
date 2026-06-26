@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 28/28 green.**
+**Rigor checkers selftest: PASSING — 29/29 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -15,6 +15,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_workspace_gates.py`](scripts/check_workspace_gates.py) | ✅ pass | Method Gate / Draft Quality Gate / replication pack / claim-integrity / design-risk: a gate marked `pass` must have its evidence on disk, and ordering holds (quality gate never looser than the method gate). |
 | [`scripts/check_method_gate_card.py`](scripts/check_method_gate_card.py) | ✅ pass | Method Gate design-card honesty: a passed Method Gate cannot have missing/failed design-card rows, hit hard flags, placeholder paths, or evidence claims stronger than the card permits. |
 | [`scripts/check_runtime_fallbacks.py`](scripts/check_runtime_fallbacks.py) | ✅ pass | Runtime fallback honesty: missing tools, networks, MCP services, or statistical backends must be recorded in state decisions, stage logs, and backend reports, and blocked or non-parity fallbacks cannot pass Method Gate or replication readiness. |
+| [`scripts/check_backend_capabilities.py`](scripts/check_backend_capabilities.py) | ✅ pass | Backend capability reports: Python/StatsPAI, Stata, R, and export stack availability must be recorded as structured status, missing dependencies, fallback backend, and probe timestamp before execution. |
 | [`scripts/check_backend_parity.py`](scripts/check_backend_parity.py) | ✅ pass | Backend parity fixtures and workspace reports: fallback or secondary Python/StatsPAI, Stata, and R result bundles must agree on sample hash, estimator family, clustering, fixed effects, coefficients, standard errors, and diagnostics before parity claims can pass. |
 | [`scripts/check_citation_integrity.py`](scripts/check_citation_integrity.py) | ✅ pass | Citation existence + temporal integrity: DOI resolution, retraction screening, citation-laundering, and look-ahead / vintage / sample-vs-claim-period leakage. |
 | [`scripts/check_verification_log.py`](scripts/check_verification_log.py) | ✅ pass | The load-bearing methods-claim verification log exists and every claim it makes is backed by a recorded check. |

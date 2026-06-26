@@ -99,6 +99,7 @@ REQUIRED_TEMPLATES = {
     ],
 }
 REQUIRED_JSON_TEMPLATES = [
+    "templates/backend_capabilities.json",
     "templates/backend_parity.json",
 ]
 REQUIRED_REFERENCES = {
@@ -239,6 +240,7 @@ def load_template() -> dict:
         "child_skill",
         "environment_status",
         "version_report",
+        "capability_report",
         "backend_parity_report",
     ]:
         if key not in backend:
@@ -380,6 +382,7 @@ def check_assets() -> None:
         "references/runtime-fallbacks.md",
         "scripts/smoke_workspace.py",
         "scripts/check_demo_execution.py",
+        "scripts/check_backend_capabilities.py",
         "scripts/check_backend_parity.py",
         "scripts/check_stage_scenario.py",
         "scripts/check_stage_adversarial.py",
@@ -401,6 +404,7 @@ def check_assets() -> None:
         "scripts/check_preregistration.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
+        "templates/backend_capabilities.json",
         "templates/backend_parity.json",
         "evals/stage_scenario_contract.json",
         "evals/stage_adversarial_cases.json",
@@ -486,6 +490,12 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh did not create 00_meta/pipeline_status.md")
         if not (workspace / "00_meta" / "analysis_backend.md").exists():
             fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
+        if not (workspace / "00_meta" / "backend_capabilities.json").exists():
+            fail("init_workspace.sh did not create 00_meta/backend_capabilities.json")
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_backend_capabilities.py"), str(workspace)],
+            check=True,
+        )
         if not (workspace / "00_meta" / "backend_parity.json").exists():
             fail("init_workspace.sh did not create 00_meta/backend_parity.json")
         subprocess.run(
@@ -512,6 +522,7 @@ def check_python_compile() -> None:
         ROOT / "validate_skill.py",
         ROOT / "scripts" / "smoke_workspace.py",
         ROOT / "scripts" / "check_demo_execution.py",
+        ROOT / "scripts" / "check_backend_capabilities.py",
         ROOT / "scripts" / "check_backend_parity.py",
         ROOT / "scripts" / "check_stage_scenario.py",
         ROOT / "scripts" / "check_stage_adversarial.py",
@@ -638,6 +649,13 @@ def check_reproducibility_scaffold_checker() -> None:
 def check_demo_execution_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_demo_execution.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_backend_capabilities_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_backend_capabilities.py"), "--selftest"],
         check=True,
     )
 
@@ -796,6 +814,7 @@ def main() -> None:
     check_init_workspace(template)
     check_python_compile()
     check_demo_execution_checker()
+    check_backend_capabilities_checker()
     check_backend_parity_checker()
     check_stage_scenario_checker()
     check_stage_adversarial_checker()

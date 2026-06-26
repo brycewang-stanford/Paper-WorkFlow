@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "status": "pending",
+  "selected_backend": "",
+  "secondary_validation": "none",
+  "probed_at": "",
+  "tools": [
+    {
+      "id": "python",
+      "label": "Python runtime",
+      "required_for": ["python-statspai"],
+      "probe": "python3 --version",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": ""
+    },
+    {
+      "id": "statspai",
+      "label": "StatsPAI MCP or package",
+      "required_for": ["python-statspai"],
+      "probe": "python -c 'import statspai'",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": ""
+    },
+    {
+      "id": "stata",
+      "label": "Stata executable",
+      "required_for": ["stata"],
+      "probe": "stata-mp -q",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": ""
+    },
+    {
+      "id": "r",
+      "label": "R runtime",
+      "required_for": ["r"],
+      "probe": "R --version",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": ""
+    },
+    {
+      "id": "table_export",
+      "label": "Table export stack",
+      "required_for": [],
+      "probe": "backend-specific",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": "Word / Excel / LaTeX support"
+    },
+    {
+      "id": "figure_export",
+      "label": "Figure export stack",
+      "required_for": [],
+      "probe": "backend-specific",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": "PDF + PNG export support"
+    }
+  ],
+  "missing_dependencies": [],
+  "fallback_backend": "",
+  "notes": ""
+}
