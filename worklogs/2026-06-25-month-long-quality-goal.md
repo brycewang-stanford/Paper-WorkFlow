@@ -1208,6 +1208,80 @@ Remaining risk:
   `backend_parity.json` template and optional live backend replay when those
   runtimes are available.
 
+### 2026-06-25 Packet 1R — Workspace backend parity report contract
+
+Files changed:
+
+- `templates/backend_parity.json`
+- `assets/workflow_state.template.json`
+- `assets/init_workspace.sh`
+- `validate_skill.py`
+- `scripts/check_backend_parity.py`
+- `scripts/check_runtime_fallbacks.py`
+- `scripts/check_state_template_paths.py`
+- `scripts/smoke_workspace.py`
+- `scripts/check_gate_integration.py`
+- `scripts/check_final_report_contract.py`
+- `scripts/check_stage_scenario.py`
+- `scripts/generate_rigor_report.py`
+- `references/workspace-and-state.md`
+- `references/analysis-backends.md`
+- `templates/analysis_backend.md`
+- `templates/FINAL_REPORT.md`
+- `evals/contract_matrix.json`
+- `scripts/check_bilingual_docs.py`
+- `README.md`
+- `README.en.md`
+- `RIGOR.md`
+- `worklogs/2026-06-25-month-long-quality-goal.md`
+
+Invariant strengthened:
+
+- `00_meta/backend_parity.json` is now part of every initialized workspace and
+  the canonical `workflow_state.json` analysis-backend contract.
+- `scripts/check_backend_parity.py <workspace>` validates pending, pass, and
+  not_pass workspace reports in addition to the offline fixture manifest.
+- Runtime fallback paths that claim `Artifact parity checked: yes` while also
+  passing Method Gate or replication readiness now require a workspace
+  `backend_parity.json` report with `status: pass`.
+- Smoke, init, state-template, final-report, stage-scenario, bilingual docs,
+  and contract-matrix checks all now know about the backend parity report.
+- `RIGOR.md` now describes the backend parity checker as both a fixture and
+  workspace-report contract.
+
+Validation:
+
+- `python3 scripts/check_backend_parity.py --selftest` -> PASS
+- `python3 scripts/check_backend_parity.py` -> PASS, 5 cases, 1 passing fixture,
+  4/4 failing fixtures caught
+- `tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT; bash assets/init_workspace.sh "$tmp/ws" >/dev/null; python3 scripts/check_backend_parity.py "$tmp/ws"; python3 scripts/check_runtime_fallbacks.py "$tmp/ws"` -> PASS,
+  pending workspace report accepted and no fallback detected
+- `python3 scripts/check_runtime_fallbacks.py --selftest` -> PASS
+- `python3 scripts/check_state_template_paths.py` -> PASS, 17 state defaults,
+  14 bootstrap files, 18 skeleton dirs
+- `python3 scripts/smoke_workspace.py --quiet` -> PASS
+- `python3 scripts/check_final_report_contract.py --selftest && python3 scripts/check_stage_scenario.py --selftest` -> PASS
+- `python3 scripts/check_final_report_contract.py` -> PASS, 11 headings, 14
+  markers, 6 commands
+- `python3 scripts/check_stage_scenario.py` -> PASS, 10 stages, 32 artifacts,
+  13 gate OK checks
+- `python3 -m py_compile scripts/check_backend_parity.py scripts/check_runtime_fallbacks.py scripts/check_state_template_paths.py scripts/smoke_workspace.py scripts/check_gate_integration.py scripts/check_final_report_contract.py scripts/check_stage_scenario.py validate_skill.py` -> PASS
+- `python3 -m json.tool templates/backend_parity.json >/dev/null && python3 -m json.tool assets/workflow_state.template.json >/dev/null && python3 -m json.tool evals/contract_matrix.json >/dev/null` -> PASS
+- `python3 scripts/generate_rigor_report.py` -> PASS, wrote `RIGOR.md` with
+  28/28 checker selftests green
+- `python3 validate_skill.py` -> PASS
+- `python3 scripts/generate_rigor_report.py --check` -> PASS, `RIGOR.md`
+  current and 28/28 checker selftests green
+- `python3 scripts/check_monthly_worklog.py` -> PASS, 23 packets
+- `git diff --check` -> PASS
+
+Remaining risk:
+
+- The workspace report is still an offline JSON contract. It blocks unsupported
+  parity claims and makes fallback evidence inspectable, but live Stata/R replay
+  remains a future enhancement for machines where those runtimes and example
+  datasets are available.
+
 ## Anti-cheat
 
 - Do not mark the month goal complete before 2026-07-26.
