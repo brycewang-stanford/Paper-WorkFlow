@@ -38,4 +38,5 @@ Selected at (Beijing): <YYYY-MM-DD HH:MM>
 - Missing dependency:
 - Fallback backend:
 - Artifact parity checked: yes / no
+- Backend parity report: 00_meta/backend_parity.json
 - Gate impact:

@@ -112,6 +112,7 @@ def _passing_state() -> dict:
             "primary": "python-statspai", "secondary_validation": "none",
             "script_extension": ".py", "child_skill": "statspai", "environment_status": "ok",
             "version_report": "00_meta/analysis_backend.md",
+            "backend_parity_report": "00_meta/backend_parity.json",
         },
         "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md",
                             "estimand_alignment": "pass", "missingness_balance": "pass",

@@ -70,6 +70,38 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_method_gate_card.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Method Gate design-card honesty: a passed Method Gate cannot have "
+            "missing/failed design-card rows, hit hard flags, placeholder paths, "
+            "or evidence claims stronger than the card permits."
+        ),
+    },
+    {
+        "path": "scripts/check_runtime_fallbacks.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Runtime fallback honesty: missing tools, networks, MCP services, or "
+            "statistical backends must be recorded in state decisions, stage logs, "
+            "and backend reports, and blocked or non-parity fallbacks cannot pass "
+            "Method Gate or replication readiness."
+        ),
+    },
+    {
+        "path": "scripts/check_backend_parity.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Backend parity fixtures and workspace reports: fallback or secondary "
+            "Python/StatsPAI, Stata, and R result bundles must agree on sample hash, "
+            "estimator family, clustering, fixed effects, coefficients, standard "
+            "errors, and diagnostics before parity claims can pass."
+        ),
+    },
+    {
         "path": "scripts/check_citation_integrity.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,
@@ -95,6 +127,16 @@ REGISTRY: list[dict] = [
         "enforces": (
             "A minimal workspace initialises and every template contract holds "
             "(templates instantiate with the fields the gates later require)."
+        ),
+    },
+    {
+        "path": "scripts/check_demo_execution.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Bundled DiD demo execution: the notebook's code cells run in a "
+            "temporary workspace, regenerate the table/figures, and preserve the "
+            "core teaching estimates and staggered-adoption caution."
         ),
     },
     {
@@ -147,12 +189,124 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_stage_scenario.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Stage 0-9 golden-path scenario: a completed workspace must have "
+            "per-stage logs, handoffs, key artifacts, final handoff recovery, "
+            "a green workspace-gate card with table-result reconciliation, and "
+            "a filled final delivery report."
+        ),
+    },
+    {
+        "path": "scripts/check_stage_adversarial.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Adversarial Stage 0-9 scenarios: common corruptions of a completed "
+            "workspace (missing artifacts, stale handoffs, broken reset coverage, "
+            "unreconciled tables, non-final citations, and gate-order regressions) "
+            "or unfilled final reports must be rejected."
+        ),
+    },
+    {
+        "path": "scripts/check_design_gate_contract.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Design-gate-card contract: every contracted empirical design family "
+            "has required artifacts, hard-fail conditions, allowed claim levels, "
+            "behavioral guardrails, and a matching Method Gate template label."
+        ),
+    },
+    {
+        "path": "scripts/check_method_specific_failures.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Method-specific failure fixtures: every contracted design family must "
+            "have a failure fixture, and each fixture rejects missing or failed "
+            "design-specific diagnostics before a Method Gate can pass."
+        ),
+    },
+    {
+        "path": "scripts/check_state_template_paths.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Workflow-state path contract: default artifact paths are safe "
+            "workspace-relative paths whose parent directories exist in the init "
+            "skeleton, and Stage 0 bootstrap artifacts exist after init."
+        ),
+    },
+    {
+        "path": "scripts/check_reproducibility_scaffold.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Replication scaffold: the run_all master script captures environment "
+            "state, warns when no expected manifest exists, accepts matching "
+            "outputs, and fails corrupted output manifests."
+        ),
+    },
+    {
+        "path": "scripts/check_final_report_contract.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Final-report contract: delivery handoffs must include validation "
+            "commands, changed files/commits, failures and fixes, residual risks, "
+            "and child/parent remote-parity status."
+        ),
+    },
+    {
         "path": "scripts/check_cross_references.py",
         "argv": ["--selftest"],
         "layer": MAINT,
         "enforces": (
             "Cross-reference contract: every internal link, named artifact, and "
             "script path referenced from SKILL.md and references actually resolves."
+        ),
+    },
+    {
+        "path": "scripts/check_bilingual_docs.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Bilingual README parity: the Chinese and English user surfaces expose "
+            "the same reference docs, script inventory, validation commands, and "
+            "load-bearing workflow artifacts."
+        ),
+    },
+    {
+        "path": "scripts/check_contract_matrix.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Contract matrix: each quality theme has named owner files, validators, "
+            "and docs, and high-leverage repo artifacts are covered by at least one "
+            "maintained invariant."
+        ),
+    },
+    {
+        "path": "scripts/check_rigor_registry.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "RIGOR registry completeness: every checker discovered under scripts/ "
+            "or evals/ must be registered in this report, and registry drift is a "
+            "blocking maintenance failure."
+        ),
+    },
+    {
+        "path": "scripts/check_monthly_worklog.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Long-horizon maintenance evidence: the month-long worklog records the "
+            "goal window, baseline PASS evidence, week plan, packet-level validation, "
+            "and anti-cheat guards that prevent premature closure."
         ),
     },
     {
@@ -232,15 +386,16 @@ def _drift() -> list[str]:
     return sorted(found - registered)
 
 
+def _report_ok(active_results: list[dict], drift: list[str]) -> bool:
+    return all(r["status"] == "PASS" for r in active_results) and not drift
+
+
 def evaluate(timeout: int = 180) -> dict:
     results = [_run_selftest(e, timeout=timeout) for e in REGISTRY]
     active = [r for r in results if r["status"] != "PLANNED"]
     passed = [r for r in active if r["status"] == "PASS"]
     drift = _drift()
-    # Drift is ADVISORY: an unregistered checker (often a sibling authored by parallel
-    # work-in-flight) is surfaced for follow-up but must not flip this report red or fail
-    # CI. Only the registered checkers' selftests determine green/red.
-    ok = all(r["status"] == "PASS" for r in active)
+    ok = _report_ok(active, drift)
     return {
         "ok": ok,
         "passed": len(passed),
@@ -301,13 +456,12 @@ def render(ev: dict, date: str) -> str:
     section("Maintenance gates — verify this skill package", maint)
 
     if ev["drift"]:
-        out.append("## Registry drift (advisory)")
+        out.append("## Registry drift (blocking)")
         out.append("")
         out.append(
-            "These checkers exist on disk but are not registered above — often a sibling "
-            "authored by parallel work still in flight. Advisory only: it does not fail "
-            "this report or CI. Register each (in `generate_rigor_report.py`) once it "
-            "stabilises so the report stays complete:"
+            "These checkers exist on disk but are not registered above. This is a "
+            "blocking maintenance failure: register each in `generate_rigor_report.py` "
+            "or remove the stray checker so the report stays complete:"
         )
         out.append("")
         for d in ev["drift"]:
@@ -327,26 +481,12 @@ def render(ev: dict, date: str) -> str:
     return "\n".join(out)
 
 
-DRIFT_HEADING = "## Registry drift (advisory)"
-
-
 def _body_for_check(text: str) -> str:
-    """Body used for --check freshness: drops the volatile date line AND the advisory
-    drift section. Drift reflects parallel-work files on disk, so it must not gate
-    freshness — only the registered-checker results and structure should."""
+    """Body used for --check freshness: drops only the volatile date line."""
     out: list[str] = []
-    skipping = False
     for l in text.splitlines():
         if l.startswith(DATE_MARKER):
             continue
-        if l.strip() == DRIFT_HEADING:
-            skipping = True
-            continue
-        if skipping:
-            if l.startswith("## "):  # next section ends the drift block
-                skipping = False
-            else:
-                continue
         out.append(l)
     return "\n".join(out)
 
@@ -380,7 +520,14 @@ def main(argv: list[str] | None = None) -> int:
                   file=sys.stderr)
             return 1
         if not ev["ok"]:
-            print("RIGOR.md is current but a checker selftest is FAILING", file=sys.stderr)
+            if ev["drift"]:
+                print(
+                    "RIGOR.md is current but registry drift is present: "
+                    + ", ".join(ev["drift"]),
+                    file=sys.stderr,
+                )
+            else:
+                print("RIGOR.md is current but a checker selftest is FAILING", file=sys.stderr)
             return 1
         print(f"RIGOR.md is current and {ev['passed']}/{ev['active']} checkers pass their selftest")
         return 0

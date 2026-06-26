@@ -29,7 +29,8 @@
     "script_extension": "",
     "child_skill": "",
     "environment_status": "pending",
-    "version_report": "00_meta/analysis_backend.md"
+    "version_report": "00_meta/analysis_backend.md",
+    "backend_parity_report": "00_meta/backend_parity.json"
   },
   "empirical_audit": {
     "status": "pending",

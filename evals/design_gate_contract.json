@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "source": "references/design-gate-cards.md",
+  "template": "templates/method_gate.md",
+  "minimum_design_count": 9,
+  "minimum_guardrail_count": 10,
+  "required_template_markers": [
+    "Design Gate Card",
+    "Design card used:",
+    "Hard Flags",
+    "Claim Downgrade",
+    "workflow_state.json.method_gate.required_artifacts",
+    "workflow_state.json.method_gate.missing_artifacts",
+    "workflow_state.json.evidence_governance.claim_strength"
+  ],
+  "design_cards": [
+    {
+      "id": "did_event_study",
+      "heading": "DiD / Event Study / Staggered Adoption",
+      "method_gate_label": "DiD",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "Adoption/cohort table",
+        "Pre-period coverage",
+        "Event-study plot/table",
+        "Staggered estimator",
+        "Naive TWFE contrast",
+        "Anticipation/placebo timing",
+        "Sensitivity"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive"
+      ]
+    },
+    {
+      "id": "iv_2sls_late",
+      "heading": "IV / 2SLS / LATE",
+      "method_gate_label": "IV",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "First stage",
+        "Reduced form",
+        "Weak-IV robust inference",
+        "Exclusion narrative",
+        "Balance / falsification",
+        "Over-ID / multiple IV checks",
+        "Complier boundary"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive"
+      ]
+    },
+    {
+      "id": "rdd_kink_threshold",
+      "heading": "RDD / Kink / Threshold Designs",
+      "method_gate_label": "RDD",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "Running variable audit",
+        "Density/manipulation test",
+        "Bandwidth report",
+        "RBC estimate",
+        "Covariate continuity",
+        "Donut and placebo cutoffs",
+        "Plot"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive"
+      ]
+    },
+    {
+      "id": "synthetic_control_sdid",
+      "heading": "Synthetic Control / SDID",
+      "method_gate_label": "SC-SDID",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "Donor pool log",
+        "Pre-fit fit report",
+        "Unit/time weights",
+        "In-space placebo",
+        "In-time placebo",
+        "Leave-one-out",
+        "SDID/DiD contrast"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive"
+      ]
+    },
+    {
+      "id": "panel_fe_hdfe",
+      "heading": "Panel FE / HDFE / Observational Controls",
+      "method_gate_label": "Panel FE",
+      "minimum_required_artifacts": 6,
+      "required_items": [
+        "Variation audit",
+        "Singleton/drop log",
+        "FE/specification curve",
+        "Alternative SE",
+        "Covariate timing screen",
+        "Influence/outlier check"
+      ],
+      "claim_levels": [
+        "causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "dml_hte_causal_forest",
+      "heading": "DML / HTE / Causal Forest / ML Causal",
+      "method_gate_label": "DML-HTE",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "Split/cross-fitting log",
+        "Nuisance diagnostics",
+        "Overlap / propensity support",
+        "Orthogonal score check",
+        "Seed/model stability",
+        "HTE calibration",
+        "Policy value / subgroup guardrail"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "causal_graph_refutation",
+      "heading": "Causal Graph + Refutation",
+      "method_gate_label": "DAG-refuter",
+      "minimum_required_artifacts": 5,
+      "required_items": [
+        "DAG source",
+        "Adjustment set",
+        "Refuters",
+        "Sensitivity",
+        "Claim boundary"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive"
+      ]
+    },
+    {
+      "id": "prediction_text_embeddings",
+      "heading": "Prediction-Assisted / Text-as-Data / Embeddings",
+      "method_gate_label": "Prediction-assisted",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "Label/data provenance",
+        "Leakage audit",
+        "Train/test or validation split",
+        "Human-valid labels",
+        "Feature timing screen",
+        "Sensitivity to model choice",
+        "Interpretability boundary"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "time_series_var",
+      "heading": "Time Series / VAR / 协整 / 单位根",
+      "method_gate_label": "Time Series-VAR",
+      "minimum_required_artifacts": 9,
+      "required_items": [
+        "Stationarity / unit-root test",
+        "Lag-order selection",
+        "Cointegration check",
+        "Model stability",
+        "Residual diagnostics",
+        "Shock identification",
+        "Ordering / scheme sensitivity",
+        "Structural break screen",
+        "IRF/forecast inference"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    }
+  ],
+  "behavioral_guardrails": [
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9",
+    "G10"
+  ]
+}

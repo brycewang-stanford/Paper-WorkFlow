@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "checker": "scripts/check_backend_parity.py",
+  "minimum_case_count": 5,
+  "default_tolerances": {
+    "estimate_abs": 1e-8,
+    "std_error_abs": 1e-8,
+    "diagnostic_abs": 1e-8
+  },
+  "cases": [
+    {
+      "id": "did_python_to_r_fixest_equivalent",
+      "design": "did_event_study",
+      "primary_backend": "python-statspai",
+      "candidate_backend": "r",
+      "expected": "pass",
+      "reference": {
+        "estimator_family": "twfe_event_study",
+        "sample_hash": "sha256:did-sample-001",
+        "nobs": 2400,
+        "cluster_level": "firm_id",
+        "fixed_effects": ["firm_id", "year"],
+        "coefficients": {
+          "treat_post": {"estimate": 0.124000001, "std_error": 0.041000001},
+          "event_time_-2": {"estimate": -0.006, "std_error": 0.018}
+        },
+        "diagnostics": {
+          "pretrend_joint_p": 0.42
+        }
+      },
+      "candidate": {
+        "estimator_family": "twfe_event_study",
+        "sample_hash": "sha256:did-sample-001",
+        "nobs": 2400,
+        "cluster_level": "firm_id",
+        "fixed_effects": ["year", "firm_id"],
+        "coefficients": {
+          "treat_post": {"estimate": 0.124000002, "std_error": 0.041000002},
+          "event_time_-2": {"estimate": -0.006000001, "std_error": 0.018}
+        },
+        "diagnostics": {
+          "pretrend_joint_p": 0.420000001
+        }
+      }
+    },
+    {
+      "id": "did_stata_cluster_level_mismatch",
+      "design": "did_event_study",
+      "primary_backend": "python-statspai",
+      "candidate_backend": "stata",
+      "expected": "fail",
+      "expected_error": "cluster_level mismatch",
+      "reference": {
+        "estimator_family": "twfe_event_study",
+        "sample_hash": "sha256:did-sample-001",
+        "nobs": 2400,
+        "cluster_level": "firm_id",
+        "fixed_effects": ["firm_id", "year"],
+        "coefficients": {
+          "treat_post": {"estimate": 0.124, "std_error": 0.041}
+        },
+        "diagnostics": {}
+      },
+      "candidate": {
+        "estimator_family": "twfe_event_study",
+        "sample_hash": "sha256:did-sample-001",
+        "nobs": 2400,
+        "cluster_level": "province_id",
+        "fixed_effects": ["firm_id", "year"],
+        "coefficients": {
+          "treat_post": {"estimate": 0.124, "std_error": 0.041}
+        },
+        "diagnostics": {}
+      }
+    },
+    {
+      "id": "iv_r_sample_hash_mismatch",
+      "design": "iv_2sls_late",
+      "primary_backend": "python-statspai",
+      "candidate_backend": "r",
+      "expected": "fail",
+      "expected_error": "sample_hash mismatch",
+      "reference": {
+        "estimator_family": "iv_2sls",
+        "sample_hash": "sha256:iv-sample-locked",
+        "nobs": 1800,
+        "cluster_level": "county_id",
+        "fixed_effects": ["state", "year"],
+        "coefficients": {
+          "treatment_hat": {"estimate": 0.310, "std_error": 0.082}
+        },
+        "diagnostics": {
+          "first_stage_f": 28.7
+        }
+      },
+      "candidate": {
+        "estimator_family": "iv_2sls",
+        "sample_hash": "sha256:iv-sample-drifted",
+        "nobs": 1800,
+        "cluster_level": "county_id",
+        "fixed_effects": ["state", "year"],
+        "coefficients": {
+          "treatment_hat": {"estimate": 0.310, "std_error": 0.082}
+        },
+        "diagnostics": {
+          "first_stage_f": 28.7
+        }
+      }
+    },
+    {
+      "id": "rdd_stata_estimate_drift",
+      "design": "rdd_kink_threshold",
+      "primary_backend": "python-statspai",
+      "candidate_backend": "stata",
+      "expected": "fail",
+      "expected_error": "estimate mismatch",
+      "reference": {
+        "estimator_family": "local_linear_rdd",
+        "sample_hash": "sha256:rdd-bandwidth-004",
+        "nobs": 950,
+        "cluster_level": "none",
+        "fixed_effects": [],
+        "coefficients": {
+          "cutoff_jump": {"estimate": 0.0875, "std_error": 0.0210}
+        },
+        "diagnostics": {
+          "bandwidth_left": 2.4,
+          "bandwidth_right": 2.4
+        }
+      },
+      "candidate": {
+        "estimator_family": "local_linear_rdd",
+        "sample_hash": "sha256:rdd-bandwidth-004",
+        "nobs": 950,
+        "cluster_level": "none",
+        "fixed_effects": [],
+        "coefficients": {
+          "cutoff_jump": {"estimate": 0.0910, "std_error": 0.0210}
+        },
+        "diagnostics": {
+          "bandwidth_left": 2.4,
+          "bandwidth_right": 2.4
+        }
+      }
+    },
+    {
+      "id": "dml_candidate_missing_term",
+      "design": "dml_hte_causal_forest",
+      "primary_backend": "python-statspai",
+      "candidate_backend": "r",
+      "expected": "fail",
+      "expected_error": "missing coefficient",
+      "reference": {
+        "estimator_family": "dml_ate",
+        "sample_hash": "sha256:dml-folds-002",
+        "nobs": 3200,
+        "cluster_level": "none",
+        "fixed_effects": [],
+        "coefficients": {
+          "ate": {"estimate": 0.052, "std_error": 0.014},
+          "policy_value": {"estimate": 0.018, "std_error": 0.006}
+        },
+        "diagnostics": {
+          "min_overlap": 0.11
+        }
+      },
+      "candidate": {
+        "estimator_family": "dml_ate",
+        "sample_hash": "sha256:dml-folds-002",
+        "nobs": 3200,
+        "cluster_level": "none",
+        "fixed_effects": [],
+        "coefficients": {
+          "ate": {"estimate": 0.052, "std_error": 0.014}
+        },
+        "diagnostics": {
+          "min_overlap": 0.11
+        }
+      }
+    }
+  ]
+}

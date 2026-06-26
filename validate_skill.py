@@ -67,7 +67,14 @@ REQUIRED_TEMPLATES = {
         "Evidence ledger claim strength",
     ],
     "templates/REPLICATION.md": ["Data Availability and Provenance", "Program to Output Map"],
-    "templates/FINAL_REPORT.md": ["Gate Results", "Residual Risks"],
+    "templates/FINAL_REPORT.md": [
+        "Gate Results",
+        "Validation Evidence",
+        "Change / Commit Ledger",
+        "Failures and Fixes",
+        "Remote / Parity Status",
+        "Residual Risks",
+    ],
     "templates/evidence_ledger.md": ["Claim Register", "Estimand-to-Claim Map", "Claim Strength Ladder", "Exhibit and Script Map"],
     "templates/claim_integrity_audit.md": ["Claim Integrity Audit", "Audit Scope", "Claim Locator Manifest", "Verdict Taxonomy", "Blocking findings"],
     "templates/preregistration.md": [
@@ -91,6 +98,9 @@ REQUIRED_TEMPLATES = {
         "Adoption Record",
     ],
 }
+REQUIRED_JSON_TEMPLATES = [
+    "templates/backend_parity.json",
+]
 REQUIRED_REFERENCES = {
     "references/design-risk-ledger.md": [
         "Design Risk Ledger",
@@ -229,6 +239,7 @@ def load_template() -> dict:
         "child_skill",
         "environment_status",
         "version_report",
+        "backend_parity_report",
     ]:
         if key not in backend:
             fail(f"analysis_backend missing key: {key}")
@@ -368,15 +379,37 @@ def check_assets() -> None:
         "references/data-governance.md",
         "references/runtime-fallbacks.md",
         "scripts/smoke_workspace.py",
+        "scripts/check_demo_execution.py",
+        "scripts/check_backend_parity.py",
+        "scripts/check_stage_scenario.py",
+        "scripts/check_stage_adversarial.py",
+        "scripts/check_design_gate_contract.py",
+        "scripts/check_method_specific_failures.py",
+        "scripts/check_method_gate_card.py",
+        "scripts/check_runtime_fallbacks.py",
         "scripts/check_workspace_gates.py",
+        "scripts/check_state_template_paths.py",
+        "scripts/check_contract_matrix.py",
+        "scripts/check_bilingual_docs.py",
+        "scripts/check_final_report_contract.py",
+        "scripts/check_monthly_worklog.py",
+        "scripts/check_rigor_registry.py",
+        "scripts/check_reproducibility_scaffold.py",
         "scripts/check_skillopt_packet.py",
         "scripts/check_verification_log.py",
         "scripts/check_citation_integrity.py",
         "scripts/check_preregistration.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
+        "templates/backend_parity.json",
+        "evals/stage_scenario_contract.json",
+        "evals/stage_adversarial_cases.json",
+        "evals/design_gate_contract.json",
+        "evals/method_failure_cases.json",
+        "evals/backend_parity_cases.json",
     ]
     required.extend(REQUIRED_TEMPLATES)
+    required.extend(REQUIRED_JSON_TEMPLATES)
     for rel in required:
         path = ROOT / rel
         if not path.exists():
@@ -400,6 +433,11 @@ def check_template_contracts() -> None:
         for marker in markers:
             if marker not in text:
                 fail(f"{rel} missing required marker: {marker}")
+    for rel in REQUIRED_JSON_TEMPLATES:
+        try:
+            json.loads((ROOT / rel).read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            fail(f"{rel} is not valid JSON: {exc}")
     subprocess.run(["bash", "-n", str(ROOT / "templates" / "run_all.sh")], check=True)
 
 
@@ -448,8 +486,16 @@ def check_init_workspace(template: dict) -> None:
             fail("init_workspace.sh did not create 00_meta/pipeline_status.md")
         if not (workspace / "00_meta" / "analysis_backend.md").exists():
             fail("init_workspace.sh did not create 00_meta/analysis_backend.md")
+        if not (workspace / "00_meta" / "backend_parity.json").exists():
+            fail("init_workspace.sh did not create 00_meta/backend_parity.json")
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_backend_parity.py"), str(workspace)],
+            check=True,
+        )
         if not (workspace / "00_meta" / "evidence_ledger.md").exists():
             fail("init_workspace.sh did not create 00_meta/evidence_ledger.md")
+        if not (workspace / "00_meta" / "data_governance.md").exists():
+            fail("init_workspace.sh did not create 00_meta/data_governance.md")
         if not (workspace / "00_meta" / "claim_integrity_audit.md").exists():
             fail("init_workspace.sh did not create 00_meta/claim_integrity_audit.md")
         if not (workspace / "00_meta" / "citation_integrity_log.md").exists():
@@ -465,7 +511,22 @@ def check_python_compile() -> None:
     files = [
         ROOT / "validate_skill.py",
         ROOT / "scripts" / "smoke_workspace.py",
+        ROOT / "scripts" / "check_demo_execution.py",
+        ROOT / "scripts" / "check_backend_parity.py",
+        ROOT / "scripts" / "check_stage_scenario.py",
+        ROOT / "scripts" / "check_stage_adversarial.py",
+        ROOT / "scripts" / "check_design_gate_contract.py",
+        ROOT / "scripts" / "check_method_specific_failures.py",
+        ROOT / "scripts" / "check_method_gate_card.py",
+        ROOT / "scripts" / "check_runtime_fallbacks.py",
         ROOT / "scripts" / "check_workspace_gates.py",
+        ROOT / "scripts" / "check_state_template_paths.py",
+        ROOT / "scripts" / "check_contract_matrix.py",
+        ROOT / "scripts" / "check_bilingual_docs.py",
+        ROOT / "scripts" / "check_final_report_contract.py",
+        ROOT / "scripts" / "check_monthly_worklog.py",
+        ROOT / "scripts" / "check_rigor_registry.py",
+        ROOT / "scripts" / "check_reproducibility_scaffold.py",
         ROOT / "scripts" / "check_skillopt_packet.py",
         ROOT / "scripts" / "check_verification_log.py",
         ROOT / "scripts" / "check_citation_integrity.py",
@@ -493,6 +554,159 @@ def check_gate_verifier() -> None:
 def check_skillopt_packet_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_skillopt_packet.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_contract_matrix_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py")],
+        check=True,
+    )
+
+
+def check_bilingual_docs_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_bilingual_docs.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_bilingual_docs.py")],
+        check=True,
+    )
+
+
+def check_final_report_contract_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_final_report_contract.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_final_report_contract.py")],
+        check=True,
+    )
+
+
+def check_monthly_worklog_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_monthly_worklog.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_monthly_worklog.py")],
+        check=True,
+    )
+
+
+def check_rigor_registry_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_rigor_registry.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_rigor_registry.py")],
+        check=True,
+    )
+
+
+def check_state_template_paths_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_state_template_paths.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_state_template_paths.py")],
+        check=True,
+    )
+
+
+def check_reproducibility_scaffold_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_reproducibility_scaffold.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_reproducibility_scaffold.py")],
+        check=True,
+    )
+
+
+def check_demo_execution_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_demo_execution.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_backend_parity_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_backend_parity.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_backend_parity.py")],
+        check=True,
+    )
+
+
+def check_stage_scenario_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_stage_scenario.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_stage_scenario.py")],
+        check=True,
+    )
+
+
+def check_stage_adversarial_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_stage_adversarial.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_stage_adversarial.py")],
+        check=True,
+    )
+
+
+def check_design_gate_contract_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_design_gate_contract.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_design_gate_contract.py")],
+        check=True,
+    )
+
+
+def check_method_specific_failures_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_method_specific_failures.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_method_specific_failures.py")],
+        check=True,
+    )
+
+
+def check_method_gate_card_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_method_gate_card.py"), "--selftest"],
+        check=True,
+    )
+
+
+def check_runtime_fallbacks_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_runtime_fallbacks.py"), "--selftest"],
         check=True,
     )
 
@@ -581,9 +795,24 @@ def main() -> None:
     check_notebook()
     check_init_workspace(template)
     check_python_compile()
+    check_demo_execution_checker()
+    check_backend_parity_checker()
+    check_stage_scenario_checker()
+    check_stage_adversarial_checker()
+    check_design_gate_contract_checker()
+    check_method_specific_failures_checker()
+    check_method_gate_card_checker()
+    check_runtime_fallbacks_checker()
     check_smoke_workspace()
     check_gate_integration()
     check_gate_verifier()
+    check_state_template_paths_checker()
+    check_contract_matrix_checker()
+    check_bilingual_docs_checker()
+    check_final_report_contract_checker()
+    check_monthly_worklog_checker()
+    check_rigor_registry_checker()
+    check_reproducibility_scaffold_checker()
     check_skillopt_packet_checker()
     check_verification_log()
     check_citation_integrity_checker()

@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "minimum_theme_count": 5,
+  "required_paths": [
+    "SKILL.md",
+    "README.md",
+    "README.en.md",
+    "assets/init_workspace.sh",
+    "assets/workflow_state.template.json",
+    "templates/backend_parity.json",
+    "templates/run_all.sh",
+    "templates/REPLICATION.md",
+    "templates/DAS.md",
+    "templates/data_governance.md",
+    "scripts/smoke_workspace.py",
+    "scripts/check_demo_execution.py",
+    "scripts/check_backend_parity.py",
+    "scripts/check_workspace_gates.py",
+    "scripts/check_runtime_fallbacks.py",
+    "scripts/check_design_gate_contract.py",
+    "scripts/check_method_gate_card.py",
+    "scripts/check_method_specific_failures.py",
+    "scripts/check_stage_scenario.py",
+    "scripts/check_stage_adversarial.py",
+    "scripts/check_state_template_paths.py",
+    "scripts/check_reproducibility_scaffold.py",
+    "scripts/check_bilingual_docs.py",
+    "scripts/check_final_report_contract.py",
+    "scripts/check_monthly_worklog.py",
+    "scripts/check_rigor_registry.py",
+    "scripts/generate_rigor_report.py",
+    "validate_skill.py",
+    "RIGOR.md",
+    "templates/FINAL_REPORT.md",
+    "did_demo.ipynb",
+    "evals/design_gate_contract.json",
+    "evals/method_failure_cases.json",
+    "evals/backend_parity_cases.json",
+    "evals/stage_scenario_contract.json",
+    "evals/stage_adversarial_cases.json",
+    "worklogs/2026-06-25-month-long-quality-goal.md"
+  ],
+  "contracts": [
+    {
+      "id": "stage0_workspace_boot",
+      "theme": "workflow_contract_state",
+      "invariant": "A new workspace starts with Stage 0 routing, passport, handoff, pipeline-status, backend, evidence-ledger, integrity, citation, data-governance, and design-risk placeholders while preserving pending gate state.",
+      "owner_files": [
+        "assets/init_workspace.sh",
+        "assets/workflow_state.template.json",
+        "evals/stage_scenario_contract.json",
+        "evals/stage_adversarial_cases.json",
+        "scripts/check_stage_scenario.py",
+        "scripts/check_stage_adversarial.py",
+        "scripts/check_state_template_paths.py",
+        "templates/entry_routing.md",
+        "templates/stage_passport.md",
+        "templates/handoff_card.md",
+        "templates/handoff_prompt.md",
+        "templates/pipeline_status.md",
+        "templates/analysis_backend.md",
+        "templates/evidence_ledger.md",
+        "templates/claim_integrity_audit.md",
+        "templates/citation_integrity_log.md",
+        "templates/data_governance.md",
+        "templates/design_risk_ledger.md"
+      ],
+      "validators": [
+        "validate_skill.py",
+        "scripts/smoke_workspace.py",
+        "scripts/check_stage_scenario.py",
+        "scripts/check_stage_adversarial.py",
+        "scripts/check_state_template_paths.py",
+        "scripts/check_gate_integration.py"
+      ],
+      "docs": [
+        "SKILL.md",
+        "references/workspace-and-state.md",
+        "references/orchestration-and-handoff.md",
+        "references/data-governance.md"
+      ]
+    },
+    {
+      "id": "method_gate_ordering",
+      "theme": "runtime_validators_evals",
+      "invariant": "Method Gate, design risk, evidence governance, Draft Quality Gate, integrity audit, citation integrity, and replication-ready status cannot contradict each other.",
+      "owner_files": [
+        "scripts/check_workspace_gates.py",
+        "scripts/check_method_gate_card.py",
+        "scripts/check_runtime_fallbacks.py",
+        "scripts/check_backend_parity.py",
+        "scripts/check_citation_integrity.py",
+        "scripts/check_preregistration.py",
+        "scripts/check_verification_log.py",
+        "scripts/check_design_gate_contract.py",
+        "scripts/check_method_specific_failures.py",
+        "evals/design_gate_contract.json",
+        "evals/method_failure_cases.json",
+        "evals/backend_parity_cases.json",
+        "templates/backend_parity.json",
+        "templates/method_gate.md",
+        "templates/design_risk_ledger.md",
+        "templates/evidence_ledger.md",
+        "templates/quality_scorecard.md",
+        "templates/claim_integrity_audit.md",
+        "templates/citation_integrity_log.md"
+      ],
+      "validators": [
+        "scripts/check_workspace_gates.py",
+        "scripts/check_method_gate_card.py",
+        "scripts/check_runtime_fallbacks.py",
+        "scripts/check_backend_parity.py",
+        "scripts/check_citation_integrity.py",
+        "scripts/check_preregistration.py",
+        "scripts/check_verification_log.py",
+        "scripts/check_review_scorecard.py",
+        "scripts/check_design_gate_contract.py",
+        "scripts/check_method_specific_failures.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/research-grade-methods.md",
+        "references/design-gate-cards.md",
+        "references/design-risk-ledger.md",
+        "references/integrity-and-claim-audit.md",
+        "references/citation-and-temporal-integrity.md",
+        "references/runtime-fallbacks.md",
+        "references/analysis-backends.md",
+        "RIGOR.md"
+      ]
+    },
+    {
+      "id": "reproducibility_pack",
+      "theme": "reproducibility_examples",
+      "invariant": "A paper run must have a truthful replication README, one-click rebuild entry, data availability statement, output manifest path, environment capture, and demo evidence that does not masquerade as real paper results.",
+      "owner_files": [
+        "templates/REPLICATION.md",
+        "templates/run_all.sh",
+        "templates/DAS.md",
+        "templates/check_outputs.py",
+        "templates/repro_environment.md",
+        "scripts/check_reproducibility_scaffold.py",
+        "scripts/check_demo_execution.py",
+        "did_demo.ipynb",
+        "evals/replication_cases/did_demo_self.json",
+        "evals/check_replication_accuracy.py",
+        "evals/check_quality_judge.py"
+      ],
+      "validators": [
+        "scripts/smoke_workspace.py",
+        "scripts/check_demo_execution.py",
+        "scripts/check_gate_integration.py",
+        "scripts/check_reproducibility_scaffold.py",
+        "evals/check_replication_accuracy.py",
+        "evals/check_quality_judge.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/reproducibility-pack.md",
+        "references/computational-reproducibility.md",
+        "references/worked-example.md",
+        "README.md",
+        "README.en.md"
+      ]
+    },
+    {
+      "id": "bilingual_user_surface",
+      "theme": "bilingual_user_docs",
+      "invariant": "The Chinese and English user surfaces explain the same Stage 0-9 workflow, hard gates, backend choices, local checks, workspace outputs, and publish boundary at a comparable level.",
+      "owner_files": [
+        "README.md",
+        "README.en.md",
+        "scripts/check_bilingual_docs.py",
+        "SKILL.md",
+        "references/skill-map.md",
+        "references/stage-playbook.md"
+      ],
+      "validators": [
+        "scripts/check_bilingual_docs.py",
+        "scripts/check_cross_references.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "README.md",
+        "README.en.md",
+        "references/workspace-and-state.md"
+      ]
+    },
+    {
+      "id": "maintainer_governance",
+      "theme": "maintainer_governance_release",
+      "invariant": "Maintenance changes must keep the always-loaded layer bounded, register checker coverage, preserve SkillOpt packet discipline, and leave dated progress evidence for long-running work.",
+      "owner_files": [
+        "templates/SKILLOPT_PACKET.md",
+        "templates/FINAL_REPORT.md",
+        "scripts/check_skillopt_packet.py",
+        "scripts/check_final_report_contract.py",
+        "evals/score_skill.py",
+        "evals/check_complexity_budget.py",
+        "scripts/check_monthly_worklog.py",
+        "scripts/check_rigor_registry.py",
+        "evals/complexity_baseline.json",
+        "scripts/generate_rigor_report.py",
+        "RIGOR.md",
+        "worklogs/2026-06-25-month-long-quality-goal.md"
+      ],
+      "validators": [
+        "scripts/check_skillopt_packet.py",
+        "scripts/check_final_report_contract.py",
+        "evals/score_skill.py",
+        "evals/check_complexity_budget.py",
+        "scripts/generate_rigor_report.py",
+        "scripts/check_contract_matrix.py",
+        "scripts/check_rigor_registry.py",
+        "scripts/check_monthly_worklog.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/skillopt-improvement-loop.md",
+        "evals/README.md",
+        "evals/complexity_audit.md",
+        "worklogs/2026-06-25-month-long-quality-goal.md"
+      ]
+    }
+  ]
+}

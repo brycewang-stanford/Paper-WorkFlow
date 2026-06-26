@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "status": "pending",
+  "primary_backend": "",
+  "candidate_backend": "",
+  "comparison_scope": [
+    "sample_hash",
+    "nobs",
+    "estimator_family",
+    "cluster_level",
+    "fixed_effects",
+    "coefficients",
+    "standard_errors",
+    "diagnostics"
+  ],
+  "tolerances": {
+    "estimate_abs": 1e-8,
+    "std_error_abs": 1e-8,
+    "diagnostic_abs": 1e-8
+  },
+  "result_pairs": [],
+  "blocking_differences": [],
+  "last_checked": ""
+}

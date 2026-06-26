@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "scenario_name": "minimal_stage0_9_pass_workspace",
+  "required_stage_count": 10,
+  "stages": [
+    {
+      "number": 0,
+      "state_key": "0_intake_setup",
+      "log": "logs/stage_0.md",
+      "handoff": "00_meta/handoff/S00-intake.md",
+      "required_artifacts": [
+        "00_meta/entry_routing.md",
+        "00_meta/stage_passport.md",
+        "00_meta/pipeline_status.md",
+        "00_meta/analysis_backend.md",
+        "00_meta/data_governance.md"
+      ]
+    },
+    {
+      "number": 1,
+      "state_key": "1_topic_design",
+      "log": "logs/stage_1.md",
+      "handoff": "00_meta/handoff/S01-topic-design.md",
+      "required_artifacts": [
+        "01_proposal/proposal.md",
+        "01_proposal/candidates/topic_card.md",
+        "03_analysis/design_register.md"
+      ]
+    },
+    {
+      "number": 2,
+      "state_key": "2_data",
+      "log": "logs/stage_2.md",
+      "handoff": "00_meta/handoff/S02-data.md",
+      "required_artifacts": [
+        "02_data/codebook.md",
+        "02_data/sample_audit.md",
+        "02_data/clean/analysis_sample.csv"
+      ]
+    },
+    {
+      "number": 3,
+      "state_key": "3_identification_estimation",
+      "log": "logs/stage_3.md",
+      "handoff": "00_meta/handoff/S03-method-gate.md",
+      "required_artifacts": [
+        "03_analysis/method_gate.md",
+        "03_analysis/inference_report.md",
+        "03_analysis/design_risk_ledger.md",
+        "03_analysis/results/main_results.json"
+      ]
+    },
+    {
+      "number": 4,
+      "state_key": "4_tables_figures",
+      "log": "logs/stage_4.md",
+      "handoff": "00_meta/handoff/S04-results.md",
+      "required_artifacts": [
+        "04_results/table_main.tex",
+        "04_results/figure_event_study.md"
+      ]
+    },
+    {
+      "number": 5,
+      "state_key": "5_draft",
+      "log": "logs/stage_5.md",
+      "handoff": "00_meta/handoff/S05-draft.md",
+      "required_artifacts": [
+        "05_draft/main.tex",
+        "05_draft/ref.bib"
+      ]
+    },
+    {
+      "number": 6,
+      "state_key": "6_polish",
+      "log": "logs/stage_6.md",
+      "handoff": "00_meta/handoff/S06-polish.md",
+      "required_artifacts": [
+        "06_polish/polish_log.md",
+        "06_polish/changed_claims.md"
+      ]
+    },
+    {
+      "number": 7,
+      "state_key": "7_language_dehumanize",
+      "log": "logs/stage_7.md",
+      "handoff": "00_meta/handoff/S07-quality-gate.md",
+      "required_artifacts": [
+        "07_dehumanize/main.tex",
+        "00_meta/quality_scorecard.md",
+        "00_meta/claim_integrity_audit.md",
+        "00_meta/citation_integrity_log.md"
+      ]
+    },
+    {
+      "number": 8,
+      "state_key": "8_review_revision",
+      "log": "logs/stage_8.md",
+      "handoff": "00_meta/handoff/S08-review.md",
+      "required_artifacts": [
+        "08_review/referee_report.md",
+        "08_review/response_letter.md"
+      ]
+    },
+    {
+      "number": 9,
+      "state_key": "9_submission",
+      "log": "logs/stage_9.md",
+      "handoff": "00_meta/handoff/S09-submission.md",
+      "required_artifacts": [
+        "09_submission/submission_checklist.md",
+        "09_submission/DAS.md",
+        "REPLICATION.md",
+        "run_all.sh",
+        "FINAL_REPORT.md"
+      ]
+    }
+  ],
+  "final_required_artifacts": [
+    "00_meta/workflow_state.json",
+    "00_meta/stage_passport.md",
+    "00_meta/pipeline_status.md",
+    "00_meta/handoff/S09-submission.md",
+    "REPLICATION.md",
+    "run_all.sh",
+    "FINAL_REPORT.md"
+  ],
+  "final_delivery_checks": [
+    "check_workspace_gates --json --reconcile",
+    "check_final_report_contract --filled"
+  ]
+}

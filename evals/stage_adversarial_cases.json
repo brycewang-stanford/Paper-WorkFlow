@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "base_contract": "evals/stage_scenario_contract.json",
+  "minimum_case_count": 8,
+  "cases": [
+    {
+      "id": "missing_stage3_results",
+      "description": "A completed method stage cannot lose the main results JSON while keeping Method Gate green.",
+      "mutation": {
+        "type": "delete_path",
+        "path": "03_analysis/results/main_results.json"
+      },
+      "expected_error": "missing or empty stage 3 artifact: 03_analysis/results/main_results.json"
+    },
+    {
+      "id": "stale_latest_handoff",
+      "description": "A finished workspace cannot point latest_handoff back to an earlier handoff card.",
+      "mutation": {
+        "type": "set_latest_handoff",
+        "path": "00_meta/handoff/S07-quality-gate.md"
+      },
+      "expected_error": "latest_handoff must point to the Stage 9 handoff"
+    },
+    {
+      "id": "missing_reset_boundary",
+      "description": "A long-running Stage 0-9 run must retain reset-boundary coverage for every stage.",
+      "mutation": {
+        "type": "remove_reset_boundary",
+        "stage": 6
+      },
+      "expected_error": "reset_boundaries must cover every stage 0-9"
+    },
+    {
+      "id": "stage_log_missing_artifact",
+      "description": "A stage log cannot omit a key artifact that the stage contract requires.",
+      "mutation": {
+        "type": "strip_log_artifact",
+        "stage": 2,
+        "artifact": "02_data/sample_audit.md"
+      },
+      "expected_error": "stage 2 log does not mention artifact: 02_data/sample_audit.md"
+    },
+    {
+      "id": "table_results_unreconciled",
+      "description": "Publication table numbers must remain reconcilable to main_results.json.",
+      "mutation": {
+        "type": "replace_text",
+        "path": "03_analysis/results/main_results.json",
+        "old": "0.123",
+        "new": "9.999"
+      },
+      "expected_error": "workspace gate checker did not prove OK: reconcile"
+    },
+    {
+      "id": "citation_not_final_clean",
+      "description": "A final quality/submission state cannot keep a citation in to-verify status.",
+      "mutation": {
+        "type": "replace_text",
+        "path": "00_meta/citation_integrity_log.md",
+        "old": "verified | 2026-06-25 | ok",
+        "new": "to-verify | 2026-06-25 | needs final DOI check"
+      },
+      "expected_error": "workspace gate checker failed"
+    },
+    {
+      "id": "quality_gate_looser_than_method_gate",
+      "description": "Draft Quality Gate cannot remain pass when Method Gate is downgraded after the fact.",
+      "mutation": {
+        "type": "set_state_value",
+        "path": [
+          "method_gate",
+          "status"
+        ],
+        "value": "not_pass"
+      },
+      "expected_error": "workspace gate checker failed"
+    },
+    {
+      "id": "final_report_unfilled_placeholder",
+      "description": "A finished submission handoff cannot ship a FINAL_REPORT that still contains template placeholders.",
+      "mutation": {
+        "type": "replace_text",
+        "path": "FINAL_REPORT.md",
+        "old": "Project: scenario_project",
+        "new": "Project: <short name>"
+      },
+      "expected_error": "filled FINAL_REPORT check failed"
+    }
+  ]
+}

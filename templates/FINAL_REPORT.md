@@ -47,6 +47,7 @@ Workspace: <paper_workspace/...>
 | Pipeline status | 00_meta/pipeline_status.md | no |
 | Latest handoff | 00_meta/handoff/ | no |
 | Analysis backend report | 00_meta/analysis_backend.md | no |
+| Backend parity report | 00_meta/backend_parity.json | no |
 | Clean data and codebook | 02_data/clean.parquet, 02_data/codebook.md | no |
 | Sample / estimand audit | 02_data/sample_audit.md | no |
 | Design risk ledger | 03_analysis/design_risk_ledger.md | no |
@@ -67,7 +68,40 @@ Workspace: <paper_workspace/...>
 
 Last rebuild check:
 
-## 5. Residual Risks
+## 5. Validation Evidence
+
+Commands run:
+
+| Command | Result | Evidence / notes |
+|---|---|---|
+| `python3 validate_skill.py` | PASS / FAIL / not in scope | <child gate output summary> |
+| `python3 scripts/generate_rigor_report.py --check` | PASS / FAIL / not in scope | <RIGOR freshness output> |
+| `git diff --check` | PASS / FAIL / not in scope | <whitespace/path hygiene output> |
+| `make catalog` | PASS / FAIL / not in scope | <parent catalog refresh evidence, if child catalog-visible metadata changed> |
+| `make validate` | PASS / FAIL / not in scope | <parent validation evidence, if parent sync is in scope> |
+| `make check` | PASS / FAIL / not in scope | <parent end-to-end evidence, if parent sync is in scope> |
+
+## 6. Change / Commit Ledger
+
+| Commit / SHA | Files changed | Change summary |
+|---|---|---|
+| <no commit / short sha> | <repo-relative paths> | <what changed and why> |
+
+## 7. Failures and Fixes
+
+| Failures encountered | Fix / outcome | Follow-up |
+|---|---|---|
+| <command / gate / review finding> | <fix applied or reason deferred> | <remaining action or none> |
+
+## 8. Remote / Parity Status
+
+| Scope | Status | Evidence / notes |
+|---|---|---|
+| Child repo status | clean / dirty / committed / pushed / No push requested | <branch, HEAD, origin, or known dirty files> |
+| Parent repo status | clean / dirty / not in scope | <gitlink/catalog state and validation evidence> |
+| Remote / parity status | pushed / not pushed / No push requested | <remote SHA parity, ls-remote evidence, or explicit no-push note> |
+
+## 9. Residual Risks
 
 - Identification:
 - Design risks / external validity:
@@ -80,7 +114,7 @@ Last rebuild check:
 - Journal formatting:
 - Handoff / continuation:
 
-## 6. Next Actions
+## 10. Next Actions
 
 1. <action>
 2. <action>
