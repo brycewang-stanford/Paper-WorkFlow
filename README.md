@@ -275,6 +275,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── pipeline_status.md           紧凑 dashboard：当前状态、材料、checkpoint、下一步
 │   ├── handoff/                     长任务/换 agent/阶段切换时的交接卡
 │   ├── analysis_backend.md          Python/StatsPAI、Stata、R 后端选择与环境检查
+│   ├── backend_parity.json          fallback/secondary validation 的结果等价性报告
 │   ├── quality_scorecard.md         初稿质量门 7 维评分卡（放行/回炉判定）
 │   ├── data_governance.md           数据分级、PII、IRB/DUA、公开包边界
 │   ├── evidence_ledger.md           estimand→claim→data→estimate→exhibit→script 总账
@@ -382,15 +383,52 @@ Paper-WorkFlow/
 ├── SKILL.md                          # 总编排器（入口 · 完整执行协议）
 ├── README.md                         # 中文说明（已整合原 PDF 讲义要点）
 ├── README.en.md                      # English README（与中文版同步的最新版）
-├── validate_skill.py                 # 本目录自检：模板、链接、workspace init、Notebook 结构
+├── RIGOR.md                          # 自动生成的 gate-coverage report（checker suite 全绿）
+├── RELATED-WORK.md                   # 竞品/同类 skills 库对比与差异化证据
+├── validate_skill.py                 # 本目录主自检：模板、链接、workspace init、demo 执行、rigor/maintenance gates
 ├── scripts/
 │   ├── smoke_workspace.py            # 临时最小工作区 + 模板实例化 smoke test
+│   ├── check_demo_execution.py       # 执行 did_demo.ipynb 并验证表图/核心教学不变量
+│   ├── check_backend_parity.py       # Python/StatsPAI、Stata、R 后端 fallback/secondary parity fixture
+│   ├── check_stage_scenario.py       # Stage 0–9 完整场景 fixture + gate/reconcile 校验
+│   ├── check_stage_adversarial.py    # Stage 0–9 反例场景：缺产物、旧 handoff、闸门倒挂等
+│   ├── check_design_gate_contract.py # 设计分支证据卡 × method_gate 模板同步校验
+│   ├── check_method_specific_failures.py # 9 类设计的 Method Gate 方法特定失败 fixture
+│   ├── check_method_gate_card.py     # 工作区 method_gate.md Design Gate Card 运行期校验
+│   ├── check_runtime_fallbacks.py    # 工具/网络/MCP/后端退化路径的日志与闸门诚实性校验
 │   ├── check_workspace_gates.py      # 运行期 Method/Quality/Replication gate 机械校验
-│   └── check_skillopt_packet.py      # 维护期 SkillOpt-style 改进包机械校验
+│   ├── check_state_template_paths.py # workflow_state 默认路径 × init 骨架一致性
+│   ├── check_citation_integrity.py   # 引用存在性、撤稿/版本、look-ahead/vintage 检查
+│   ├── check_review_scorecard.py     # Draft Quality Gate 评分卡 L1/L2 机械校验
+│   ├── check_preregistration.py      # 预注册锁与 exploratory 标注校验
+│   ├── check_gate_integration.py     # 真实 init + 真实模板 + gate checker 集成测试
+│   ├── check_reproducibility_scaffold.py # run_all + check_outputs 复现脚手架测试
+│   ├── check_cross_references.py     # 内部链接、路径、checker wiring、Stage/table 合约
+│   ├── check_bilingual_docs.py       # 中英文 README 用户入口与门禁说明同步校验
+│   ├── check_final_report_contract.py # FINAL_REPORT 交付证据与 remote/parity 状态模板校验
+│   ├── check_contract_matrix.py      # 月度质量主题 owner/validator/docs 覆盖矩阵
+│   ├── check_monthly_worklog.py      # 一个月质量目标 worklog 结构与证据完整性
+│   ├── check_rigor_registry.py       # RIGOR registry 覆盖所有 checker 的防漂移校验
+│   ├── check_skillopt_packet.py      # 维护期 SkillOpt-style 改进包机械校验
+│   ├── check_verification_log.py     # 方法 claim verification log 校验
+│   └── generate_rigor_report.py      # 生成/检查 RIGOR.md
+├── evals/
+│   ├── contract_matrix.json          # 长期质量主题 → owner files / validators / docs
+│   ├── backend_parity_cases.json     # 三后端 fallback/secondary validation parity 夹具
+│   ├── design_gate_contract.json     # 设计分支证据卡 contract（9 类设计 + G1–G10 护栏）
+│   ├── method_failure_cases.json     # 9 类设计的 Method Gate 方法特定反例
+│   ├── stage_scenario_contract.json  # Stage 0–9 golden-path 场景契约
+│   ├── stage_adversarial_cases.json  # Stage 0–9 反例场景清单
+│   ├── score_skill.py                # SkillOpt selection-gate 评分 harness
+│   ├── check_complexity_budget.py    # always-loaded layer 复杂度棘轮
+│   ├── check_replication_accuracy.py # Stage 3 输出正确性 fixture
+│   ├── check_quality_judge.py        # Draft Quality Gate judge calibration
+│   └── scenarios.json · quality_calibration.json · complexity_baseline.json
 ├── templates/                        # 关键 artifact 模板
 │   ├── design_register.md
 │   ├── design_risk_ledger.md
 │   ├── analysis_backend.md
+│   ├── backend_parity.json
 │   ├── sample_audit.md
 │   ├── method_gate.md
 │   ├── pipeline_status.md
@@ -483,7 +521,13 @@ python3 scripts/smoke_workspace.py
 python3 scripts/check_skillopt_packet.py --selftest
 ```
 
-它会检查本地 Markdown 链接、`workflow_state` schema、Stage 0 route/passport/pipeline-status/handoff 模板、claim integrity 模板、`init_workspace.sh` 的拒绝覆盖行为、核心资产、模板契约、最小工作区 smoke fixture、DiD Notebook 结构，以及 SkillOpt-style 改进包 checker 的自测。若本次维护有实际改进包，再跑 `python3 scripts/check_skillopt_packet.py <packet>`。母仓库发布前再从仓库根目录跑 `make check`。
+它会检查本地 Markdown 链接、`workflow_state` schema、Stage 0 route/passport/pipeline-status/handoff 模板、claim integrity 与 data-governance 模板、`init_workspace.sh` 的拒绝覆盖行为、核心资产、模板契约、设计分支证据卡 contract、9 类设计的 Method Gate 方法特定失败 fixture、Method Gate Design Gate Card 运行期自测、runtime fallback 日志/decision/闸门诚实性、三后端 backend parity fixture、最小工作区 smoke fixture、Stage 0–9 完整场景 fixture、filled FINAL_REPORT 交付包与反例场景、DiD Notebook 结构与临时执行、复现脚手架、中英文 README parity、FINAL_REPORT 交付证据 contract、月度质量 worklog、RIGOR registry 覆盖，以及 SkillOpt-style 改进包 checker 的自测。若本次维护有实际改进包，再跑 `python3 scripts/check_skillopt_packet.py <packet>`。母仓库发布前再从仓库根目录跑：
+
+```bash
+make catalog
+make validate
+make check
+```
 
 ---
 

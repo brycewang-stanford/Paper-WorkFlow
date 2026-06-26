@@ -195,6 +195,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/pipeline_status.md
 ├── 00_meta/handoff/
 ├── 00_meta/analysis_backend.md
+├── 00_meta/backend_parity.json
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
 ├── 00_meta/evidence_ledger.md
@@ -263,15 +264,52 @@ Paper-WorkFlow/
 ├── SKILL.md
 ├── README.md
 ├── README.en.md
+├── RIGOR.md
+├── RELATED-WORK.md
 ├── validate_skill.py
 ├── scripts/
 │   ├── smoke_workspace.py
+│   ├── check_demo_execution.py
+│   ├── check_backend_parity.py
+│   ├── check_stage_scenario.py
+│   ├── check_stage_adversarial.py
+│   ├── check_design_gate_contract.py
+│   ├── check_method_specific_failures.py
+│   ├── check_method_gate_card.py
+│   ├── check_runtime_fallbacks.py
 │   ├── check_workspace_gates.py
-│   └── check_skillopt_packet.py
+│   ├── check_state_template_paths.py
+│   ├── check_citation_integrity.py
+│   ├── check_review_scorecard.py
+│   ├── check_preregistration.py
+│   ├── check_gate_integration.py
+│   ├── check_reproducibility_scaffold.py
+│   ├── check_cross_references.py
+│   ├── check_bilingual_docs.py
+│   ├── check_final_report_contract.py
+│   ├── check_contract_matrix.py
+│   ├── check_monthly_worklog.py
+│   ├── check_rigor_registry.py
+│   ├── check_skillopt_packet.py
+│   ├── check_verification_log.py
+│   └── generate_rigor_report.py
+├── evals/
+│   ├── contract_matrix.json
+│   ├── backend_parity_cases.json
+│   ├── design_gate_contract.json
+│   ├── method_failure_cases.json
+│   ├── stage_scenario_contract.json
+│   ├── stage_adversarial_cases.json
+│   ├── score_skill.py
+│   ├── check_complexity_budget.py
+│   ├── check_replication_accuracy.py
+│   ├── check_quality_judge.py
+│   └── scenarios.json · quality_calibration.json · complexity_baseline.json
 ├── templates/
 │   ├── design_register.md
 │   ├── design_risk_ledger.md
 │   ├── analysis_backend.md
+│   ├── backend_parity.json
 │   ├── sample_audit.md
 │   ├── method_gate.md
 │   ├── evidence_ledger.md
@@ -346,6 +384,12 @@ Paper-WorkFlow/
 - [references/quality-rubric.md](references/quality-rubric.md): Draft Quality Gate scoring rubric.
 - [references/subagent-templates.md](references/subagent-templates.md): reusable subagent prompts.
 - [references/workspace-and-state.md](references/workspace-and-state.md): workspace layout and state contract.
+- [references/worked-example.md](references/worked-example.md): end-to-end example path.
+- [references/threats-to-validity.md](references/threats-to-validity.md): reviewer-facing validity threats and responses.
+- [references/design-transparency.md](references/design-transparency.md): pre-analysis and design-transparency expectations.
+- [references/literature-and-positioning.md](references/literature-and-positioning.md): search and contribution-positioning protocol.
+- [references/data-governance.md](references/data-governance.md): restricted/confidential data, IRB/DUA, DAS, and archive boundaries.
+- [references/runtime-fallbacks.md](references/runtime-fallbacks.md): fallback paths when skills, agents, networks, MCP services, or statistical tools are unavailable.
 - [references/skillopt-improvement-loop.md](references/skillopt-improvement-loop.md): SkillOpt-style rollout, bounded-patch, and held-out-gate protocol for maintaining this skill.
 - [templates/](templates/): reusable artifact templates.
 
@@ -361,10 +405,25 @@ python3 scripts/check_skillopt_packet.py --selftest
 
 For an actual maintenance packet, run `python3 scripts/check_skillopt_packet.py <packet>`.
 
+The local gate also verifies that `init_workspace.sh` creates the Stage 0
+routing, passport, pipeline-status, handoff, claim-integrity, citation-integrity,
+and data-governance placeholders without overwriting an existing workspace. It
+also executes the bundled DiD notebook in a temporary workspace and exercises the
+replication scaffold's manifest success/failure paths, validates the design-gate
+contract, catches method-specific failure fixtures for all 9 contracted design families, selftests Method Gate
+Design Gate Card parsing, validates the Stage 0-9 scenario fixture, filled
+FINAL_REPORT delivery packet, and adversarial cases, checks bilingual README
+parity, validates the FINAL_REPORT
+delivery-evidence contract, and validates the month-long maintenance worklog's
+packet evidence and anti-cheat guardrails, plus RIGOR registry coverage for
+every checker on disk and runtime-fallback honesty across logs, state decisions,
+backend reports, gate outcomes, and backend-parity result fixtures.
+
 From the parent repository, regenerate and validate catalog metadata when publishing changes that affect discovery:
 
 ```bash
 make catalog
+make validate
 make check
 ```
 
