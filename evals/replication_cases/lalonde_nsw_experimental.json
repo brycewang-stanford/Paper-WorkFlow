@@ -1,0 +1,26 @@
+{
+  "id": "lalonde_nsw_experimental",
+  "status": "active",
+  "design": "Panel FE",
+  "title": "NSW experimental benchmark: the +$1,794 the observational pipeline must recover",
+  "gold_source": "Dehejia & Wahba (1999, JASA 94(448)) NSW male-sample experimental benchmark: treatment-control difference in 1978 earnings of about +$1,794. This exact constant is pinned, with the dataset, in the parent AERS repo's audited numeric benchmark (benchmark/tasks/lalonde-recovery.toml, 'experimental_att = 1794.0'; data at benchmark/data/, from the public Dehejia-Wahba NSW files), where a deterministic checker recomputes it from the shipped data - so the gold is a measured, recomputable fact rather than a transcription from memory.",
+  "description": "The canonical stress test for observational causal inference. The NSW job-training program was a randomized experiment, so the experimental contrast (~+$1,794 in 1978 earnings for the male sample) is ground truth. LaLonde (1986) showed that replacing the experimental controls with survey controls (PSID/CPS) and running naive regressions flips the estimate negative; Dehejia & Wahba (1999) showed propensity-score methods on the right subsample recover the experimental benchmark. A Stage 3 pipeline pointed at the NSW-plus-survey-controls data must (1) surface the covariate imbalance rather than hide it, and (2) produce an adjusted estimate that is positive and near the experimental benchmark - matching the parent repo's lalonde-recovery golds.",
+  "tolerances": {
+    "rel_tol": 0.15,
+    "partial_tol": 0.35,
+    "abs_floor": 300.0
+  },
+  "primary_coefficients": [
+    {
+      "name": "adjusted_att",
+      "value": 1794.0,
+      "sign": "+",
+      "note": "Adjusted (matched / weighted / doubly-robust) ATT on 1978 earnings. Observational methods are not guaranteed to nail the experimental number, hence the looser rel_tol than a same-data replication; the sign and rough magnitude are the load-bearing facts."
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/ (e.g. estimates.json).",
+    "format": "{\"coefficients\": {\"adjusted_att\": {\"value\": <float>}}} or the bare shorthand {\"adjusted_att\": <float>}.",
+    "note": "The naive unadjusted contrast on the composite (non-experimental) sample is strongly negative; reporting that number here means the pipeline skipped the balancing step."
+  }
+}

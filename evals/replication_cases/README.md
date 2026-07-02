@@ -39,6 +39,18 @@ against.
   so a faithful Callaway-Sant'Anna / Sun-Abraham / BJS estimate must recover
   ~2.0 and a naive TWFE is the cautionary contrast. Use it to confirm the scorer
   and a Stage 3 backend agree before trusting transcribed cases.
+- [`card_krueger_1994_minwage.json`](card_krueger_1994_minwage.json) — the first
+  **published** case: Card & Krueger (1994, AER) Table 3's +2.76 FTE
+  difference-in-differences (and Table 4's regression-adjusted +2.30), both
+  transcribed directly from the published tables and re-verified against the
+  paper's PDF on 2026-07-02. A replication on the public survey data must land
+  a POSITIVE NJ−PA differential of this magnitude.
+- [`lalonde_nsw_experimental.json`](lalonde_nsw_experimental.json) — the NSW
+  experimental benchmark (~+$1,794, Dehejia & Wahba 1999). The gold constant and
+  the data ship in the parent AERS repo's audited numeric benchmark, where a
+  deterministic checker recomputes it — a recomputable fact, not a memory.
+  Deliberately looser tolerances: observational adjustment is scored on sign
+  and rough magnitude, not on nailing the experimental point.
 - [`published_case_template.json`](published_case_template.json) — copy-to-extend
   template for a published-replication case (gold transcribed from a paper that
   ships a replication package). Left as a template on purpose: it has no real

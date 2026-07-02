@@ -1,0 +1,32 @@
+{
+  "id": "card_krueger_1994_minwage",
+  "status": "active",
+  "design": "DiD",
+  "title": "Card & Krueger (1994): NJ minimum-wage rise and fast-food FTE employment",
+  "gold_source": "Card & Krueger (1994), 'Minimum Wages and Employment: A Case Study of the Fast-Food Industry in New Jersey and Pennsylvania', AER 84(4). Table 3 (p. 780), row 3 'Change in mean FTE employment', column (iii) 'Difference, NJ-PA' = 2.76 (SE 1.36). Secondary: Table 4 (p. 780), model (ii) 'New Jersey dummy' with chain/ownership controls = 2.30 (SE 1.20). Values transcribed directly from the published tables (davidcard.berkeley.edu/papers/njmin-aer.pdf), re-verified 2026-07-02.",
+  "description": "The canonical minimum-wage DiD. NJ raised its minimum wage from $4.25 to $5.05 in April 1992; PA did not. Comparing changes in full-time-equivalent employment at fast-food stores across the state line, employment did NOT fall in NJ relative to PA - the simple DiD is +2.76 FTE (Table 3) and the regression-adjusted NJ effect is +2.30 FTE (Table 4, model ii). A faithful replication on the public survey data (released with the paper; also shipped in standard teaching packages) must recover a POSITIVE NJ-PA differential of roughly this magnitude; a negative sign means the replication mis-built the treatment contrast or the FTE weighting (part-timers count 0.5). Store-level survey data with two waves; standard errors in the paper are conventional, so only point estimates are scored.",
+  "tolerances": {
+    "rel_tol": 0.05,
+    "partial_tol": 0.20,
+    "abs_floor": 1.0
+  },
+  "primary_coefficients": [
+    {
+      "name": "did_fte",
+      "value": 2.76,
+      "sign": "+",
+      "note": "Simple DiD in mean FTE employment, NJ minus PA, wave 2 minus wave 1, all available observations (Table 3, row 3, col iii). Balanced-sample variant is 2.75 (row 4), inside rel_tol."
+    },
+    {
+      "name": "nj_dummy_adjusted",
+      "value": 2.3,
+      "sign": "+",
+      "note": "Regression-adjusted NJ dummy with chain and ownership controls (Table 4, model ii). The no-controls model (i) gives 2.33, inside rel_tol."
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/ (e.g. estimates.json).",
+    "format": "{\"coefficients\": {\"did_fte\": {\"value\": <float>}, \"nj_dummy_adjusted\": {\"value\": <float>}}}",
+    "note": "Score the FTE-employment DiD, not the proportional-change models (Table 5 col iii-iv) - those are a different estimand (0.05, insignificant)."
+  }
+}
