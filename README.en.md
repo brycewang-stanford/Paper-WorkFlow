@@ -12,6 +12,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
+[![Rigor](https://img.shields.io/badge/rigor-29%2F29_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 ![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)

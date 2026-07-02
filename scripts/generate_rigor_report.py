@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -501,6 +502,40 @@ def _body_for_check(text: str) -> str:
     return "\n".join(out)
 
 
+README_BADGE_PATHS = (ROOT / "README.md", ROOT / "README.en.md")
+BADGE_RE = re.compile(
+    r"\[!\[Rigor\]\(https://img\.shields\.io/badge/rigor-(\d+)%2F(\d+)_executable_gates-[0-9A-Fa-f]{6}"
+    r"\?style=flat&labelColor=0D1117\)\]\(RIGOR\.md\)"
+)
+
+
+def badge_markdown(ev: dict) -> str:
+    """The README badge that must always mirror the live checker count."""
+    return (
+        "[![Rigor](https://img.shields.io/badge/rigor-"
+        f"{ev['passed']}%2F{ev['active']}_executable_gates-16A34A"
+        "?style=flat&labelColor=0D1117)](RIGOR.md)"
+    )
+
+
+def check_readme_badges(ev: dict) -> list[str]:
+    """Both user-facing READMEs must carry a rigor badge with the current count."""
+    problems: list[str] = []
+    for path in README_BADGE_PATHS:
+        if not path.exists():
+            problems.append(f"{path.name} missing (expected rigor badge in it)")
+            continue
+        match = BADGE_RE.search(path.read_text(encoding="utf-8"))
+        if match is None:
+            problems.append(f"{path.name} has no rigor badge; add: {badge_markdown(ev)}")
+        elif (int(match.group(1)), int(match.group(2))) != (ev["passed"], ev["active"]):
+            problems.append(
+                f"{path.name} rigor badge says {match.group(1)}/{match.group(2)} but "
+                f"checkers are at {ev['passed']}/{ev['active']}; update to: {badge_markdown(ev)}"
+            )
+    return problems
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--check", action="store_true",
@@ -539,12 +574,19 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print("RIGOR.md is current but a checker selftest is FAILING", file=sys.stderr)
             return 1
+        badge_problems = check_readme_badges(ev)
+        if badge_problems:
+            for problem in badge_problems:
+                print(f"README rigor badge drift: {problem}", file=sys.stderr)
+            return 1
         print(f"RIGOR.md is current and {ev['passed']}/{ev['active']} checkers pass their selftest")
         return 0
 
     REPORT_PATH.write_text(report, encoding="utf-8")
     status = "all green" if ev["ok"] else "FAILURES present"
     print(f"wrote {REPORT_PATH.name}: {ev['passed']}/{ev['active']} checkers pass their selftest ({status})")
+    for problem in check_readme_badges(ev):
+        print(f"  BADGE: {problem}")
     for r in ev["results"]:
         if r["status"] not in {"PASS", "PLANNED"}:
             print(f"  {r['status']}: {r['path']} — {r['detail']}")

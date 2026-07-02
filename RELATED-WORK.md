@@ -93,17 +93,17 @@ Both were cloned and read in full (147 and 98 skills respectively). Evidence-bac
 | 5 | **Citation integrity** (existence + retraction + temporal/look-ahead) | ✅ `check_citation_integrity.py --final` | 🟡 opt-in DOI | ❌ advice only |
 | 6 | **Claim fidelity** audit (number / quote / claim↔evidence) | ✅ `claim_integrity_audit` gated | ❌ | 🟡 prose entailment |
 | 7 | **Reproducibility** enforcement (DAS, `run_all`, env capture, rebuild check) | ✅ replication-pack gate | ❌ value only | ❌ described, not run |
-| 8 | **Pre-registration / researcher-DOF** guarding | 🟡 `design-transparency.md` (prose) | ❌ | 🟡 git-lock + prose |
+| 8 | **Pre-registration / researcher-DOF** guarding | ✅ `templates/preregistration.md` + `check_preregistration.py` | ❌ | 🟡 git-lock + prose |
 | 9 | Structured **quality rubric / review** (severity, accept/reject) | ✅ 7-dim gate | 🟡 ScholarEval averaging | ✅ 6-dim ARA review |
 | 10 | **Self-maintenance discipline** (eval harness, complexity ratchet, SkillOpt) | ✅ `score_skill` + ratchet + packet | 🟡 security CI | 🟡 inventory count |
 | 11 | **Multi-host distribution / install** polish | 🟡 in-repo, no installer | ✅ `npx`/`gh skill install --pin` | ✅ `npx` + marketplace |
-| 12 | **Public transparency / credibility** artifact (badge) | 🟡 worklogs, no badge | ✅ auto `SECURITY.md` + CI badge | 🟡 line/ref-count signals |
+| 12 | **Public transparency / credibility** artifact (badge) | ✅ `RIGOR.md` + README badge, drift-gated in `validate_skill.py` | ✅ auto `SECURITY.md` + CI badge | 🟡 line/ref-count signals |
 | 13 | Raw **breadth** (skill / DB count) | 🟡 1 orchestrator + 67-skill toolkit | ✅ 147 + 78 DBs | ✅ 98 |
 
 **Reading the matrix:** we **dominate the entire rigor block (rows 1–10)** — the half of the table that
-determines whether produced research is *trustworthy*. We **lag on the merchandising block (rows 11–13)** —
-distribution, a public credibility badge, and raw breadth. That asymmetry is the roadmap: **don't chase their
-breadth; make our rigor advantage loud, verifiable, and easy to adopt.**
+determines whether produced research is *trustworthy* — and the credibility badge (row 12) is now shipped and
+drift-gated. We **still lag on distribution polish and raw breadth (rows 11 and 13)**. That asymmetry is the
+roadmap: **don't chase their breadth; make our rigor advantage loud, verifiable, and easy to adopt.**
 
 ---
 

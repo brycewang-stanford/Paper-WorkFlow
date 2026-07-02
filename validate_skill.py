@@ -624,6 +624,14 @@ def check_rigor_registry_checker() -> None:
     )
 
 
+def check_rigor_report_current() -> None:
+    """RIGOR.md and the README rigor badges must mirror the live checker roster."""
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "generate_rigor_report.py"), "--check"],
+        check=True,
+    )
+
+
 def check_state_template_paths_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_state_template_paths.py"), "--selftest"],
@@ -831,6 +839,7 @@ def main() -> None:
     check_final_report_contract_checker()
     check_monthly_worklog_checker()
     check_rigor_registry_checker()
+    check_rigor_report_current()
     check_reproducibility_scaffold_checker()
     check_skillopt_packet_checker()
     check_verification_log()
