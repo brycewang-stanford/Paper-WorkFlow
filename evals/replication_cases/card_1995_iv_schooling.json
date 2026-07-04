@@ -1,0 +1,32 @@
+{
+  "id": "card_1995_iv_schooling",
+  "status": "active",
+  "design": "IV / 2SLS",
+  "title": "Card (1995) returns to schooling: the IV>OLS result the public data reproduces",
+  "gold_source": "Card (1995) 'Using Geographic Variation in College Proximity to Estimate the Return to Schooling' (NBER WP 4483, in L. Lynch ed. 'Aspects of Labour Market Behaviour: Essays in Honour of John Vanderkamp', U Toronto Press). The headline IV return is ~0.13 (log-points) and the OLS return is ~0.075; the first-stage coefficient of nearc4 on educ is ~0.32 with F ~ 13. The exact study sample is the subset of NLS-1966 men with the nearc4 instrument (Card's Table 1); the AERS numeric benchmark `card-iv-recovery` recomputes the canonical numbers on the same Card-style CSV and ships the data in `demo-StatsPAI-skill/data/card.csv`. Gold values are pinned to that recomputable benchmark, not transcribed from the original tables, so the scorer catches both fabrication and methodological drift.",
+  "description": "The canonical 2SLS-with-instrument-as-IV example. The instrument (proximity to a 4-year college, nearc4) is plausibly exogenous to the wage equation once the regional and demographic controls are absorbed. A faithful replication of Card (1995) on the public Card-style CSV (NLS-19666 subsample, n=3010) yields OLS ~0.075, IV ~0.13, first-stage coef ~0.32, first-stage F ~ 13. A Stage 3 run pointed at the same data must report (a) a positive OLS return, (b) an IV return that EXCEEDS the OLS return, and (c) the first-stage F (not just any number — the rule-of-thumb threshold is 10). Tolerance on the IV return is wider than on OLS because 2SLS is less precise than OLS in finite samples, and the relative-tol reflects that.",
+  "tolerances": {
+    "rel_tol": 0.05,
+    "partial_tol": 0.20,
+    "abs_floor": 1.0
+  },
+  "primary_coefficients": [
+    {
+      "name": "ols_return",
+      "value": 0.0747,
+      "sign": "+",
+      "note": "OLS coefficient on educ in the log-wage equation. Pinned to the committed AERS numeric benchmark `card-iv-recovery` which recomputes on the shipped CSV."
+    },
+    {
+      "name": "iv_return",
+      "value": 0.1315,
+      "sign": "+",
+      "note": "2SLS coefficient on educ using nearc4 as the instrument. Pinned to the same committed benchmark; rel_tol is 5% (in the 2SLS regime this is well within sampling noise)."
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/ (e.g. estimates.json).",
+    "format": "{\"coefficients\": {\"ols_return\": {\"value\": <float>}, \"iv_return\": {\"value\": <float>}}}",
+    "note": "The first-stage F is also checked, but the load-bearing claim is that IV > OLS - the canonical Card result. A replication that just runs OLS fails by reporting the IV coefficient as the OLS coefficient (no first-stage reported, IV == OLS)."
+  }
+}
