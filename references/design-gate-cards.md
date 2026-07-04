@@ -285,7 +285,138 @@
 
 ---
 
-## 10. 跨设计行为护栏（Behavioral Guardrails — 反模式黑名单）
+## 10. PSM-DID / 截面匹配 + DID（Heckman-Robbins 组合）
+
+**适用**：横截面或单期处理数据 + 大量可观测协变量的政策评估；
+经典场景是"处理非随机但有大量协变量"+ "同一处理时点"——中国实证中最常见的"两期 PSM-DID"。
+**重要提示**：AER/QJE/JPE 这两年（2022-2026）对纯 PSM-DID 的口径已偏严——理由是 Rosenbaum / Abadie / Heckman 等早就指出 PSM 不能解决未观测异质性/选择。**只要数据有时间维度（哪怕只有 2 期），优先用 Callaway-Sant'Anna / Sun-Abraham / Borusyak-Jaravel-Spiess（见 §1）。纯截面 + 匹配 → 只能解释为"伪 DiD"或"反事实路径"**。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| 协变量平衡表 | `03_analysis/results/psm_balance.*` | 匹配前后 treated/control 在所有协变量上的 SMD 是否 < 0.1（或 0.25 for some journals） |
+| 共同支持诊断 | `03_analysis/results/common_support.*` | propensity score 的共同区间；trim 掉的样本比例 |
+| PS 模型设定 | `03_analysis/design_register.md` | logit/probit 用了哪些协变量；是否含 treatment 前/后的"坏控制" |
+| 匹配方法 + caliper | `03_analysis/results/matching_method.*` | 1:1 / 1:K、with/without replacement、caliper 宽度；近邻法的距离 |
+| 双重差分估计表 | `03_analysis/results/psm_did_main.*` | 4 个均值：treated_pre、treated_post、control_pre、control_post；或 DID 回归 |
+| 共同支持可视化 | `03_analysis/results/ps_density.*` | 两组 propensity score 分布叠加图 |
+| 替代匹配方法 | `03_analysis/robustness/alt_matching.*` | 近邻 / 卡尺 / 核匹配 / 半径匹配 / 优化匹配 / 加权 IPW 结果是否一致 |
+| 替代协变量集 | `03_analysis/robustness/alt_covariates.*` | 加/减协变量后结果是否稳健 |
+| 加权 vs 匹配对比 | `03_analysis/robustness/ipw_vs_psm.*` | IPW-DID 与 PSM-DID 结果是否一致 |
+| **时间维度声明** | `03_analysis/design_register.md` | 显式说明"为什么不能用现代交错 DID"——若可（哪怕 2 期），应优先 CS/SA/BJS（§1） |
+| 隐藏偏差诊断 | `03_analysis/robustness/rosenbaum_bounds.*` | Gamma 敏感性：多强未观测异质性才能推翻结论 |
+
+**Hard fail**
+
+- **横截面声称因果** 而没有显式承认"协变量控制了所有可观测选择"的局限。
+- 协变量包含 **post-treatment / mediator** 变量（坏控制，G6）。
+- 平衡表 SMD > 0.25 且不报告。
+- 共同支持区间几乎为空（两组 propensity score 几乎不重叠）仍报 ATT。
+- **未做 Rosenbaum bounds / Gamma 敏感性** 却报告精确 p 值。
+- 用"PSM 解决了选择偏差"作为主论点（必须改用"在可观测协变量上平衡"的弱表述）。
+
+**允许 claim**
+
+- `causal`：仅在以下三个条件**同时满足**时：
+  1. 数据**真有 2 期或更多**（建议改用 §1 现代 DiD 估计）；
+  2. 平衡诊断与 Rosenbaum bounds 全部过关；
+  3. 在 cover letter 显式说明局限。
+- `qualified_causal`：标准情况——有合理平衡、稳健性一致、但承认"不可观测异质性未排除"。
+- `descriptive`：单期横截面、平衡诊断不理想、或无敏感性分析时。
+- `exploratory`：共同支持差 + Rosenbaum bounds 早推翻结果。
+
+**降级触发**：任何 hard fail → 至少降 `descriptive`；未做敏感性 → 至少降 `qualified_causal` 且必须补做。
+
+---
+
+## 11. 空间计量（Spatial Durbin / SAR / SEM / SDM）
+
+**适用**：数据存在空间依赖（地理邻近、区域溢出、网络效应）且研究问题涉及溢出。
+中国实证常见场景：地方政府竞争（GDP 锦标赛）、区域创新扩散、环境污染溢出、城市群集聚效应。
+**重要提示**：空间计量在国内顶刊（《经济研究》《管理世界》《中国工业经济》）接受度高，但在 AER/QJE 等英文顶刊中近年更倾向用 network interference / spillover 估计（见 `67/interference` 等）。**中国语境下写作时强调"空间溢出"和"区域协同"是常规路径**。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| 空间权重矩阵说明 | `03_analysis/design_register.md` + `02_data/spatial_weights.*` | queen/rook/distance/k-NN；行标准化方法；是否 row-standardized |
+| 权重矩阵敏感性 | `03_analysis/robustness/w_specs.*` | 不同 k-NN（如 5/8/10）、不同距离阈值结果是否一致 |
+| Moran I 检验 | `03_analysis/results/moran_i.*` | 残差与因变量是否空间相关；不显著时不该用 SDM |
+| LM 检验序列 | `03_analysis/results/lm_tests.*` | LM-Lag、LM-Error、R-LM-Lag、R-LM-Error；按 Anselin 2005 决策表选模型 |
+| Hausman 检验 | `03_analysis/results/spatial_hausman.*` | 固定 vs 随机效应选择 |
+| 估计表 | `03_analysis/results/spatial_main.*` | SAR / SEM / SDM / SAC / SDEM 系数表 + 空间自回归系数 ρ |
+| 直接/间接效应分解 | `03_analysis/results/spatial_decomposition.*` | LeSage & Pace 2009 偏微分分解：direct + indirect + total effect |
+| **直接 vs 间接效应** | `03_analysis/results/spatial_decomposition.*` | SDM 中 indirect 才是空间溢出的核心；必须显式报告 |
+| 共同因子检验 | `03_analysis/robustness/spatial_common_factor.*` | SDM 是否能 collapse 为 SAR / SEM；W*X 是否可忽略 |
+| 异质性空间效应 | `03_analysis/robustness/heterogeneous_spatial.*` | 不同子样本/不同时期空间效应是否稳定 |
+| ML vs GMM 对比 | `03_analysis/robustness/ml_vs_gmm.*` | ML（默认）vs GMM 在小样本下结果是否一致 |
+
+**Hard fail**
+
+- **未报告空间自回归系数 ρ**（这是空间计量的灵魂），只报 X 系数。
+- 未做 LeSage-Pace 偏微分分解就把"空间系数"等同于"溢出效应"（混淆点估计与平均效应）。
+- **Moran I 不显著** 但仍跑 SDM。
+- 权重矩阵事后挑选（"试到显著为止"，G10）。
+- 把空间系数解释为"该地区对其他地区的因果效应"（应该用 partial derivative 解释）。
+- 权重矩阵未标准化（导致 ρ 数量级不可比）。
+
+**允许 claim**
+
+- `causal`：在以下条件**同时满足**时：
+  1. 空间识别假设（空间 DGP）合理；
+  2. ρ 显著、分解效应（特别是 indirect）显著且稳健；
+  3. 权重矩阵有制度/地理依据。
+- `qualified_causal`：标准情况——ρ 显著但权重矩阵选择有主观性；或空间 DGP 可能误设。
+- `descriptive`：仅当 Moran I 显著、ρ 显著、但没做完整分解。
+- `exploratory`：ρ 不显著，或权重矩阵过敏感。
+
+**降级触发**：权重矩阵无制度依据 → 至少 `qualified_causal`；无偏微分分解 → 至少 `qualified_causal` 且补做；Moran I 不显著仍用 SDM → 强制降 `descriptive`。
+
+---
+
+## 12. 门槛面板回归（Threshold Panel — Hansen 1999 / Kremer et al. 2009）
+
+**适用**：异质性效应依赖某个门槛变量（如收入、规模、年龄、环境规制强度）；中国实证最常用：环境规制 vs 企业创新、金融发展 vs 经济增长、政府规模 vs 民间投资。
+**重要提示**：门槛面板在国内顶刊接受度极高，但**方法学批评也多**：
+1. 单一门槛假设强（实际常有多门槛或未知函数形式）；
+2. Bootstrap 临界值表在样本量 < 200 时不稳；
+3. **门槛值是估计量而非已知值**，但很多论文误把门槛值当外生给定。
+优先考虑 Hansen (2000) bootstrap 检验、Bai (1997) 多门槛、Caner-Hansen (2004) 渐近分布修正。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| 门槛值显著性检验 | `03_analysis/results/threshold_test.*` | Hansen 1996 / Hansen 1999 bootstrap 检验 p 值；单一/多门槛的 LR 统计量 |
+| 门槛值置信区间 | `03_analysis/results/threshold_ci.*` | Hansen (1999) LR 似然比法构造的 95% CI |
+| 门槛效应分区间表 | `03_analysis/results/threshold_regimes.*` | regime 1 vs regime 2 系数表；系数跳变点 |
+| Bootstrap 临界值表 | `03_analysis/results/bootstrap_critical.*` | 至少 1000 次（理想 5000+）bootstrap 后的 LR 统计量分布 |
+| 多门槛检验 | `03_analysis/robustness/multi_threshold.*` | 是否检验双门槛、三门槛；不同门槛数下结果对比 |
+| 线性 vs 门槛对比 | `03_analysis/robustness/linear_vs_threshold.*` | 门槛模型的 LR 检验拒绝线性吗？ |
+| 门槛值稳健性 | `03_analysis/robustness/threshold_grids.*` | 改变门槛搜索网格（更细/更粗）结果是否一致 |
+| 异质性分析 | `03_analysis/robustness/threshold_heterogeneity.*` | 不同子样本/不同时期门槛值是否稳定 |
+| 内生性处理 | `03_analysis/design_register.md` | 门槛变量是内生的吗？若内生，需要 IV-threshold（如 Caner-Hansen 2004） |
+| 时间/个体效应 | `03_analysis/design_register.md` | 是否控制了个体/时间固定效应；FE-threshold 模型还是 pooled threshold |
+| 三种 estimator 对比 | `03_analysis/robustness/three_estimators.*` | Hansen (1999) vs Bai (1997) vs Caner-Hansen (2004) 结果是否一致 |
+
+**Hard fail**
+
+- **未做门槛显著性检验**（如直接报告"找到门槛值 X"）——这是门槛面板最常见的硬伤。
+- Bootstrap 重数 < 500（结果不可信）。
+- **把门槛值当作已知值**而非估计量（必须报告 CI）。
+- 单门槛模型但门槛值选择不合理（如把样本均值当门槛）。
+- 门槛内/外样本量 < 30（系数估计不可信）。
+- 门槛值高度依赖样本期/子样本（说明模型过拟合）。
+- 协变量含 post-treatment 变量（G6）。
+- 跨门槛的系数差异**仅由样本量差异**驱动（如 regime 1 n=500、regime 2 n=20）。
+
+**允许 claim**
+
+- `causal`：门槛检验显著、CI 较窄、效应稳健。
+- `qualified_causal`：门槛检验显著但 CI 较宽；或门槛值在不同子样本间略变；或 Bootstrap 临界值不稳。
+- `descriptive`：门槛检验不显著、效应分区间异质但门槛值本身不稳。
+- `exploratory`：多门槛模型结果矛盾；或 IV-threshold 与 OLS-threshold 矛盾。
+
+**降级触发**：未做 bootstrap 检验 → 强制降 `descriptive`；门槛 CI 跨多个候选门槛值 → 至少 `qualified_causal`；门槛值因子样本大幅漂移 → 至少 `descriptive`。
+
+---
+
+## 13. 跨设计行为护栏（Behavioral Guardrails — 反模式黑名单）
 
 > 上面每张卡管「这个设计需要哪些证据」；本节管「**不管哪个设计，都不许犯的操作错误**」。
 > 思路来自 Econometrics-Agent（*Can AI Master Econometrics?* arXiv 2506.00856）的关键发现：
@@ -317,7 +448,7 @@
 
 ---
 
-## 11. Method Gate 填写规则
+## 14. Method Gate 填写规则
 
 `03_analysis/method_gate.md` 必须把本文件对应设计卡复制或摘要成一张表：
 

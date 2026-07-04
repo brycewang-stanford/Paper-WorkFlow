@@ -137,6 +137,8 @@ playbook 指定的工作区子目录落盘即可。
 | 设计透明度 / 预分析 | `69-Paper-WorkFlow/references/design-transparency.md`：PAP/预注册、功效与 MDE、预趋势功效 + HonestDiD、设定曲线、研究者自由度披露（Stage 3） |
 | 文献检索与贡献定位 | `69-Paper-WorkFlow/references/literature-and-positioning.md`：滚雪球 + 引用图工具、文献矩阵、定位句式、引用真实性（Stage 1/5） |
 | 数据治理 / IRB / DUA | `69-Paper-WorkFlow/references/data-governance.md`：public/restricted/confidential/PII 分级、DAS、IRB/DUA、公开复现包边界（Stage 2/9/收尾） |
+| **中国数据源路由** | `69-Paper-WorkFlow/references/china-data-sources.md`：CSMAR/WIND/CNINFO/CHARLS/CFPS/CHFS/统计年鉴/工业企业/海关/专利/土地/文本/政策的字段映射、申请流程、清洗陷阱、GB/T 7714 引用、DAS 模板（中国实证/中文学位论文/国内期刊投稿） |
+| **中国期刊投稿路由** | `69-Paper-WorkFlow/references/chinese-journals.md`：5 大顶刊（经济研究/管理世界/经济学季刊/中国工业经济/数量经济技术经济研究）+ 第二梯队 + GB/T 7714-2015 详解 + cover letter / response letter 模板 + 学位论文场景 + 选刊决策树（中国期刊/中文学位论文） |
 | 运行时退化路径 | `69-Paper-WorkFlow/references/runtime-fallbacks.md`：Skill/Agent/网络/MCP/Stata/R/Python/Zotero 缺失时的 fallback、日志与质量封顶 |
 | 关键 artifact 模板 | `69-Paper-WorkFlow/templates/`：design register、design risk ledger、method gate、quality scorecard、data governance、DAS、REPLICATION、submission checklist、FINAL_REPORT、run_all |
 | 端到端示例 trace | `69-Paper-WorkFlow/references/worked-example.md`：黄金路径逐阶段产物 + 两道闸门触发 + 回退循环（编排器填空范本） |
@@ -177,6 +179,9 @@ playbook 指定的工作区子目录落盘即可。
    - 多期面板、关注 FE → **panel-data**。
    - 纯时序 / 宏观 → **time-series**。
    - 关注异质效应 / 高维控制 → **ml-causal（因果森林 / DML）**。
+   - 单期或两期 + 大量协变量 → **PSM-DID**（按 `design-gate-cards.md` §10 走 R 期延门）。有 2+ 期优先改用现代交错 DiD。
+   - 数据有空间依赖（GDP 锦标赛、环境溢出、区域协同） → **空间计量（SDM/SAR/SEM）**（按 `design-gate-cards.md` §11 走）。
+   - 异质性依赖门槛变量（环境规制、收入、金融发展） → **门槛面板（Hansen 1999 / Bai 1997）**（按 `design-gate-cards.md` §12 走）。
    - 都不典型 → 退回 `67/stats` 做探索，或回 Stage 1 重审识别。
    选定主设计后，立即加载 `references/design-gate-cards.md` 的对应卡片，把 required artifacts、
    hard fail 与最强允许 claim 写进 `method_gate.md` 和 `evidence_ledger.md`。

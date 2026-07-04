@@ -232,6 +232,12 @@ DAS、存档计划、重跑耗时、数据治理红旗）并更新 `workflow_sta
 [`empirical-audit.md`](references/empirical-audit.md)（样本/变量/estimand 对齐）·
 [`dataset-cards.md`](references/dataset-cards.md)（Stage 2 数据源目录+触发的设计风险；配 [`templates/dataset_card.md`](templates/dataset_card.md)）。
 
+**Stage 2 数据源（按地区/性质分流）** — [`china-data-sources.md`](references/china-data-sources.md)（**中国实证数据源总表**：CSMAR/WIND/CNINFO/CHARLS/CFPS/CHFS/CGSS/统计年鉴/工业企业/海关/专利/土地/文本/政策，含字段映射、申请流程、清洗陷阱、GB/T 7714 引用规范、DAS 模板；中文学位论文/中国期刊论文专属）·
+配合 [`data-governance.md`](references/data-governance.md) 的全球合规框架使用（本文是「中国语境」特有补充）。
+
+**Stage 5/8/9 中国期刊投稿（按地区/性质分流）** — [`chinese-journals.md`](references/chinese-journals.md)（**中国期刊投稿总册**：5 大顶刊详细规范 + 第二梯队 + 细分领域 + 学位论文场景 + GB/T 7714-2015 详解 + cover letter / response letter 模板 + 选刊决策树 + "中国故事"写作要点；中国期刊/中文学位论文投稿专属）·
+配合 [`peer-review-and-submission.md`](references/peer-review-and-submission.md)（英文期刊投稿策略）使用（本文是「中国期刊」特有补充）。
+
 **研究深化层（按阶段加载）** — [`inference-and-uncertainty.md`](references/inference-and-uncertainty.md)（标准误/聚类·few-cluster·随机化推断·多重检验·弱工具区间 · Stage 3/4/5/8）·
 [`mechanism-and-channels.md`](references/mechanism-and-channels.md)（X→M→Y 三分类·Gelbach·因果中介+敏感性·坏控制 · Stage 1/3/5/8）·
 [`threats-to-validity.md`](references/threats-to-validity.md)（识别威胁×审稿异议预案 · Stage 3/5/8）·

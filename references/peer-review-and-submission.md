@@ -8,6 +8,11 @@
 > `paper-submission`、`reference-verify`，见 [`skill-map.md`](skill-map.md)）；本文件规定「审到什么深度、
 > 回应写成什么样、投稿包齐到什么程度才算达标」。识别硬伤的判定回到
 > [`research-grade-methods.md`](research-grade-methods.md) 与 [`quality-rubric.md`](quality-rubric.md)。
+>
+> **中国期刊投稿专有补充**：见 [`chinese-journals.md`](chinese-journals.md)——本文是英文 SSCI 期刊
+> 评审/投稿口径的「通用底盘」，中国期刊（CSSCI）请改用同文档 §5 投稿策略、§6 学位论文场景、
+> §7 投稿包清单、§8.2 response letter 模板、§8.3 投稿检查清单。中文学位论文场景的论文结构、
+> 创新点声明、答辩PPT 等也见 [`chinese-journals.md`](chinese-journals.md) §6。
 
 ---
 

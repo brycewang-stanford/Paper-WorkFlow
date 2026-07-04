@@ -107,6 +107,9 @@ Stage 1 的 `proposal.md` 给方向；`design_register.md` 把方向变成可审
 | **HTE / Causal Forest / GRF** | CATE / forest-based effect | honesty/sample split、ATE 校准、heterogeneity test、policy subgroup stability、variable importance caveat | HTE 不稳则只保留主效应，异质性降为 exploratory appendix |
 | **Causal Graph + Refutation** | DoWhy-style identify-estimate-refute | DAG/source assumptions、identified estimand、placebo refuter、random common cause、subset/refit checks | refuter 失败则缩小因果 claim 或回 Stage 1/3 |
 | **Prediction-assisted empirics** | ML controls / text-as-data / embeddings | leakage audit、train/test split、feature provenance、post-treatment variable screen、human-valid labels | 泄漏/后处理变量风险未清，不能进入主识别设定 |
+| **PSM-DID / 截面匹配 + DID** | PSM（logit/probit + 1:1/K-nn/IPW）+ 2×2 DID | 协变量平衡表（SMD < 0.1）、共同支持诊断、Rosenbaum bounds（Gamma 敏感性）、隐式声明"为何不用现代交错 DID" | 优先改用 §1 现代 DiD；PSM-DID 必须有 Rosenbaum 敏感性 |
+| **空间计量（SAR / SEM / SDM）** | ML/GMM 估计 + LeSage-Pace 偏微分分解 | Moran I、LM 检验序列、空间自回归系数 ρ、**直接 vs 间接效应分解**、权重矩阵敏感性（k-NN / 距离阈值） | ρ 不显著降级；无偏微分分解降级；权重矩阵无制度依据降级 |
+| **门槛面板（Hansen 1999 / Bai 1997）** | 门槛回归 + Bootstrap 显著性 | 门槛值 bootstrap 检验 p 值、门槛值置信区间、Bootstrap 临界值表（≥1000 重）、多门槛检验、门槛值子样本稳健性 | 未做 bootstrap 强制降 `descriptive`；门槛 CI 跨多个候选值降级 |
 
 Stage 3 完成时写 `03_analysis/method_gate.md`，并按 [`design-gate-cards.md`](design-gate-cards.md)
 选择对应设计卡：

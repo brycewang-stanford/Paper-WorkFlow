@@ -74,15 +74,20 @@
 **目的**：依 proposal 的变量与样本，拿到**分析就绪**的数据集 + codebook。
 
 **plan**：从 `proposal.md` 抽出需要的变量、频率、地域、时间窗、合并键，列一张「变量→数据源」需求表。
-加载 [`data-governance.md`](data-governance.md) 与 [`empirical-audit.md`](empirical-audit.md)，先从
-`templates/data_governance.md` 生成 `00_meta/data_governance.md`，从 `templates/sample_audit.md` 生成
-`02_data/sample_audit.md`。前者记录 public / restricted / confidential / PII、DUA、IRB/ethics、许可证、
-再分发边界；后者预留 raw→clean→estimation sample 的 N、单位数、treated/control 数、drop 原因和脚本行号。
+加载 [`data-governance.md`](data-governance.md)、[`empirical-audit.md`](empirical-audit.md)，**中国实证研究
+必须额外加载 [`china-data-sources.md`](china-data-sources.md) 选定数据源与字段映射**（CSMAR/WIND/CNINFO
+等 12 类中国数据源、合规与申请流程、清洗陷阱、引用规范）。先从 `templates/data_governance.md`
+生成 `00_meta/data_governance.md`，从 `templates/sample_audit.md` 生成 `02_data/sample_audit.md`。
+前者记录 public / restricted / confidential / PII、DUA、IRB/ethics、许可证、再分发边界；后者
+预留 raw→clean→estimation sample 的 N、单位数、treated/control 数、drop 原因和脚本行号。
 
 **execute**
 - `Skill` 调用 `67/data-fetcher` 取数（FRED / World Bank / BLS / OECD / Yahoo Finance；A 股/中国
   宏观等可配合 `57-dgunning-edgartools`、`58-charlescoverdale-econstack`、`59-shiquda-openalex-skill`
-  等集合，见 skill-map）。多个独立数据源可并行 subagent 各取一段、各自写盘到 `02_data/raw/`。
+  等集合，见 skill-map）。**中国数据源（CSMAR/WIND/CHARLS/CFPS/CHFS/统计年鉴/工业企业/海关/专利等）
+  按 [`china-data-sources.md`](china-data-sources.md) §0 索引选择、§11 流程申请、§12 清洗陷阱
+  处理**；微观调查必须额外完成 IRB/ethics 备案（§1.2）。多个独立数据源可并行 subagent
+  各取一段、各自写盘到 `02_data/raw/`。
 - `Skill` 调用 `67/data-cleaning` 做清洗、对齐、合并、构造变量，产出 `02_data/clean.parquet`
   （或 `.dta/.csv`）与 `02_data/codebook.md`（每个变量的定义、来源、单位、缺失处理）。
 - 同步填写 `02_data/sample_audit.md`：合并键唯一性、样本限制、缺失/attrition、baseline balance、
@@ -264,6 +269,10 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - `Skill` 调用 `67/paper-writer`，喂入 `04_results/`（表图）+ `01_proposal/proposal.md`（动机/贡献/
   假设），让它按"Intro → 文献/制度背景 → 数据 → 识别策略 → 结果 → 机制 → 稳健性 → 结论"写出
   `05_draft/main.tex` 与 `05_draft/ref.bib`。
+- **中文期刊/学位论文投稿**：加载 [`chinese-journals.md`](chinese-journals.md) §3-4 选定目标期刊
+  的字数、摘要、关键词、JEL 分类号、参考文献格式等规范，**写 `05_draft/format_plan.md`** 列出本文
+  计划遵循的格式条款（避免投稿前返工）；中文期刊特有的"研究意义"、"政策含义"段落必须显式
+  （详 §5.6 "中国故事"写作要点）；学位论文场景的章节字数、创新点声明结构按 §6。
   写作 prompt 必须附 `00_meta/evidence_ledger.md`，要求每个摘要、引言、结果和结论 claim 使用不高于 ledger
   允许等级的措辞；ledger 中 `descriptive` / `exploratory` / `no_claim` 的内容不得被包装成主因果发现。
   还必须附 `03_analysis/design_risk_ledger.md`：识别段、稳健性段、政策含义和 cover letter 的外推边界不得
@@ -355,6 +364,10 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 - 加载 [`peer-review-and-submission.md`](peer-review-and-submission.md)（五维审稿 + Essential/Desirable
   分级、逐条可追溯的 response letter 模板）与 [`threats-to-validity.md`](threats-to-validity.md)（审稿命中
   识别威胁时，按其 §2 末列「被问到怎么回应」逐条回应、指向具体修改位置）。
+- **中文期刊评审**：除英文评审口径外，额外加载 [`chinese-journals.md`](chinese-journals.md) §5
+  (投稿策略与生态)——中国评审人更看重"研究意义"、"政策含义"、"中国故事"叙事；response letter
+  须逐条引用 `chinese-journals.md` §8.2 模板并显式说明修改位置。
+  学位论文场景额外按 §6.4 创新点写法结构化列出 3 个创新点（博士必须）。
   同时加载 [`design-risk-ledger.md`](design-risk-ledger.md)，把 `03_analysis/design_risk_ledger.md` 中未完全关闭
   或只允许降级措辞的风险转成模拟 reviewer objections 和主动回应。
 - `Skill` 调用 `67/referee-report` 生成审稿报告（可设 normal/high-level 档与意见条数；
@@ -386,6 +399,10 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **execute**
 - `Skill` 调用 `67/paper-submission`，评估贡献新颖度、匹配 SSCI/ABS 星级、给出 ~20 本目标期刊清单，
   落 `09_submission/journal_shortlist.md`。结合 Stage 0 选定的目标期刊收敛到 1 主 + 2 备。
+- **中文期刊选刊**：加载 [`chinese-journals.md`](chinese-journals.md) §0.1（按研究主题的选刊速查）、
+  §3（5 大顶刊详细规范）与 §4（第二梯队），按"研究主题 × 字数 × 审稿周期 × 拒稿率"过滤出
+  **1 主投 + 2 备投**的国内 CSSCI 期刊短名单；学位论文场景按 §6.2-6.3 准备相应章节、创新点声明、答辩PPT。
+  选刊前**必须**登录目标期刊官网核当前投稿须知（字数、查重率、JEL、IRB 要求等可能已变）。
 - **终审引用**：再 `Skill` 调用一次 `67/reference-verify`（投稿前最后一次，确保此前所有修订没动坏
   引用），落 `09_submission/ref_verify_final.xlsx`。
 - **引用/时序终审闸门**：跑 `python3 scripts/check_citation_integrity.py <workspace> --final` —— 不得残留

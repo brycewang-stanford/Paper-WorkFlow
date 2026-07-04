@@ -4,6 +4,10 @@
 > 哪些只能脚本化、哪些会阻断投稿」写成可执行闸门。模板见
 > [`../templates/data_governance.md`](../templates/data_governance.md) 与
 > [`../templates/DAS.md`](../templates/DAS.md)。
+>
+> **中国实证研究专有补充**：见 [`china-data-sources.md`](china-data-sources.md) §1（含《个人信息
+> 保护法》、《数据出境安全评估办法》、《人类遗传资源管理条例》、IRB / 机构伦理委员会备案、
+> 数据分级与出境实操要点）。中国数据源的字段映射、申请流程、清洗陷阱见同文档 §2–§15。
 
 ---
 
