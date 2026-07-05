@@ -1,0 +1,7 @@
+control variable coefs (model 2 / 3 / 5):
+internet_use &    0.1863 &    0.0203
+age &    0.0067 &    0.0009
+gender_male &    0.1640 &    0.0155
+urban &    0.2187 &    0.0156
+education &    0.0664 &    0.0041
+marital & 

@@ -1,0 +1,20 @@
+\begin{table}[htbp]\centering
+\def\sym#1{\ifmmode^{#1}\else\(^{#1}\)\fi}
+\caption{Heterogeneous effects: IV-2SLS by subgroup}
+\begin{tabular}{l*{6}{c}}
+\hline\hline
+                &\multicolumn{1}{c}{(1)}&\multicolumn{1}{c}{(2)}&\multicolumn{1}{c}{(3)}&\multicolumn{1}{c}{(4)}&\multicolumn{1}{c}{(5)}&\multicolumn{1}{c}{(6)}\\
+                &\multicolumn{1}{c}{Urban}&\multicolumn{1}{c}{Rural}&\multicolumn{1}{c}{Male}&\multicolumn{1}{c}{Female}&\multicolumn{1}{c}{High Edu}&\multicolumn{1}{c}{Low Edu}\\
+\hline
+internet\_use    &  -0.2792         &   0.2972\sym{*}  &   0.2128         &  -0.0078         &   0.3048         &   0.0186         \\
+                & (0.3127)         & (0.1629)         & (0.2178)         & (0.1779)         & (0.4360)         & (0.1416)         \\
+\hline
+N               &    1,629         &    2,005         &    1,878         &    1,756         &    1,637         &    2,064         \\
+R$^2$           &    0.212         &    0.321         &    0.316         &    0.304         &    0.188         &    0.167         \\
+\hline\hline
+\multicolumn{7}{l}{\footnotesize Standard errors in parentheses}\\
+\multicolumn{7}{l}{\footnotesize Standard errors clustered at household level in parentheses.}\\
+\multicolumn{7}{l}{\footnotesize * <0.10$, ** <0.05$, *** <0.01$.}\\
+\multicolumn{7}{l}{\footnotesize \sym{*} \(p<0.10\), \sym{**} \(p<0.05\), \sym{***} \(p<0.01\)}\\
+\end{tabular}
+\end{table}

@@ -1,0 +1,24 @@
+============================================================
+ 扩展稳健性检验结果汇总（来自 Stata + Python）
+============================================================
+
+【分位数回归】 sqreg
+  q25: coef = 0.1848 (se = 0.0273)
+  q50: coef = 0.1858 (se = 0.0283)
+  q75: coef = 0.1879 (se = 0.0307)
+
+【AIPW】 teffects aipw
+  ATE = 0.1636 (N=3634)
+
+【PPML (Poisson)】 Python statsmodels
+  coef = 0.1768
+  se   = 0.0002
+  p    = 0.0000
+  N    = 3634
+
+【Logit 第一阶段】 family_internet_2018 → internet_use
+  coef = 1.0638
+  se   = 0.1222
+  pseudo-R2 = 0.1248
+
+(true beta_int = 0.18)
