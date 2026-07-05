@@ -1,0 +1,44 @@
+{
+  "id": "spatial_sdm_simulation",
+  "status": "active",
+  "design": "Spatial Durbin Model (SDM)",
+  "title": "空间 Durbin 模型 (SDM) 典型 DGP 模拟 — 地方政府 GDP 锦标赛场景",
+  "gold_source": "Own simulation. DGP: Y = ρ W Y + X β + W X θ + ε; TRUE_ρ=0.3, β_X=0.5 (直接效应), θ_WX=0.4 (间接/空间溢出), 30 个城市 × 20 年 queen 邻接权重. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §11 spatial-decomposition requirement.",
+  "description": "空间 Durbin 模型是中文实证'地方政府竞争 / 区域创新扩散 / 环境溢出'类研究的主流。30 个城市 × 20 年面板；空间权重为 queen 邻接。TRUE_ρ=0.3（空间自回归系数），β_X=0.5（直接效应），θ_WX=0.4（间接效应 / 空间溢出）。ML 估计应恢复 ρ≈0.3、β≈0.5、θ≈0.4。**LeSage-Pace 偏微分分解**给出 direct effect ≈ 0.6（含空间反馈），indirect effect ≈ 0.5。这是中文期刊顶刊审稿人最关心的一点——必须做分解、不能只看 ρ 或 β。",
+  "tolerances": {
+    "rel_tol": 0.10,
+    "partial_tol": 0.25,
+    "abs_floor": 0.05
+  },
+  "primary_coefficients": [
+    {
+      "name": "rho",
+      "value": 0.3,
+      "sign": "+",
+      "note": "空间自回归系数 ρ=0.3；ML 估计应恢复 ~0.30（rel_tol 内）"
+    },
+    {
+      "name": "beta_direct",
+      "value": 0.5,
+      "sign": "+",
+      "note": "X 的直接效应（短期平均偏导）"
+    },
+    {
+      "name": "theta_wx",
+      "value": 0.4,
+      "sign": "+",
+      "note": "W*X 的系数（短期）；间接效应约 0.5（LeSage-Pace 分解后）"
+    },
+    {
+      "name": "indirect_effect",
+      "value": 0.5,
+      "sign": "+",
+      "note": "LeSage-Pace 偏微分分解的 indirect effect；这是中文顶刊审稿必看项"
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/spatial_main.json (含 direct/indirect/total 分解).",
+    "format": "{\"coefficients\": {\"rho\": {\"value\": <float>}, \"beta_direct\": {\"value\": <float>}, \"theta_wx\": {\"value\": <float>}, \"indirect_effect\": {\"value\": <float>}}}",
+    "note": "必须包含 LeSage-Pace 偏微分分解（直接 + 间接 + 总效应）；只报 ρ 不报分解 = Method Gate 失败 (design-gate-cards.md §11)。"
+  }
+}

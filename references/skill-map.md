@@ -118,7 +118,7 @@ playbook 指定的工作区子目录落盘即可。
 | 9 | 选刊 / 投稿评估 | **`67/paper-submission`** | `60-regisely-superpapers`、AEA replication/data-code policy pack |
 | 9 | 硕士论文评阅（学位场景） | `67/master-thesis-review` | `66-zheng-siyao-empirical-research-skills`(整套) |
 | — | 转 Word / 格式转换 | `67/md-to-docx`、`67/markitdown` | `08-ndpvt-web-latex-document-skill` |
-| — | 做汇报 PPT | `67/marp-slides-creator`+`67/marp-export`、`67/chinese-ppt` | 演示物料见本仓库根目录 |
+| — | 做汇报 PPT | `67/marp-slides-creator`+`67/marp-export`、`67/chinese-ppt`、`69-Paper-WorkFlow/defense_pptx.py`（论文/期刊汇报参数化生成，按 [`chinese-journals.md`](chinese-journals.md) §6.5 模板 + 从工作区自动提取内容） | 演示物料见本仓库根目录 |
 
 ---
 

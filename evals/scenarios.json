@@ -69,6 +69,41 @@
       "prompt": "User has a DAG and wants identification by backdoor/front-door plus refutation tests for an observational design.",
       "routing_anchors": ["67/ml-causal", "refuter", "DoWhy"],
       "gate_card_keyword": "Causal Graph"
+    },
+    {
+      "id": "psm_did_china",
+      "split": "selection",
+      "prompt": "中文实证场景：单期或两期政策评估 + 大量可观测协变量（如最低工资、户籍改革）。用户需要 PSM-DID 而非现代交错 DiD；需配套 Rosenbaum bounds 敏感性。",
+      "routing_anchors": ["PSM", "PSM-DID", "rosenbaum", "近邻匹配", "IPW", "卡尺匹配", "china-data-sources", "design-gate-cards.md §10"],
+      "gate_card_keyword": "PSM-DID"
+    },
+    {
+      "id": "spatial_did_china",
+      "split": "selection",
+      "prompt": "中文实证场景：地方政府 GDP 锦标赛 / 环境规制溢出 / 区域协同效应。数据有空间依赖，需用空间计量（SAR/SEM/SDM）+ LeSage-Pace 偏微分分解。",
+      "routing_anchors": ["空间计量", "SDM", "SAR", "SEM", "空间权重", "Moran I", "偏微分分解", "china-data-sources", "design-gate-cards.md §11"],
+      "gate_card_keyword": "空间计量"
+    },
+    {
+      "id": "threshold_panel_china",
+      "split": "selection",
+      "prompt": "中文实证场景：异质性依赖门槛变量（环境规制、金融发展、收入门槛）。需用 Hansen 1999 / Bai 1997 门槛面板 + bootstrap 检验。",
+      "routing_anchors": ["门槛面板", "Hansen 1999", "Bai 1997", "bootstrap", "Caner-Hansen", "design-gate-cards.md §12"],
+      "gate_card_keyword": "门槛面板"
+    },
+    {
+      "id": "policy_pilot_china",
+      "split": "regression",
+      "prompt": "中文实证场景：国家数字经济创新发展试验区 / 智慧城市 / 自贸区 / 低碳城市等政策试点的因果评估。需用交错 DID（CS/SA/BJS）+ 数据源对接（CSMAR/统计年鉴/政策数据库）。",
+      "routing_anchors": ["交错 DiD", "政策试点", "CSMAR", "CNRDS", "数字经济试验区", "callaway_santanna", "china-data-sources", "design-gate-cards.md §1"],
+      "gate_card_keyword": "DiD"
+    },
+    {
+      "id": "digital_transformation_china",
+      "split": "regression",
+      "prompt": "中文实证场景：上市公司数字化转型（年报词频法 / CSMAR 数字化转型子库 / 北大数字金融指数）对全要素生产率 / 创新产出 / 风险承担的影响。需用 DiD 或 PSM-DID + 文本/财务数据融合。",
+      "routing_anchors": ["数字化转型", "词频法", "CSMAR", "数字金融指数", "TFP", "OP/LP/ACF", "china-data-sources", "design-gate-cards.md §1 或 §10"],
+      "gate_card_keyword": "DiD"
     }
   ]
 }

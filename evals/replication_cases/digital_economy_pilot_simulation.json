@@ -1,0 +1,32 @@
+{
+  "id": "digital_economy_pilot_simulation",
+  "status": "active",
+  "design": "Staggered DiD (Callaway-Sant'Anna)",
+  "title": "国家数字经济创新发展试验区政策评估 — 交错 DiD 模拟",
+  "gold_source": "Own simulation. DGP: 50 个城市分 4 批入选试验区（2017/2019/2020/2021），每批 8-12 个城市；TRUE_ATT=0.08 (8% TFP 提升). Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §1 交错 DiD 路径与 china-data-sources.md §2 CSMAR 字段映射。",
+  "description": "中国'国家数字经济创新发展试验区'是 2017 年起分批设立的政策试点，典型交错 DiD 场景。50 个城市分 4 批入选，每批 8-12 个城市。TRUE_ATT=0.08（企业 TFP 提升 8%）。CS/SA/BJS 估计量应恢复 ATT≈0.08，event-study leads 应不显著。模拟数据基于 CSMAR 公司财务 + 北大数字金融指数的合并结构。**这是 design-gate-cards.md §1（交错 DiD）+ china-data-sources.md §2（CSMAR 字段映射）+ china-journals.md §3.1 经济研究规范的端到端检验。**",
+  "tolerances": {
+    "rel_tol": 0.10,
+    "partial_tol": 0.25,
+    "abs_floor": 0.02
+  },
+  "primary_coefficients": [
+    {
+      "name": "att",
+      "value": 0.08,
+      "sign": "+",
+      "note": "Callaway-Sant'Anna group-time ATT 的 simple 聚合；现代交错 DiD 应恢复 ~0.08；TWFE 估计会因负权重偏低"
+    },
+    {
+      "name": "leads_avg",
+      "value": 0.0,
+      "sign": "0",
+      "note": "事件研究 leads（pre-5 至 pre-1）的平均系数；平行趋势检验应接近 0（H0：leads=0）"
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/group_time_att.json (CS/SA) 或 main_results.json (BJS).",
+    "format": "{\"coefficients\": {\"att\": {\"value\": <float>}, \"leads_avg\": {\"value\": <float>}, \"pretrends_pvalue\": {\"value\": <float>}}}",
+    "note": "pretrends_pvalue > 0.10 才算过平行趋势检验（design-gate-cards.md §1）。CS/SA 必用，TWFE 仅作对照。"
+  }
+}

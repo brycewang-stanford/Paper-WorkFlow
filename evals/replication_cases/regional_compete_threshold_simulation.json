@@ -1,0 +1,38 @@
+{
+  "id": "regional_compete_threshold_simulation",
+  "status": "active",
+  "design": "Threshold Panel (Hansen 1999) — 地方政府竞争门槛",
+  "title": "地方政府竞争 GDP 锦标赛 — 财政透明度门槛效应模拟",
+  "gold_source": "Own simulation. DGP: 280 个地级市 × 12 年 (2010-2021)，Y = 财政支出竞争 (per capita)，X = 财政透明度，门槛变量 = 经济发展水平 (人均 GDP log). TRUE_γ = log(60000) ≈ 11.0, β_低 = 0.10, β_高 = 0.45. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §12 + china-data-sources.md §4 地方统计年鉴.",
+  "description": "中国地方政府竞争研究的典型门槛模型：经济发展水平作为门槛变量，财政透明度对支出竞争的效应在低/高发展水平下不同。280 个地级市 × 12 年面板，数据来源是地级市统计年鉴 + CEIC + EPS。TRUE_γ=log(60000)≈11.0（人均 GDP 6 万元），β_低=0.10（经济发展水平低时，财政透明度对支出竞争影响小），β_高=0.45（经济发展水平高时，影响显著放大）。Bootstrap 1000 次应识别门槛值 ~11.0。这是中国地方治理与区域发展文献的主流实证范式（参周黎安 2007'中国地方官员的晋升锦标赛'，王永钦等 2007'中国的大国发展道路'）。",
+  "tolerances": {
+    "rel_tol": 0.10,
+    "partial_tol": 0.25,
+    "abs_floor": 0.05
+  },
+  "primary_coefficients": [
+    {
+      "name": "gamma_threshold",
+      "value": 11.0,
+      "sign": "+",
+      "note": "门槛值 = log(人均 GDP 6 万) ≈ 11.0；Hansen LR 法估计的门槛值应在 95% CI 内"
+    },
+    {
+      "name": "beta_low_regime",
+      "value": 0.10,
+      "sign": "+",
+      "note": "经济发展水平低于门槛时的财政透明度对支出竞争的影响"
+    },
+    {
+      "name": "beta_high_regime",
+      "value": 0.45,
+      "sign": "+",
+      "note": "经济发展水平高于门槛时的影响；通常是高 3-5 倍"
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/threshold_regimes.json.",
+    "format": "{\"coefficients\": {\"gamma_threshold\": {\"value\": <float>}, \"beta_low_regime\": {\"value\": <float>}, \"beta_high_regime\": {\"value\": <float>}, \"threshold_test_pvalue\": {\"value\": <float>}}}",
+    "note": "中国数据可能受行政区划调整影响，必须用民政部最新区划代码更新面板（见 china-data-sources.md §4 地方统计年鉴）。Bootstrap ≥ 1000 重。"
+  }
+}

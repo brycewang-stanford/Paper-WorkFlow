@@ -1,0 +1,38 @@
+{
+  "id": "threshold_panel_simulation",
+  "status": "active",
+  "design": "Threshold Panel (Hansen 1999)",
+  "title": "Hansen (1999) 门槛面板回归的典型 DGP 模拟",
+  "gold_source": "Own simulation. DGP: Y_it = α_i + β_1·X_it·I(q_it ≤ γ) + β_2·X_it·I(q_it > γ) + ε_it, with TRUE_γ = 1.0, β_1 = 0.5, β_2 = 1.5 (跨门槛效应差 1.0). N=500, T=10, balanced panel. Simulated 2026-07-04, seed=42. Verifies the threshold panel branch of design-gate-cards.md §12.",
+  "description": "标准门槛面板的最小可识别 DGP：单一门槛 γ=1.0，门槛以下系数 0.5，门槛以上系数 1.5（差 1.0）。N=500 个体 × 10 期。门槛变量 q 与 X 独立正态。Bootstrap 重数 1000。Hansen 1999 估计量应同时识别 γ≈1.0 与 β_1≈0.5 / β_2≈1.5。门限检验 p 值应 < 0.05。这是国内实证'环境规制 vs 企业创新''金融发展 vs 经济增长'类研究的标准范式（Hansen 1999、Caner-Hansen 2004）。",
+  "tolerances": {
+    "rel_tol": 0.10,
+    "partial_tol": 0.25,
+    "abs_floor": 0.05
+  },
+  "primary_coefficients": [
+    {
+      "name": "gamma_threshold",
+      "value": 1.0,
+      "sign": "+",
+      "note": "门槛值 γ=1.0；Hansen LR 法估计的门槛值应落在 95% CI 内，区间半径应 < 0.2"
+    },
+    {
+      "name": "beta_below",
+      "value": 0.5,
+      "sign": "+",
+      "note": "门槛以下 regime 1 的 X 系数，β₁=0.5"
+    },
+    {
+      "name": "beta_above",
+      "value": 1.5,
+      "sign": "+",
+      "note": "门槛以上 regime 2 的 X 系数，β₂=1.5"
+    }
+  ],
+  "candidate_contract": {
+    "where": "Stage 3 writes estimates to 03_analysis/results/estimates.json (or threshold_regimes.json).",
+    "format": "{\"coefficients\": {\"gamma_threshold\": {\"value\": <float>}, \"beta_below\": {\"value\": <float>}, \"beta_above\": {\"value\": <float>}, \"threshold_test_pvalue\": {\"value\": <float>}}}",
+    "note": "门槛检验 p 值必须 < 0.05，否则 Method Gate 失败 (design-gate-cards.md §12)。重点是 regime 之间的系数差（约 1.0），不是单个 regime 的数值。"
+  }
+}

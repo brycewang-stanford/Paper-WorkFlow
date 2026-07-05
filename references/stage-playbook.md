@@ -413,6 +413,18 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
   若政策页无法访问，按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 标 blocked，投稿包不得标 ready。
 - 需要排版成 Word / 提交版 PDF 时用 `67/md-to-docx`、`67/markitdown`、`08-ndpvt-web-latex-document-skill`。
+- **中文学位论文答辩 PPT（Stage 9 子任务）**：调用
+  `python3 defense_pptx.py --workspace <workspace> --type thesis --output 答辩.pptx`
+  （默认 22 页结构，按 [`chinese-journals.md`](chinese-journals.md) §6.5 模板）；
+  或先复制 [`templates/defense_ppt_config.yaml`](../templates/defense_ppt_config.yaml) 填好元数据再
+  `python3 defense_pptx.py --config defense_ppt_config.yaml --output 答辩.pptx`。
+  脚本会**自动**从 `01_proposal/proposal.md`、`02_data/sample_audit.md`、
+  `03_analysis/results/main_results.json`、`03_analysis/design_register.md` 提取背景、识别策略、
+  主要发现（启发式解析）。论文场景默认 22 张，时长 15 分钟；期刊汇报场景用
+  `--type journal-talk`（默认 18 张）。该 PPT 与 `build_pptx.py`（skill 演示版 30 张）视觉风格
+  统一（深蓝/橙/金配色），但 build_pptx.py 演示整个工作流，defense_pptx.py 专攻答辩/汇报。
+  **Stage 9 结束前的硬要求**：`defense_pptx.py --workspace <ws> --type <type> --duration <min>`
+  跑通，**不能因脚本报错就跳过答辩 PPT**——这是本硕博毕业流程的硬交付物。
 
 **review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明、
 IRB/DUA 与公开复现包边界）。

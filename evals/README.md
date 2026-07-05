@@ -45,15 +45,42 @@ edit must strictly beat.
 
 ## Scenario splits
 
-[`scenarios.json`](scenarios.json) freezes nine research-task archetypes split
+[`scenarios.json`](scenarios.json) freezes 14 research-task archetypes split
 the SkillOpt way — do not move a scenario between splits to flatter a number:
 
 - **train** (`did_staggered`, `iv_2sls`, `rdd_sharp`, `synthetic_control`) — may
   motivate an edit; never gate on these alone.
-- **selection** (`panel_fe`, `ml_hte`, `time_series_var`) — held out; gates
-  acceptance.
-- **regression** (`dml_highdim`, `causal_graph`) — held out; guards designs the
-  current edit does not target.
+- **selection** (`panel_fe`, `ml_hte`, `time_series_var`, `psm_did_china`, `spatial_did_china`, `threshold_panel_china`) — held out; gates
+  acceptance. **3 个中文场景（PSM-DID / 空间计量 / 门槛面板）** 反映国内顶刊常用方法。
+- **regression** (`dml_highdim`, `causal_graph`, `policy_pilot_china`, `digital_transformation_china`) — held out; guards designs the
+  current edit does not target. **2 个中文场景（政策试点 / 数字化转型）** 反映国内"中国故事"实证典型。
+
+**中文场景对照**（`scenarios.json` 第 11-15 项）：
+
+| Scenario | 中国实证典型应用 | 主要门卡 |
+|---|---|---|
+| `psm_did_china` | 最低工资 / 户籍改革 / 一次性政策评估 | §10 PSM-DID |
+| `spatial_did_china` | GDP 锦标赛 / 环境溢出 / 区域协同 | §11 空间计量 |
+| `threshold_panel_china` | 环境规制门槛 / 金融发展门槛 | §12 门槛面板 |
+| `policy_pilot_china` | 数字经济试验区 / 智慧城市 / 自贸区 | §1 交错 DiD |
+| `digital_transformation_china` | 年报词频法 + TFP（赵剑波 2020 类） | §1 交错 DiD 或 §10 PSM-DID |
+
+**配套 replication case**（`replication_cases/`）：
+
+| Case | 设计 | Gold 来源 |
+|---|---|---|
+| `card_krueger_1994_minwage.json` | PSM-DID 黄金标准（NJ min-wage） | Card-Krueger 1994 AER Table 3 |
+| `threshold_panel_simulation.json` | Hansen 1999 门槛 | Own DGP, TRUE_γ=1.0, β差=1.0 |
+| `spatial_sdm_simulation.json` | SDM + LeSage-Pace 分解 | Own DGP, ρ=0.3, indirect=0.5 |
+| `digital_economy_pilot_simulation.json` | 交错 DiD 政策试点 | Own DGP, TRUE_ATT=0.08 |
+| `digital_transformation_psm_did_simulation.json` | PSM-DID 数字化转型 | Own DGP, TRUE_ATT=0.05 |
+| `regional_compete_threshold_simulation.json` | Hansen 1999 地方竞争门槛 | Own DGP, TRUE_γ=log(60000)≈11.0 |
+
+**中国场景的相关文档**：
+
+- 数据源：见 [`../references/china-data-sources.md`](../references/china-data-sources.md)
+- 期刊投稿：见 [`../references/chinese-journals.md`](../references/chinese-journals.md)
+- Design Gate Cards（10-12）：见 [`../references/design-gate-cards.md`](../references/design-gate-cards.md)
 
 ## Usage
 
