@@ -1,11 +1,11 @@
 {
-  "recorded": "2026-07-06",
-  "note": "Bumped to v2026.07-6: SKILL.md +1087 bytes (32022, 22 bytes over 32000 target) and +2 reference files (29 -> 31) per upstream consolidation; complexity targets remain unchanged for the always-loaded floor.",
+  "recorded": "2026-07-11",
+  "note": "Bumped to v2026.07-7: added references/skill-coverage-map.md (P1 auditability fix -- '47 skills' claim now has an explicit per-skill source map). 31 -> 32 reference files; SKILL.md grew slightly to cross-link the new map. Always-loaded SKILL.md is still 230B over the 32000 byte target -- consolidation still pending.",
   "ceiling": {
-    "skill_md_bytes": 32022,
-    "skill_md_tokens_est": 8006,
-    "reference_count": 31,
-    "reference_bytes": 500267,
+    "skill_md_bytes": 32230,
+    "skill_md_tokens_est": 8058,
+    "reference_count": 32,
+    "reference_bytes": 511215,
     "template_count": 25,
     "template_bytes": 68963
   },

@@ -1,0 +1,46 @@
+name: paper-workflow-ci
+
+# CI gate for the Paper-WorkFlow skill. Runs on every push to main and on
+# every pull request targeting main. Failures here mean the head commit
+# has broken one of the executable gates (e.g. bilingual README drift,
+# numeric-claim drift, gate-card contract regression, etc.).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Don't run twice on the same SHA from a PR push and a push-to-main.
+concurrency:
+  group: paper-workflow-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run validate_skill.py (full executable-gate battery)
+        run: python3 validate_skill.py
+
+      - name: Run bilingual README parity check (defence-in-depth)
+        run: python3 scripts/check_bilingual_docs.py
+
+      - name: Run numeric-claims cross-doc check
+        run: python3 scripts/check_numeric_claims.py
+
+      - name: Run bilingual README parity selftest
+        run: python3 scripts/check_bilingual_docs.py --selftest
+
+      - name: Run numeric-claims selftest
+        run: python3 scripts/check_numeric_claims.py --selftest

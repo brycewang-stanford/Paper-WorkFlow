@@ -221,6 +221,7 @@ DAS、存档计划、重跑耗时、数据治理红旗）并更新 `workflow_sta
 
 **编排核心** — [`stage-playbook.md`](references/stage-playbook.md)（10 阶段逐阶段手册：skill 调用·subagent 模板·失败回退）·
 [`skill-map.md`](references/skill-map.md)（§0 子 skill 调用机制+注册名对照+输出路径重定向；其余为「任务→skill」全量路由）·
+[`skill-coverage-map.md`](references/skill-coverage-map.md)（「47 技能」**溯源表**——每个 skill 来自哪个上游库、放在哪一级目录，归类到主线/横切/转换/reviewer 四组）·
 [`orchestration-and-handoff.md`](references/orchestration-and-handoff.md)（Stage 0 路由·stage passport·pipeline status·fresh evidence·handoff·schema v10 字段）·
 [`workspace-and-state.md`](references/workspace-and-state.md)（目录布局·`workflow_state.json` 字段·subagent 输入/输出约定）·
 [`subagent-templates.md`](references/subagent-templates.md)（可复制派发模板，内置上下文保护契约与输出重定向）。

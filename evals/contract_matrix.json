@@ -27,6 +27,7 @@
     "scripts/check_state_template_paths.py",
     "scripts/check_reproducibility_scaffold.py",
     "scripts/check_bilingual_docs.py",
+    "scripts/check_numeric_claims.py",
     "scripts/check_final_report_contract.py",
     "scripts/check_monthly_worklog.py",
     "scripts/check_rigor_registry.py",
@@ -176,12 +177,15 @@
         "README.md",
         "README.en.md",
         "scripts/check_bilingual_docs.py",
+        "scripts/check_numeric_claims.py",
         "SKILL.md",
         "references/skill-map.md",
+        "references/skill-coverage-map.md",
         "references/stage-playbook.md"
       ],
       "validators": [
         "scripts/check_bilingual_docs.py",
+        "scripts/check_numeric_claims.py",
         "scripts/check_cross_references.py",
         "validate_skill.py"
       ],

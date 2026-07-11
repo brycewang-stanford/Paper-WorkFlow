@@ -394,6 +394,7 @@ def check_assets() -> None:
         "scripts/check_state_template_paths.py",
         "scripts/check_contract_matrix.py",
         "scripts/check_bilingual_docs.py",
+        "scripts/check_numeric_claims.py",
         "scripts/check_final_report_contract.py",
         "scripts/check_monthly_worklog.py",
         "scripts/check_rigor_registry.py",
@@ -534,6 +535,7 @@ def check_python_compile() -> None:
         ROOT / "scripts" / "check_state_template_paths.py",
         ROOT / "scripts" / "check_contract_matrix.py",
         ROOT / "scripts" / "check_bilingual_docs.py",
+        ROOT / "scripts" / "check_numeric_claims.py",
         ROOT / "scripts" / "check_final_report_contract.py",
         ROOT / "scripts" / "check_monthly_worklog.py",
         ROOT / "scripts" / "check_rigor_registry.py",
@@ -587,6 +589,17 @@ def check_bilingual_docs_checker() -> None:
     )
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_bilingual_docs.py")],
+        check=True,
+    )
+
+
+def check_numeric_claims_checker() -> None:
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_numeric_claims.py"), "--selftest"],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_numeric_claims.py")],
         check=True,
     )
 
@@ -836,6 +849,7 @@ def main() -> None:
     check_state_template_paths_checker()
     check_contract_matrix_checker()
     check_bilingual_docs_checker()
+    check_numeric_claims_checker()
     check_final_report_contract_checker()
     check_monthly_worklog_checker()
     check_rigor_registry_checker()
