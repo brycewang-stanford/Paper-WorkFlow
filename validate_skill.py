@@ -866,4 +866,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except subprocess.CalledProcessError as exc:
+        # The failing checker has already printed its own diagnostics; add a
+        # single readable line naming the gate command instead of a traceback.
+        cmd = " ".join(str(part) for part in exc.cmd)
+        print(f"FAIL: gate command exited {exc.returncode}: {cmd}", file=sys.stderr)
+        raise SystemExit(1)

@@ -13,6 +13,7 @@
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
 [![Rigor](https://img.shields.io/badge/rigor-30%2F30_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
@@ -514,7 +515,8 @@ Paper-WorkFlow/
 
 ### 本地自检
 
-维护或改造本 skill 后，先在本目录运行：
+维护或改造本 skill 后，先在本目录运行（首次需 `pip install -r requirements-dev.txt`，
+供 demo notebook 执行闸门使用；其余检查器只依赖标准库）：
 
 ```bash
 python3 validate_skill.py

@@ -1,9 +1,9 @@
 {
-  "recorded": "2026-07-11",
-  "note": "Bumped to v2026.07-7: added references/skill-coverage-map.md (P1 auditability fix -- '47 skills' claim now has an explicit per-skill source map). 31 -> 32 reference files; SKILL.md grew slightly to cross-link the new map. Always-loaded SKILL.md is still 230B over the 32000 byte target -- consolidation still pending.",
+  "recorded": "2026-07-16",
+  "note": "v2026.07-8: SKILL.md consolidation pass -- trimmed redundant parentheticals from the always-loaded layer; 32230 -> 31966 bytes, now under the 32000-byte aspirational target. No content contract changed (stage table, gate names, numeric claims, links all intact).",
   "ceiling": {
-    "skill_md_bytes": 32230,
-    "skill_md_tokens_est": 8058,
+    "skill_md_bytes": 31966,
+    "skill_md_tokens_est": 7992,
     "reference_count": 32,
     "reference_bytes": 511215,
     "template_count": 25,

@@ -56,8 +56,17 @@ def _execute_notebook(tmp_dir: Path) -> tuple[dict, str]:
                     if cell.get("cell_type") != "code":
                         continue
                     source = "".join(cell.get("source", []))
-                    if source.strip():
+                    if not source.strip():
+                        continue
+                    try:
                         exec(compile(source, f"did_demo.ipynb cell {index}", "exec"), namespace)
+                    except ModuleNotFoundError as exc:
+                        fail(
+                            f"did_demo.ipynb cell {index} needs a missing dependency"
+                            f" ({exc}); install with: pip install -r requirements-dev.txt"
+                        )
+                    except Exception as exc:
+                        fail(f"did_demo.ipynb cell {index} raised {type(exc).__name__}: {exc}")
     finally:
         os.chdir(old_cwd)
     return namespace, stdout.getvalue()

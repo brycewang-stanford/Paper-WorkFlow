@@ -1,0 +1,8 @@
+# Dependencies for the executable-gate battery (python3 validate_skill.py).
+# Only scripts/check_demo_execution.py needs these: it executes did_demo.ipynb
+# for real. Every other checker is stdlib-only by design.
+numpy
+pandas
+matplotlib
+statsmodels
+linearmodels

@@ -45,7 +45,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 
 > 完整阶段细节、每阶段的 plan→execute→review→revise 微循环、subagent 派发模板，全部在
 > [`references/stage-playbook.md`](references/stage-playbook.md)。**主代理在进入某阶段时才去读
-> 对应章节**（渐进式加载，省上下文）。
+> 对应章节**。
 
 > **双硬闸门 = 方法闸门 + 初稿质量门。** Stage 3 结束必须先过
 > [`research-grade-methods.md`](references/research-grade-methods.md) 的 **Method Gate**：设计注册、
@@ -93,7 +93,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 2. **为子代理放行 Read + Write + Bash**（必要时含 Skill），让它独立闭环。
 3. **能并行就并行**：同阶段内彼此独立的任务（多个稳健性、多个候选期刊、多份机制检验）一次性并行派发（每批 ≤10；选题漏斗沿用 `idea-finder` 的 `PARALLEL_BATCH_SIZE=5`）；有依赖的串行。
 4. **每阶段是一个微循环** `plan → execute → review → revise`；重活阶段（1 选题、3 估计、6 打磨、8 评审）尤其要派**独立 critic subagent** 做对抗式审阅再修订。
-5. **子 skill 调用**：轻量且需主线上下文的（如 `paper-style` 顺着同一份 `main.tex`）直接在主代理调；重量可隔离的（多路文献扫描、批量稳健性）派 subagent，并在其 prompt 里**强制按下节「子 skill 调用协议」加载**，绝不许凭记忆脑补（参考 `idea-finder` 强制每个 subagent 加载 `econfin-proposal`+`novelty-check`）。
+5. **子 skill 调用**：轻量且需主线上下文的（如 `paper-style` 顺着同一份 `main.tex`）直接在主代理调；重量可隔离的（多路文献扫描、批量稳健性）派 subagent，并在其 prompt 里**强制按下节「子 skill 调用协议」加载**，绝不许凭记忆脑补。
 6. **日志**：每阶段把「调用了哪些 skill / 派了哪些 agent / 产出哪些文件 / 关键决策」追加到 `logs/stage_<N>.md`，并同步 `00_meta/stage_passport.md` 与 `00_meta/pipeline_status.md`。
 7. **交接**：阶段切换 / 长暂停 / 上下文变薄 / 并行 agent 接手前，在 `00_meta/handoff/` 写 handoff card 并把路径写入 `workflow_state.json.orchestration.latest_handoff`；下一位 agent 先刷新现实再继续。
 
@@ -108,13 +108,13 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
    字段，不一定等于文件夹名**（大小写/改名差异表见 skill-map §0.1）——用注册名，别用文件夹名猜。
 2. **报「not found」立刻退回 `Read` 内联执行**（稳路径，永远可用）：`Read` 该 SKILL.md 正文当本步操作
    手册逐步执行；重量步骤把「`Read` 这个 SKILL.md 并按它执行」写进 subagent 的 prompt。**不要反复重试，
-   也不要凭记忆脑补子 skill 的逻辑**（这正是 `idea-finder` 反复警告的劣化）。
+   也不要凭记忆脑补子 skill 的逻辑**。
 3. **两个子 skill（`econfin-idea-finder`、`journal-digest`）在其 SKILL.md 里硬编码了仓库外 Windows 输出
    路径，调用时必须改写**到工作区内（候选→`01_proposal/candidates/`、期刊摘要→`01_proposal/journal_digest.md`）；
    细节见 skill-map §0.2，模板见 [`references/subagent-templates.md`](references/subagent-templates.md)。
 
 > **派 subagent 调子 skill 时，SKILL.md 路径必须是仓库内完整路径**——subagent 的工作目录可能与主
-> 代理不同，给错路径它就找不到文件、转而脑补，产出不可复现的劣化结果。
+> 代理不同，给错路径它就找不到文件、转而脑补。
 
 ---
 
@@ -172,7 +172,7 @@ Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉
 4. **未达标**按 rubric「短板 → 回退阶段」映射重做（识别→Stage 3、贡献单薄→Stage 1、写作→Stage 5/6、AI 味→Stage 7、引用→reference-verify），**最多回退 2 轮**；2 轮仍卡某维则记「已知短板」标红交用户裁决是否带病投稿。
 5. 每轮打分追加进 `logs/quality_gate.md`，让用户看到分数随修订上升（审计轨迹）。
 
-> 质量门**不是**重跑 Stage 6 打磨、也不替代 Stage 8 评审——它只做一件事：按统一 rubric 量化「这份初稿够不够格」并决定放行还是回炉。
+> 质量门**不是**重跑 Stage 6 打磨、也不替代 Stage 8 评审——只按统一 rubric 量化「这份初稿够不够格」并决定放行还是回炉。
 
 **Claim Integrity Audit（配套引用 / 数字 / claim 忠实度检查）**：Stage 7→8 加载
 [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md)，用 [`templates/claim_integrity_audit.md`](templates/claim_integrity_audit.md)
@@ -217,7 +217,7 @@ DAS、存档计划、重跑耗时、数据治理红旗）并更新 `workflow_sta
 
 ## 进一步阅读（按需加载，别一次性全读进上下文）
 
-主代理进入某环节时才加载对应文档，用完即弃（路径见正文各处链接）。
+主代理进入某环节时才加载对应文档，用完即弃。
 
 **编排核心** — [`stage-playbook.md`](references/stage-playbook.md)（10 阶段逐阶段手册：skill 调用·subagent 模板·失败回退）·
 [`skill-map.md`](references/skill-map.md)（§0 子 skill 调用机制+注册名对照+输出路径重定向；其余为「任务→skill」全量路由）·
