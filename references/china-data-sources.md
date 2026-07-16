@@ -172,7 +172,7 @@
 
 - **官网**：https://charls.charlsdata.com/
 - **主持**：北京大学国家发展研究院
-- **覆盖**：45 岁以上中老年人及其配偶；2008 基线、2011/2013/2015/2018/2020/2023 追访
+- **覆盖**：45 岁以上中老年人及其配偶；2008 两省试点（甘肃/浙江），2011 全国基线；2013/2015/2018/2020/2023 追访
 - **核心模块**：人口学、健康、医疗保险、收入与资产、工作与退休、家庭结构
 - **学术访问**：
   - **免费申请**：通过官网注册账号 → 提交研究计划 + IRB 备案 → 等待审批（通常 1-3 个月）
@@ -386,7 +386,8 @@
 
 ### 6.3 学术推荐引用
 
-- Brandt, Loren, John Litwack, and Yifan Zhang. "Growth and structural transformation at the enterprise level: Evidence from a quarter of a century of micro data in China." (2014) - 系统介绍了 CID 的使用注意事项。
+- Brandt, Loren, Johannes Van Biesebroeck, and Yifan Zhang. "Challenges of working with the Chinese NBS firm-level data." *China Economic Review*, 30 (2014): 339-352 - 系统介绍了 CID 的口径变更、匹配与测量问题及解决方案（引用已核验，见 `_verification_log/cn-data-claims.md` C01）。
+- 聂辉华、江艇、杨汝岱："中国工业企业数据库的使用现状和潜在问题"，《世界经济》2012 年第 5 期 - 中文语境下 CID 常见误用与清洗建议。
 
 ### 6.4 替代数据源
 

@@ -220,6 +220,10 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 
 The final report links the proposal, cleaned data and codebook, design-risk ledger, analysis code, exhibits, draft, response letter, journal shortlist, cover letter, replication README, data availability statement, and rebuild command.
 
+## End-to-End Walk-Through
+
+The canonical Stage 0-9 walk-through lives in [`社媒文件/7.5-测试案例/`](社媒文件/7.5-测试案例/): a 12-page paper on internet use and income built on a **synthetic** CFPS-style panel (known DGP truth, not real microdata), with the full `paper_workspace/`, both hard-gate evidence trails, and the final PDF.
+
 ## DiD Demo
 
 The package keeps one runnable teaching asset: [did_demo.ipynb](did_demo.ipynb). It implements the lecture's DiD focus as six teaching steps across the notebook cells:

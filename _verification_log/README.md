@@ -6,6 +6,7 @@ by Paper-WorkFlow references and templates.
 ## Files
 
 - `methods-claims.md`: methods-claim evidence ledger.
+- `cn-data-claims.md`: China-context claim ledger for `references/china-data-sources.md` and `references/chinese-journals.md` (data-source institutional facts, legal framework, journal-process facts).
 
 ## Validation
 
