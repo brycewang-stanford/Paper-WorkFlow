@@ -13,6 +13,13 @@
 
 ## 0. 快速索引（按研究主题）
 
+<!-- CN-CLAIM-AUDIT-BANNER -->
+## Claim audit status
+
+> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 12 claims logged as of 2026-07-21; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
+
+Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
+<!-- /CN-CLAIM-AUDIT-BANNER -->
 | 研究主题 | 首选数据源 | 备选 / 增强 | 关键字段警示 |
 |---|---|---|---|
 | **公司金融 / 公司治理** | CSMAR + WIND + CNINFO | RESSET、巨潮资讯网 | 行业代码（GB/T 4754 vs 证监会 2012）冲突；ST/\*ST 状态识别 |

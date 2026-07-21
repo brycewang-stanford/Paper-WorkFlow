@@ -20,6 +20,13 @@
 
 ### 0.1 按研究主题看选刊
 
+<!-- CN-CLAIM-AUDIT-BANNER -->
+## Claim audit status
+
+> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 12 claims logged as of 2026-07-21; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
+
+Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
+<!-- /CN-CLAIM-AUDIT-BANNER -->
 | 研究主题 | 首选顶刊 | 第二梯队 | 备选 / 应用类 |
 |---|---|---|---|
 | **宏观 / 增长 / 政策评估** | 经济研究、经济学（季刊）、管理世界 | 财贸经济、经济科学、经济学动态 | 改革、经济理论与经济管理 |

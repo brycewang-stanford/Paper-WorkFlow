@@ -579,6 +579,14 @@ def check_compactness_checker() -> None:
     )
 
 
+def check_cn_claim_audit_checker() -> None:
+    """Blocking audit gate on the CN-claim ledger."""
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_cn_claim_audit.py")],
+        check=True,
+    )
+
+
 def check_contract_matrix_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py"), "--selftest"],
@@ -865,6 +873,7 @@ def main() -> None:
     check_reproducibility_scaffold_checker()
     check_skillopt_packet_checker()
     check_compactness_checker()
+    check_cn_claim_audit_checker()
     check_verification_log()
     check_citation_integrity_checker()
     check_preregistration_checker()

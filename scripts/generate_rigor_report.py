@@ -352,6 +352,17 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_cn_claim_audit.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "CN-claim audit gate: _verification_log/cn-data-claims.md must exist "
+            "with >=10 entries and both China-context reference files must carry "
+            "an audit-status banner; --update-banners rewrites the banner from the "
+            "live ledger."
+        ),
+    },
+    {
         "path": "evals/check_complexity_budget.py",
         "argv": ["--selftest"],
         "layer": MAINT,
