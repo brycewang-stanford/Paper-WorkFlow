@@ -341,6 +341,17 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_compactness.py",
+        "argv": [],
+        "layer": MAINT,
+        "enforces": (
+            "Orphan-reference detection: every references/*.md must be reachable "
+            "from SKILL.md or another reference; the ratchet is advisory and never "
+            "blocks a maintenance edit, but the report is the only honest signal of "
+            "whether pruning is keeping up with growth."
+        ),
+    },
+    {
         "path": "evals/check_complexity_budget.py",
         "argv": ["--selftest"],
         "layer": MAINT,

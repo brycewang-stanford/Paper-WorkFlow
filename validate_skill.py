@@ -571,6 +571,14 @@ def check_skillopt_packet_checker() -> None:
     )
 
 
+def check_compactness_checker() -> None:
+    """Advisory orphan-reference scan; never blocks, only reports."""
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_compactness.py")],
+        check=False,
+    )
+
+
 def check_contract_matrix_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py"), "--selftest"],
@@ -856,6 +864,7 @@ def main() -> None:
     check_rigor_report_current()
     check_reproducibility_scaffold_checker()
     check_skillopt_packet_checker()
+    check_compactness_checker()
     check_verification_log()
     check_citation_integrity_checker()
     check_preregistration_checker()

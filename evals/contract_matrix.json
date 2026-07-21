@@ -204,6 +204,7 @@
         "templates/FINAL_REPORT.md",
         "scripts/check_skillopt_packet.py",
         "scripts/check_final_report_contract.py",
+        "scripts/check_compactness.py",
         "evals/score_skill.py",
         "evals/check_complexity_budget.py",
         "scripts/check_monthly_worklog.py",
@@ -216,6 +217,7 @@
       "validators": [
         "scripts/check_skillopt_packet.py",
         "scripts/check_final_report_contract.py",
+        "scripts/check_compactness.py",
         "evals/score_skill.py",
         "evals/check_complexity_budget.py",
         "scripts/generate_rigor_report.py",

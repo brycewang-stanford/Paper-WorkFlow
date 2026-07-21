@@ -111,13 +111,13 @@ CLAIMS = [
     },
     {
         "id": "executable_gates_29_of_29",
-        "value": "30/30",
-        "summary": "30 / 30 executable gates (RIGOR badge -- the count is dynamic; update on every new gate)",
+        "value": "31/31",
+        "summary": "31 / 31 executable gates (RIGOR badge -- the count is dynamic; update on every new gate)",
         "per_doc": {
-            "README.md": [r"30\s*/\s*30"],
-            "README.en.md": [r"30\s*/\s*30"],
+            "README.md": [r"31\s*/\s*31"],
+            "README.en.md": [r"31\s*/\s*31"],
             "SKILL.md": [],
-            "RIGOR.md": [r"30\s*/\s*30", r"30/30 green"],
+            "RIGOR.md": [r"31\s*/\s*31", r"31/31 green"],
         },
     },
 ]
@@ -188,14 +188,14 @@ def _good_docs() -> dict[str, str]:
             "<b>2</b> 道硬闸门 · <b>3</b> 套分析后端\n"
             "47 个技能如何被编排\n"
             "Stage 0–9 协议\n"
-            "30/30 闸门\n"
+            "31/31 闸门\n"
         ),
         "README.en.md": (
             "<b>10</b> stages · <b>47</b> skills · "
             "<b>2</b> hard gates · <b>3</b> analysis backends\n"
             "Stage 0-9 execution protocol\n"
             "Two hard gates\n"
-            "30/30 gates\n"
+            "31/31 gates\n"
         ),
         "SKILL.md": (
             "Stage 0–9 可断点续跑流水线\n"
@@ -204,7 +204,7 @@ def _good_docs() -> dict[str, str]:
             "Python/StatsPAI、Stata、R 三种分析后端\n"
         ),
         "RIGOR.md": (
-            "30/30 green\n"
+            "31/31 green\n"
             "Stage 0-9 黄金路径\n"
         ),
     }
@@ -230,9 +230,9 @@ def _selftest() -> int:
         f"errors should mention skills_47 drift: {result['errors']}"
     )
 
-    # Drop the 30/30 from RIGOR.md -> must fail.
+    # Drop the 31/31 from RIGOR.md -> must fail.
     bad = dict(good)
-    bad["RIGOR.md"] = good["RIGOR.md"].replace("30/30", "29/29")
+    bad["RIGOR.md"] = good["RIGOR.md"].replace("31/31", "29/29")
     normalised = {k: _normalise(v) for k, v in bad.items()}
     result = evaluate(normalised)
     assert not result["ok"], "executable_gates_29_of_29 drift in RIGOR.md must fail"

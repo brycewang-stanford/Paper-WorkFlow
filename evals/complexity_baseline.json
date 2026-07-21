@@ -1,6 +1,10 @@
 {
-  "recorded": "2026-07-16",
-  "note": "v2026.07-8: SKILL.md consolidation pass -- trimmed redundant parentheticals from the always-loaded layer; 32230 -> 31966 bytes, now under the 32000-byte aspirational target. No content contract changed (stage table, gate names, numeric claims, links all intact).",
+  "recorded": "2026-07-21",
+  "note": "Section A of feat/week-polish-2026-07 polish: origin/main landed a SKILL.md consolidation (32230 -> 31966 bytes) so the always-loaded layer is now under the 32000-byte aspirational target. This branch adds scripts/check_compactness.py (orphan-reference detector, advisory only) and the policy block to make the ratchet enforceable. See docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md.",
+  "policy": {
+    "skill_md_growth": "no-growth-this-wave",
+    "rationale": "SkillOpt compactness half -- do not let the always-loaded layer drift upward. Bump the ceiling only via --update-baseline with a written justification."
+  },
   "ceiling": {
     "skill_md_bytes": 31966,
     "skill_md_tokens_est": 7992,

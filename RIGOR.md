@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 30/30 green.**
+**Rigor checkers selftest: PASSING — 31/31 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -45,6 +45,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_rigor_registry.py`](scripts/check_rigor_registry.py) | ✅ pass | RIGOR registry completeness: every checker discovered under scripts/ or evals/ must be registered in this report, and registry drift is a blocking maintenance failure. |
 | [`scripts/check_monthly_worklog.py`](scripts/check_monthly_worklog.py) | ✅ pass | Long-horizon maintenance evidence: the month-long worklog records the goal window, baseline PASS evidence, week plan, packet-level validation, and anti-cheat guards that prevent premature closure. |
 | [`scripts/check_skillopt_packet.py`](scripts/check_skillopt_packet.py) | ✅ pass | SkillOpt improvement packets: >=3 train + >=2 held-out rollouts, a bounded edit budget, and accept requires a score gain + regression pass. |
+| [`scripts/check_compactness.py`](scripts/check_compactness.py) | ✅ pass | Orphan-reference detection: every references/*.md must be reachable from SKILL.md or another reference; the ratchet is advisory and never blocks a maintenance edit, but the report is the only honest signal of whether pruning is keeping up with growth. |
 | [`evals/check_complexity_budget.py`](evals/check_complexity_budget.py) | ✅ pass | Complexity ratchet: the always-loaded SKILL.md and the reference-file count cannot grow past the recorded ceiling without a justified bump. |
 | [`evals/score_skill.py`](evals/score_skill.py) | ✅ pass | Held-out scoring-harness invariants for the SkillOpt selection gate (baseline vs candidate scored on the same rubric). |
 
@@ -55,4 +56,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-07-11 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-07-21 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
