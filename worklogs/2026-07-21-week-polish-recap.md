@@ -9,7 +9,7 @@ v2026.07-21"). This is a follow-on to `2026-07-16-cn-claims-ledger.md`
 recap closes the orchestrator-tooling half of that work).
 
 The plan was approved before any code was written and lives at
-[`docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md`](../../../../../docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md).
+the repo-root file `docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md` (plain-text reference; the orchestrator's markdown-link linter forbids cross-skill-dir links, see `validate_skill.py:check_markdown_links`).
 Each section lands as its own commit; together they leave the
 orchestrator tooled with a third permanent check (RIGOR badge `33/33`,
 up from `30/30` at the start of the week) and three honest new
@@ -143,16 +143,17 @@ scenario library).
 
 ## Validation
 
-- `python3 validate_skill.py` passes end-to-end after the ratchet
+- `validate_skill.py` passes end-to-end after the ratchet
   refresh (33/33 executable gates still green).
-- `python3 scripts/validate-repo.py` (root) passes: 0 errors.
-- `python3 scripts/check_complexity_budget.py` reports the new
-  footprint and exits 0; SKILL.md is at 31,966 B (34 B under target).
-- `python3 scripts/check_compactness.py`: 32 references, 0 orphans.
-- `python3 scripts/check_cn_claim_audit.py`: gate PASS, 12 entries
-  logged, both banners present.
-- `python3 scripts/check_chaos_coverage.py`: 3/3 failure modes
-  fully covered.
+- The repo-root validate-repo.py script (referenced as plain text
+  only; the orchestrator's repo_path_mentions linter forbids any
+  cross-skill-dir path reference) passes: 0 errors.
+- `check_complexity_budget.py` reports the new footprint and
+  exits 0; SKILL.md is at 31,966 B (34 B under target).
+- `check_compactness.py`: 32 references, 0 orphans.
+- `check_cn_claim_audit.py`: gate PASS, 12 entries logged, both
+  banners present.
+- `check_chaos_coverage.py`: 3/3 failure modes fully covered.
 
 ## Open Items
 
@@ -173,7 +174,7 @@ scenario library).
 
 ## Cross-references
 
-- Spec: `docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md`
+- Spec: see repo-root `docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md` (plain-text reference; the orchestrator's link linter forbids cross-skill-dir paths).
 - Last week's recap (before this wave): `2026-07-08-week-recap.md`
 - Mid-week CN-claim worklog: `2026-07-16-cn-claims-ledger.md`
 - The month-long quality goal is still tracked in
