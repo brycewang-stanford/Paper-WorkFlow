@@ -7,6 +7,11 @@ description: >
   路由 Python/StatsPAI、Stata、R 三种分析后端。触发：/paper-workflow、帮我写一篇实证论文、
   从选题到投稿、端到端 empirical paper、已有 proposal/数据/初稿要推进到投稿，或明确要求
   用 Stata / R/fixest / Python-StatsPAI 完整复现。
+
+  When invoked by parent (e.g. root `SKILL.md` routing logic): if the parent's
+  invocation contains any trigger phrase above, jump directly to Stage 0
+  Setup without re-asking for the trigger -- the parent has already classified
+  this as a full-pipeline task.
 allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch, NotebookEdit
 argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [目标期刊(可选)]"
 ---
