@@ -587,6 +587,14 @@ def check_cn_claim_audit_checker() -> None:
     )
 
 
+def check_chaos_coverage_checker() -> None:
+    """Advisory chaos-coverage scan; pairs with evals/chaos/."""
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_chaos_coverage.py")],
+        check=False,
+    )
+
+
 def check_contract_matrix_checker() -> None:
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py"), "--selftest"],
@@ -874,6 +882,7 @@ def main() -> None:
     check_skillopt_packet_checker()
     check_compactness_checker()
     check_cn_claim_audit_checker()
+    check_chaos_coverage_checker()
     check_verification_log()
     check_citation_integrity_checker()
     check_preregistration_checker()

@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 32/32 green.**
+**Rigor checkers selftest: PASSING — 33/33 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -47,6 +47,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_skillopt_packet.py`](scripts/check_skillopt_packet.py) | ✅ pass | SkillOpt improvement packets: >=3 train + >=2 held-out rollouts, a bounded edit budget, and accept requires a score gain + regression pass. |
 | [`scripts/check_compactness.py`](scripts/check_compactness.py) | ✅ pass | Orphan-reference detection: every references/*.md must be reachable from SKILL.md or another reference; the ratchet is advisory and never blocks a maintenance edit, but the report is the only honest signal of whether pruning is keeping up with growth. |
 | [`scripts/check_cn_claim_audit.py`](scripts/check_cn_claim_audit.py) | ✅ pass | CN-claim audit gate: _verification_log/cn-data-claims.md must exist with >=10 entries and both China-context reference files must carry an audit-status banner; --update-banners rewrites the banner from the live ledger. |
+| [`scripts/check_chaos_coverage.py`](scripts/check_chaos_coverage.py) | ✅ pass | Chaos-coverage pairing: every documented orchestrator failure mode in references/orchestration-and-handoff.md must have a matching evals/chaos/<scenario>.md with a real recovery path. The script is advisory by default; --strict is for new-failure-mode PRs. |
 | [`evals/check_complexity_budget.py`](evals/check_complexity_budget.py) | ✅ pass | Complexity ratchet: the always-loaded SKILL.md and the reference-file count cannot grow past the recorded ceiling without a justified bump. |
 | [`evals/score_skill.py`](evals/score_skill.py) | ✅ pass | Held-out scoring-harness invariants for the SkillOpt selection gate (baseline vs candidate scored on the same rubric). |
 

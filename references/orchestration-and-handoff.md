@@ -130,3 +130,24 @@ and integrity surfaces:
 
 These files are created by `assets/init_workspace.sh`, exercised by
 `scripts/smoke_workspace.py`, and checked by `validate_skill.py`.
+
+## Failure modes & recovery
+
+This section is the recovery contract for the orchestrator. The full
+descriptions — triggers, expected paths, and maintenance checks — live
+in `evals/chaos/`. `scripts/check_chaos_coverage.py` enforces the
+mapping between this prose and the scenario files; add a new
+scenario file when you add a new entry here, and add a new entry here
+when you add a new scenario file.
+
+| Failure mode | Scenario | Recovery in one line |
+|---|---|---|
+| `Skill` tool reports "skill not found" | `evals/chaos/chaos_skill_not_found.md` | Read the child skill's `SKILL.md` inline; do not retry the `Skill` tool. |
+| Subagent crashes or hangs before writing its summary | `evals/chaos/chaos_subagent_failure.md` | Check output files; retry at most once; write a handoff card on second failure. |
+| Context budget exhausted mid-Stage-3 | `evals/chaos/chaos_context_overflow.md` | Discard heavy context; resume from the last `done` stage in `workflow_state.json`; re-dispatch subagents with the ≤10-line contract. |
+
+> **Based on inference, refine on first real failure.** The recovery
+> paths above are derived from the orchestrator's documented intent
+> (SKILL.md, skill-map.md §0, this file). A real failure should be
+> recorded as a one-paragraph addition to the matching scenario file
+> in `evals/chaos/`, not as a one-off fix in code.

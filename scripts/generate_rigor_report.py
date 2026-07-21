@@ -363,6 +363,17 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_chaos_coverage.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Chaos-coverage pairing: every documented orchestrator failure mode "
+            "in references/orchestration-and-handoff.md must have a matching "
+            "evals/chaos/<scenario>.md with a real recovery path. The script is "
+            "advisory by default; --strict is for new-failure-mode PRs."
+        ),
+    },
+    {
         "path": "evals/check_complexity_budget.py",
         "argv": ["--selftest"],
         "layer": MAINT,
