@@ -271,12 +271,15 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 
 ```text
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
-├── 00_meta/workflow_state.json      唯一权威进度文件（断点续跑依据）
+├── 00_meta/
+│   ├── workflow_state.json          唯一权威进度文件（断点续跑依据）
+│   ├── intake.md                    Stage 0 一次性问清的四件套记录
 │   ├── entry_routing.md             Stage 0 入口路由、材料清点与推断假设
 │   ├── stage_passport.md            阶段产物台账：做到哪、证据在哪、返修轮次
 │   ├── pipeline_status.md           紧凑 dashboard：当前状态、材料、checkpoint、下一步
 │   ├── handoff/                     长任务/换 agent/阶段切换时的交接卡
 │   ├── analysis_backend.md          Python/StatsPAI、Stata、R 后端选择与环境检查
+│   ├── backend_capabilities.json    运行环境后端能力探测结果
 │   ├── backend_parity.json          fallback/secondary validation 的结果等价性报告
 │   ├── quality_scorecard.md         初稿质量门 7 维评分卡（放行/回炉判定）
 │   ├── data_governance.md           数据分级、PII、IRB/DUA、公开包边界
@@ -388,26 +391,33 @@ Paper-WorkFlow/
 ├── README.en.md                      # English README（与中文版同步的最新版）
 ├── RIGOR.md                          # 自动生成的 gate-coverage report（checker suite 全绿）
 ├── RELATED-WORK.md                   # 竞品/同类 skills 库对比与差异化证据
+├── CITATION.cff · LICENSE            # 引用元数据 + MIT 许可证
+├── requirements-dev.txt              # notebook 执行闸门的依赖（其余 checker 全部 stdlib-only）
 ├── validate_skill.py                 # 本目录主自检：模板、链接、workspace init、demo 执行、rigor/maintenance gates
 ├── scripts/
 │   ├── smoke_workspace.py            # 临时最小工作区 + 模板实例化 smoke test
 │   ├── check_demo_execution.py       # 执行 did_demo.ipynb 并验证表图/核心教学不变量
 │   ├── check_backend_parity.py       # Python/StatsPAI、Stata、R 后端 fallback/secondary parity fixture
+│   ├── check_backend_capabilities.py # 运行环境后端能力探测契约（backend_capabilities.json）校验
 │   ├── check_stage_scenario.py       # Stage 0–9 完整场景 fixture + gate/reconcile 校验
 │   ├── check_stage_adversarial.py    # Stage 0–9 反例场景：缺产物、旧 handoff、闸门倒挂等
 │   ├── check_design_gate_contract.py # 设计分支证据卡 × method_gate 模板同步校验
-│   ├── check_method_specific_failures.py # 9 类设计的 Method Gate 方法特定失败 fixture
+│   ├── check_method_specific_failures.py # 各设计分支的 Method Gate 方法特定失败 fixture
 │   ├── check_method_gate_card.py     # 工作区 method_gate.md Design Gate Card 运行期校验
 │   ├── check_runtime_fallbacks.py    # 工具/网络/MCP/后端退化路径的日志与闸门诚实性校验
 │   ├── check_workspace_gates.py      # 运行期 Method/Quality/Replication gate 机械校验
 │   ├── check_state_template_paths.py # workflow_state 默认路径 × init 骨架一致性
 │   ├── check_citation_integrity.py   # 引用存在性、撤稿/版本、look-ahead/vintage 检查
+│   ├── check_cn_claim_audit.py       # 中文数据源/期刊 claim 台账（_verification_log/）审计闸门
 │   ├── check_review_scorecard.py     # Draft Quality Gate 评分卡 L1/L2 机械校验
 │   ├── check_preregistration.py      # 预注册锁与 exploratory 标注校验
 │   ├── check_gate_integration.py     # 真实 init + 真实模板 + gate checker 集成测试
 │   ├── check_reproducibility_scaffold.py # run_all + check_outputs 复现脚手架测试
 │   ├── check_cross_references.py     # 内部链接、路径、checker wiring、Stage/table 合约
 │   ├── check_bilingual_docs.py       # 中英文 README 用户入口与门禁说明同步校验
+│   ├── check_numeric_claims.py       # 跨文档头条数字（阶段/技能/闸门/后端/badge）防漂移
+│   ├── check_compactness.py          # references 无孤儿引用 + 体积棘轮（advisory）
+│   ├── check_chaos_coverage.py       # 编排器失效模式 × 混沌场景覆盖校验
 │   ├── check_final_report_contract.py # FINAL_REPORT 交付证据与 remote/parity 状态模板校验
 │   ├── check_contract_matrix.py      # 月度质量主题 owner/validator/docs 覆盖矩阵
 │   ├── check_monthly_worklog.py      # 一个月质量目标 worklog 结构与证据完整性
@@ -416,59 +426,60 @@ Paper-WorkFlow/
 │   ├── check_verification_log.py     # 方法 claim verification log 校验
 │   └── generate_rigor_report.py      # 生成/检查 RIGOR.md
 ├── evals/
+│   ├── README.md                     # eval harness 说明
 │   ├── contract_matrix.json          # 长期质量主题 → owner files / validators / docs
 │   ├── backend_parity_cases.json     # 三后端 fallback/secondary validation parity 夹具
-│   ├── design_gate_contract.json     # 设计分支证据卡 contract（9 类设计 + G1–G10 护栏）
-│   ├── method_failure_cases.json     # 9 类设计的 Method Gate 方法特定反例
+│   ├── design_gate_contract.json     # 设计分支证据卡 contract（design cards + G1–G10 护栏）
+│   ├── method_failure_cases.json     # 各设计分支的 Method Gate 方法特定反例
 │   ├── stage_scenario_contract.json  # Stage 0–9 golden-path 场景契约
 │   ├── stage_adversarial_cases.json  # Stage 0–9 反例场景清单
 │   ├── score_skill.py                # SkillOpt selection-gate 评分 harness
 │   ├── check_complexity_budget.py    # always-loaded layer 复杂度棘轮
 │   ├── check_replication_accuracy.py # Stage 3 输出正确性 fixture
 │   ├── check_quality_judge.py        # Draft Quality Gate judge calibration
+│   ├── replication_cases/            # 冻结金标值的复现用例（Card 1995、Card–Krueger 1994 等）
+│   ├── chaos/                        # 编排器失效模式混沌场景
+│   ├── packets/                      # SkillOpt 改进包存档
+│   ├── baseline_scorecard.md · complexity_audit.md
 │   └── scenarios.json · quality_calibration.json · complexity_baseline.json
 ├── templates/                        # 关键 artifact 模板
-│   ├── design_register.md
-│   ├── design_risk_ledger.md
-│   ├── analysis_backend.md
-│   ├── backend_parity.json
-│   ├── sample_audit.md
-│   ├── method_gate.md
-│   ├── pipeline_status.md
-│   ├── evidence_ledger.md
-│   ├── claim_integrity_audit.md
-│   ├── quality_scorecard.md
-│   ├── data_governance.md
-│   ├── DAS.md
-│   ├── REPLICATION.md
-│   ├── SKILLOPT_PACKET.md
-│   ├── submission_checklist.md
-│   ├── FINAL_REPORT.md
-│   ├── entry_routing.md
-│   ├── stage_passport.md
-│   ├── pipeline_status.md
-│   ├── handoff_card.md
-│   ├── handoff_prompt.md
-│   └── run_all.sh
+│   ├── entry_routing.md · stage_passport.md · pipeline_status.md · handoff_card.md · handoff_prompt.md
+│   ├── analysis_backend.md · backend_capabilities.json · backend_parity.json
+│   ├── design_register.md · design_risk_ledger.md · method_gate.md · preregistration.md
+│   ├── sample_audit.md · measurement_audit.md · dataset_card.md · inference_report.md
+│   ├── evidence_ledger.md · claim_integrity_audit.md · citation_integrity_log.md
+│   ├── quality_scorecard.md · data_governance.md · DAS.md
+│   ├── REPLICATION.md · repro_environment.md · run_all.sh · check_outputs.py
+│   ├── submission_checklist.md · defense_ppt_config.yaml
+│   └── FINAL_REPORT.md · SKILLOPT_PACKET.md
 ├── references/
 │   ├── stage-playbook.md             # 10 阶段逐阶段操作手册
 │   ├── skill-map.md                  # 「任务 → 用哪个 skill」全量路由表
+│   ├── skill-coverage-map.md         # 「47 个 skill 来自哪里」溯源表与计数口径
 │   ├── worked-example.md             # 端到端「黄金路径」示例（含两道闸门触发 + 回退）
 │   ├── research-grade-methods.md     # 现代因果推断 / 应用计量方法增强包 + 方法闸门
 │   ├── design-risk-ledger.md         # 设计风险总账：识别威胁 · 选择性报告 · 外部效度 · SUTVA/attrition
 │   ├── design-gate-cards.md          # 设计分支证据卡：required artifacts + hard fail + claim 降级
 │   ├── empirical-audit.md            # 样本、变量与 estimand 对齐审计
+│   ├── measurement-and-data-quality.md # 变量测量、构造与数据质量审计
+│   ├── inference-and-uncertainty.md  # 标准误、聚类、多重检验与功效
+│   ├── mechanism-and-channels.md     # 机制、中介与渠道的可信分析
 │   ├── analysis-backends.md          # Stage 3–4 三语言后端：Python/StatsPAI、Stata、R
 │   ├── statspai-analysis.md          # Stage 3–4 StatsPAI 引擎：MCP + 包、三模式、估计量路由、三格式出表、七块稳健性闸门
 │   ├── threats-to-validity.md        # 识别威胁 × 审稿异议预案（坏控制 · 预趋势 · 弱工具）
 │   ├── design-transparency.md        # 设计透明度：预分析 · 功效/MDE · 设定曲线 · 研究者自由度
 │   ├── writing-craft.md              # 学者写作标准：引言公式 · 贡献锋利度 · 量级 · 房风
 │   ├── literature-and-positioning.md # 文献检索与贡献定位：滚雪球 · 文献矩阵 · 定位句式
+│   ├── citation-and-temporal-integrity.md # 引用存在性 · 撤稿 · look-ahead/vintage 时序完整性
 │   ├── reproducibility-pack.md       # 复现打包标准：provenance · 复现包 README · DAS
+│   ├── computational-reproducibility.md # 确定性、环境固定与产出核验（技术姊妹篇）
 │   ├── peer-review-and-submission.md # 评审与投稿标准：模拟评审 · response · 选刊 · cover letter
 │   ├── quality-rubric.md             # 初稿质量门 7 维评分卡（达标阈值 + 短板→回退映射）
 │   ├── integrity-and-claim-audit.md  # claim/citation/number 忠实度审计
 │   ├── data-governance.md            # 敏感/受限数据、IRB/DUA、DAS、公开包边界
+│   ├── dataset-cards.md              # 经管 / 社科常用数据源结构化卡片库
+│   ├── china-data-sources.md         # 中国实证研究数据源手册（Stage 2 取数路由总表）
+│   ├── chinese-journals.md           # 中国经管类期刊投稿规范与生态
 │   ├── runtime-fallbacks.md          # 工具/网络/MCP/统计软件缺失时的退化路径
 │   ├── orchestration-and-handoff.md  # Stage 0 路由、stage passport、fresh evidence、handoff
 │   ├── skillopt-improvement-loop.md  # 维护本 skill 的 SkillOpt-style rollout/gate/update 协议
@@ -481,6 +492,8 @@ Paper-WorkFlow/
 │   ├── did_table.tex                 # 演示 · DiD 基准回归表（OLS / TWFE）
 │   ├── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
 │   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg  # CoPaper.AI × Stanford REAP 品牌物料
+├── _verification_log/                # 中文数据源/期刊 claim 核验台账（check_cn_claim_audit 闸门数据）
+├── worklogs/                         # 维护期 worklog（月度质量目标 + 周度 recap）
 │
 │   —— 以下为配套演示物料 ——
 └── did_demo.ipynb                    # DiD 快速演示 Notebook

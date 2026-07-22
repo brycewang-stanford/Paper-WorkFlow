@@ -192,11 +192,13 @@ All outputs are written to a self-contained workspace:
 ```text
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/workflow_state.json
+├── 00_meta/intake.md
 ├── 00_meta/entry_routing.md
 ├── 00_meta/stage_passport.md
 ├── 00_meta/pipeline_status.md
 ├── 00_meta/handoff/
 ├── 00_meta/analysis_backend.md
+├── 00_meta/backend_capabilities.json
 ├── 00_meta/backend_parity.json
 ├── 00_meta/quality_scorecard.md
 ├── 00_meta/data_governance.md
@@ -272,11 +274,14 @@ Paper-WorkFlow/
 ├── README.en.md
 ├── RIGOR.md
 ├── RELATED-WORK.md
+├── CITATION.cff · LICENSE
+├── requirements-dev.txt
 ├── validate_skill.py
 ├── scripts/
 │   ├── smoke_workspace.py
 │   ├── check_demo_execution.py
 │   ├── check_backend_parity.py
+│   ├── check_backend_capabilities.py
 │   ├── check_stage_scenario.py
 │   ├── check_stage_adversarial.py
 │   ├── check_design_gate_contract.py
@@ -286,12 +291,16 @@ Paper-WorkFlow/
 │   ├── check_workspace_gates.py
 │   ├── check_state_template_paths.py
 │   ├── check_citation_integrity.py
+│   ├── check_cn_claim_audit.py
 │   ├── check_review_scorecard.py
 │   ├── check_preregistration.py
 │   ├── check_gate_integration.py
 │   ├── check_reproducibility_scaffold.py
 │   ├── check_cross_references.py
 │   ├── check_bilingual_docs.py
+│   ├── check_numeric_claims.py
+│   ├── check_compactness.py
+│   ├── check_chaos_coverage.py
 │   ├── check_final_report_contract.py
 │   ├── check_contract_matrix.py
 │   ├── check_monthly_worklog.py
@@ -300,6 +309,7 @@ Paper-WorkFlow/
 │   ├── check_verification_log.py
 │   └── generate_rigor_report.py
 ├── evals/
+│   ├── README.md
 │   ├── contract_matrix.json
 │   ├── backend_parity_cases.json
 │   ├── design_gate_contract.json
@@ -310,49 +320,49 @@ Paper-WorkFlow/
 │   ├── check_complexity_budget.py
 │   ├── check_replication_accuracy.py
 │   ├── check_quality_judge.py
+│   ├── replication_cases/
+│   ├── chaos/
+│   ├── packets/
+│   ├── baseline_scorecard.md · complexity_audit.md
 │   └── scenarios.json · quality_calibration.json · complexity_baseline.json
 ├── templates/
-│   ├── design_register.md
-│   ├── design_risk_ledger.md
-│   ├── analysis_backend.md
-│   ├── backend_parity.json
-│   ├── sample_audit.md
-│   ├── method_gate.md
-│   ├── evidence_ledger.md
-│   ├── claim_integrity_audit.md
-│   ├── pipeline_status.md
-│   ├── quality_scorecard.md
-│   ├── data_governance.md
-│   ├── DAS.md
-│   ├── REPLICATION.md
-│   ├── SKILLOPT_PACKET.md
-│   ├── submission_checklist.md
-│   ├── FINAL_REPORT.md
-│   ├── entry_routing.md
-│   ├── stage_passport.md
-│   ├── pipeline_status.md
-│   ├── handoff_card.md
-│   ├── handoff_prompt.md
-│   └── run_all.sh
+│   ├── entry_routing.md · stage_passport.md · pipeline_status.md · handoff_card.md · handoff_prompt.md
+│   ├── analysis_backend.md · backend_capabilities.json · backend_parity.json
+│   ├── design_register.md · design_risk_ledger.md · method_gate.md · preregistration.md
+│   ├── sample_audit.md · measurement_audit.md · dataset_card.md · inference_report.md
+│   ├── evidence_ledger.md · claim_integrity_audit.md · citation_integrity_log.md
+│   ├── quality_scorecard.md · data_governance.md · DAS.md
+│   ├── REPLICATION.md · repro_environment.md · run_all.sh · check_outputs.py
+│   ├── submission_checklist.md · defense_ppt_config.yaml
+│   └── FINAL_REPORT.md · SKILLOPT_PACKET.md
 ├── references/
 │   ├── stage-playbook.md
 │   ├── skill-map.md
+│   ├── skill-coverage-map.md
 │   ├── worked-example.md
 │   ├── research-grade-methods.md
 │   ├── design-risk-ledger.md
 │   ├── design-gate-cards.md
 │   ├── empirical-audit.md
+│   ├── measurement-and-data-quality.md
+│   ├── inference-and-uncertainty.md
+│   ├── mechanism-and-channels.md
 │   ├── analysis-backends.md
 │   ├── statspai-analysis.md
 │   ├── threats-to-validity.md
 │   ├── design-transparency.md
 │   ├── writing-craft.md
 │   ├── literature-and-positioning.md
+│   ├── citation-and-temporal-integrity.md
 │   ├── reproducibility-pack.md
+│   ├── computational-reproducibility.md
 │   ├── peer-review-and-submission.md
 │   ├── quality-rubric.md
 │   ├── integrity-and-claim-audit.md
 │   ├── data-governance.md
+│   ├── dataset-cards.md
+│   ├── china-data-sources.md
+│   ├── chinese-journals.md
 │   ├── runtime-fallbacks.md
 │   ├── orchestration-and-handoff.md
 │   ├── skillopt-improvement-loop.md
@@ -363,10 +373,11 @@ Paper-WorkFlow/
 │   ├── workflow_state.template.json
 │   ├── workflow.svg
 │   ├── did_table.tex
-│   ├── fig_event_study.png
-│   └── fig_raw_trends.png
-├── did_demo.ipynb
-└── LICENSE
+│   ├── fig_event_study.png · fig_raw_trends.png
+│   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg
+├── _verification_log/
+├── worklogs/
+└── did_demo.ipynb
 ```
 
 </details>

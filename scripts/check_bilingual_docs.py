@@ -6,6 +6,10 @@ same operational contract: the same reference docs, the same script inventory,
 the same local/parent validation commands, and the same load-bearing workflow
 artifacts. This checker keeps the bilingual surface from drifting silently.
 
+The script tree is additionally checked against the actual `scripts/*.py`
+files on disk, so the two READMEs cannot go stale *together* (symmetric drift
+that pure zh/en comparison would never catch).
+
 Usage:
     python3 scripts/check_bilingual_docs.py
     python3 scripts/check_bilingual_docs.py --selftest
@@ -115,7 +119,11 @@ def _script_tree(text: str) -> set[str]:
     return scripts
 
 
-def evaluate(zh_text: str, en_text: str) -> dict:
+def _disk_scripts() -> set[str]:
+    return {f"scripts/{p.name}" for p in (ROOT / "scripts").glob("*.py")}
+
+
+def evaluate(zh_text: str, en_text: str, disk_scripts: set[str] | None = None) -> dict:
     errors: list[str] = []
     zh_norm = _normalise(zh_text)
     en_norm = _normalise(en_text)
@@ -146,6 +154,21 @@ def evaluate(zh_text: str, en_text: str) -> dict:
             errors.append("README.en.md missing script-tree item(s): " + ", ".join(missing_en))
         if missing_zh:
             errors.append("README.md missing script-tree item(s): " + ", ".join(missing_zh))
+
+    # Guard against symmetric staleness: both trees agreeing with each other
+    # is not enough -- they must also agree with the scripts on disk.
+    if disk_scripts is not None:
+        tree = zh_scripts | en_scripts
+        missing_tree = sorted(disk_scripts - tree)
+        stale_tree = sorted(tree - disk_scripts)
+        if missing_tree:
+            errors.append(
+                "README script trees missing on-disk script(s): " + ", ".join(missing_tree)
+            )
+        if stale_tree:
+            errors.append(
+                "README script trees list script(s) not on disk: " + ", ".join(stale_tree)
+            )
 
     for marker in REQUIRED_SHARED_MARKERS:
         marker_norm = _normalise(marker)
@@ -206,6 +229,17 @@ def _selftest() -> int:
     bad_en = en.replace("│   ├── check_b.py\n", "")
     assert not evaluate(zh, bad_en)["ok"], "script-tree drift must fail"
 
+    # Disk parity: symmetric staleness (both trees agree, disk moved on) must fail.
+    tree_set = {"scripts/check_a.py", "scripts/check_b.py", "scripts/generate_rigor_report.py"}
+    assert evaluate(zh, en, disk_scripts=set(tree_set))["ok"], (
+        "matching disk inventory must pass"
+    )
+    result = evaluate(zh, en, disk_scripts=tree_set | {"scripts/check_new.py"})
+    assert not result["ok"], "script on disk missing from both trees must fail"
+    assert any("check_new.py" in e for e in result["errors"]), result["errors"]
+    result = evaluate(zh, en, disk_scripts=tree_set - {"scripts/check_b.py"})
+    assert not result["ok"], "stale tree entry with no disk file must fail"
+
     bad_en = en.replace("make validate", "")
     assert not evaluate(zh, bad_en)["ok"], "missing shared marker must fail"
 
@@ -225,7 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.selftest:
         return _selftest()
 
-    result = evaluate(_read(ZH_README), _read(EN_README))
+    result = evaluate(_read(ZH_README), _read(EN_README), disk_scripts=_disk_scripts())
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
