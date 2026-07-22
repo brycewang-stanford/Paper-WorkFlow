@@ -3,10 +3,10 @@
   "status": "active",
   "design": "Staggered DiD (Callaway-Sant'Anna)",
   "title": "国家数字经济创新发展试验区政策评估 — 交错 DiD 模拟",
-  "gold_source": "Own simulation. DGP: 50 个城市分 4 批入选试验区（2017/2019/2020/2021），每批 8-12 个城市；TRUE_ATT=0.08 (8% TFP 提升). Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §1 交错 DiD 路径与 china-data-sources.md §2 CSMAR 字段映射。",
+  "gold_source": "Own simulation. DGP: 50 个城市分 4 批入选试验区（2017/2019/2020/2021），每批 8-12 个城市；TRUE_ATT=0.08 (8% TFP 提升). Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §1 交错 DiD 路径与 china-data-sources.md §2 CSMAR 字段映射。 Generator: evals/replication_cases/generate_simulation_data.py --case digital_economy_pilot_simulation (seed=42; --verify cross-checks these golds against the declared DGP truths).",
   "description": "中国'国家数字经济创新发展试验区'是 2017 年起分批设立的政策试点，典型交错 DiD 场景。50 个城市分 4 批入选，每批 8-12 个城市。TRUE_ATT=0.08（企业 TFP 提升 8%）。CS/SA/BJS 估计量应恢复 ATT≈0.08，event-study leads 应不显著。模拟数据基于 CSMAR 公司财务 + 北大数字金融指数的合并结构。**这是 design-gate-cards.md §1（交错 DiD）+ china-data-sources.md §2（CSMAR 字段映射）+ china-journals.md §3.1 经济研究规范的端到端检验。**",
   "tolerances": {
-    "rel_tol": 0.10,
+    "rel_tol": 0.1,
     "partial_tol": 0.25,
     "abs_floor": 0.02
   },

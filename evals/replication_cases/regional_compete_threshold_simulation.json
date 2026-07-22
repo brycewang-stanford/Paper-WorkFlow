@@ -3,10 +3,10 @@
   "status": "active",
   "design": "Threshold Panel (Hansen 1999) — 地方政府竞争门槛",
   "title": "地方政府竞争 GDP 锦标赛 — 财政透明度门槛效应模拟",
-  "gold_source": "Own simulation. DGP: 280 个地级市 × 12 年 (2010-2021)，Y = 财政支出竞争 (per capita)，X = 财政透明度，门槛变量 = 经济发展水平 (人均 GDP log). TRUE_γ = log(60000) ≈ 11.0, β_低 = 0.10, β_高 = 0.45. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §12 + china-data-sources.md §4 地方统计年鉴.",
+  "gold_source": "Own simulation. DGP: 280 个地级市 × 12 年 (2010-2021)，Y = 财政支出竞争 (per capita)，X = 财政透明度，门槛变量 = 经济发展水平 (人均 GDP log). TRUE_γ = log(60000) ≈ 11.0, β_低 = 0.10, β_高 = 0.45. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §12 + china-data-sources.md §4 地方统计年鉴. Generator: evals/replication_cases/generate_simulation_data.py --case regional_compete_threshold_simulation (seed=42; --verify cross-checks these golds against the declared DGP truths).",
   "description": "中国地方政府竞争研究的典型门槛模型：经济发展水平作为门槛变量，财政透明度对支出竞争的效应在低/高发展水平下不同。280 个地级市 × 12 年面板，数据来源是地级市统计年鉴 + CEIC + EPS。TRUE_γ=log(60000)≈11.0（人均 GDP 6 万元），β_低=0.10（经济发展水平低时，财政透明度对支出竞争影响小），β_高=0.45（经济发展水平高时，影响显著放大）。Bootstrap 1000 次应识别门槛值 ~11.0。这是中国地方治理与区域发展文献的主流实证范式（参周黎安 2007'中国地方官员的晋升锦标赛'，王永钦等 2007'中国的大国发展道路'）。",
   "tolerances": {
-    "rel_tol": 0.10,
+    "rel_tol": 0.1,
     "partial_tol": 0.25,
     "abs_floor": 0.05
   },
@@ -19,7 +19,7 @@
     },
     {
       "name": "beta_low_regime",
-      "value": 0.10,
+      "value": 0.1,
       "sign": "+",
       "note": "经济发展水平低于门槛时的财政透明度对支出竞争的影响"
     },

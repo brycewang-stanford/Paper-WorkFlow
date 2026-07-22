@@ -3,10 +3,10 @@
   "status": "active",
   "design": "Spatial Durbin Model (SDM)",
   "title": "空间 Durbin 模型 (SDM) 典型 DGP 模拟 — 地方政府 GDP 锦标赛场景",
-  "gold_source": "Own simulation. DGP: Y = ρ W Y + X β + W X θ + ε; TRUE_ρ=0.3, β_X=0.5 (直接效应), θ_WX=0.4 (间接/空间溢出), 30 个城市 × 20 年 queen 邻接权重. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §11 spatial-decomposition requirement.",
+  "gold_source": "Own simulation. DGP: Y = ρ W Y + X β + W X θ + ε; TRUE_ρ=0.3, β_X=0.5 (直接效应), θ_WX=0.4 (间接/空间溢出), 30 个城市 × 20 年 queen 邻接权重. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §11 spatial-decomposition requirement. Generator: evals/replication_cases/generate_simulation_data.py --case spatial_sdm_simulation (seed=42; --verify cross-checks these golds against the declared DGP truths).",
   "description": "空间 Durbin 模型是中文实证'地方政府竞争 / 区域创新扩散 / 环境溢出'类研究的主流。30 个城市 × 20 年面板；空间权重为 queen 邻接。TRUE_ρ=0.3（空间自回归系数），β_X=0.5（直接效应），θ_WX=0.4（间接效应 / 空间溢出）。ML 估计应恢复 ρ≈0.3、β≈0.5、θ≈0.4。**LeSage-Pace 偏微分分解**给出 direct effect ≈ 0.6（含空间反馈），indirect effect ≈ 0.5。这是中文期刊顶刊审稿人最关心的一点——必须做分解、不能只看 ρ 或 β。",
   "tolerances": {
-    "rel_tol": 0.10,
+    "rel_tol": 0.1,
     "partial_tol": 0.25,
     "abs_floor": 0.05
   },
@@ -21,7 +21,7 @@
       "name": "beta_direct",
       "value": 0.5,
       "sign": "+",
-      "note": "X 的直接效应（短期平均偏导）"
+      "note": "X 的系数 β=0.5（DGP 常数）；含空间反馈的解析平均直接效应 ≈0.53，均在 rel_tol=10% 内"
     },
     {
       "name": "theta_wx",
@@ -31,9 +31,9 @@
     },
     {
       "name": "indirect_effect",
-      "value": 0.5,
+      "value": 0.75,
       "sign": "+",
-      "note": "LeSage-Pace 偏微分分解的 indirect effect；这是中文顶刊审稿必看项"
+      "note": "LeSage-Pace 偏微分分解的 indirect effect；DGP (ρ=0.3, β=0.5, θ=0.4, 行标准化 queen W) 的解析值 ≈0.75（由 generate_simulation_data.py --effects 复算；2026-07-22 修正：原金标 0.5 与 DGP 解析值不符）。这是中文顶刊审稿必看项"
     }
   ],
   "candidate_contract": {

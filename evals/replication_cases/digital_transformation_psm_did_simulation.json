@@ -3,10 +3,10 @@
   "status": "active",
   "design": "PSM-DID (PSM + 2x2 DiD)",
   "title": "上市公司数字化转型对 TFP 的影响 — PSM-DID 模拟",
-  "gold_source": "Own simulation. DGP: 1500 家 A 股公司 (2010-2022), 数字化转型处理 t=1 (年报词频得分 > 中位数); TRUE_ATT_PSMDID=0.05. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §10 PSM-DID 路径与 china-data-sources.md §2 词频法. **注意：Card-Krueger (1994) 风格 PSM-DID 仍是中国实证最常见方法，详见 [card_krueger_1994_minwage.json](card_krueger_1994_minwage.json) 中的 NJ min-wage 标准案例。**",
+  "gold_source": "Own simulation. DGP: 1500 家 A 股公司 (2010-2022), 数字化转型处理 t=1 (年报词频得分 > 中位数); TRUE_ATT_PSMDID=0.05. Simulated 2026-07-04, seed=42. Verifies design-gate-cards.md §10 PSM-DID 路径与 china-data-sources.md §2 词频法. **注意：Card-Krueger (1994) 风格 PSM-DID 仍是中国实证最常见方法，详见 [card_krueger_1994_minwage.json](card_krueger_1994_minwage.json) 中的 NJ min-wage 标准案例。** Generator: evals/replication_cases/generate_simulation_data.py --case digital_transformation_psm_did_simulation (seed=42; --verify cross-checks these golds against the declared DGP truths).",
   "description": "中国上市公司'数字化转型'研究最常用方法：先以年报词频 + 北大数字金融指数构造处理变量，再以 PSM (1:1 最近邻) + DiD 估计 ATT。本案例 DGP 设 TRUE_ATT_PSMDID=0.05（5% TFP 提升）。PSM 后平衡检验 SMD 应 < 0.1，Rosenbaum bounds Gamma 敏感性应在 Gamma=2 仍显著。**这是 PSM-DID 在中国最常见的应用场景**（参赵剑波 2020、何帆 2019 等）。Card-Krueger 1994 经典案例可作为参考 benchmark。",
   "tolerances": {
-    "rel_tol": 0.10,
+    "rel_tol": 0.1,
     "partial_tol": 0.25,
     "abs_floor": 0.02
   },
