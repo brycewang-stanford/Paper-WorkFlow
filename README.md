@@ -240,6 +240,22 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 
 ## 怎么用
 
+### 安装
+
+本 skill 有两个发布入口，**推荐母仓库**（含全部被编排的 47 个子 skill）：
+
+```bash
+# 推荐：克隆母仓库（本目录是其中的 skills/69-Paper-WorkFlow/ 子模块）
+git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills.git
+
+# 或：只要编排器本体（独立仓库，顶部 CI 徽章指向这里；子 skill 需另行提供）
+git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
+```
+
+在 Claude Code 中使用：进入母仓库目录直接开聊（仓库根的路由 `SKILL.md` 会注册 `/paper-workflow` 触发语），或把 `skills/` 下需要的目录放入项目的 `.claude/skills/`（个人全局则放 `~/.claude/skills/`）。安装依赖只有本地自检需要：`pip install -r requirements-dev.txt`（仅 notebook 执行闸门用，日常运行不需要）。
+
+### 触发
+
 > [!TIP]
 > 带什么进来，就从哪一站上车 —— 在 [Claude Code](https://claude.com/claude-code) 里直接说触发语，把手头已有的东西告诉它即可。
 

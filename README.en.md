@@ -71,8 +71,58 @@ Paper-WorkFlow turns that system into:
 
 The core rule is simple: call existing skills instead of rewriting them. The orchestrator is valuable because it gives each skill the right input, at the right time, with the right context boundary.
 
+```mermaid
+flowchart TD
+    IDEA(["One-sentence research idea"]):::io
+    IDEA --> A
+
+    subgraph A ["① CONCEIVE"]
+      direction LR
+      S1["<b>Stage 1 · Topic & Design</b><br/>idea-finder → novelty-check<br/>→ significance → proposal"]
+    end
+
+    subgraph B ["② EVIDENCE"]
+      direction LR
+      S2["<b>Stage 2</b><br/>Data<br/>fetch + clean"] --> S3["<b>Stage 3</b><br/>Identification & Estimation<br/>DiD/IV/RDD/SC…"] --> MG{"Method Gate<br/>design register · evidence bundle"} --> S4["<b>Stage 4</b><br/>Tables & Figures<br/>publication-grade exhibits"]
+    end
+
+    subgraph C ["③ COMPOSE"]
+      direction LR
+      S5["<b>Stage 5</b><br/>First draft<br/>main.tex"] --> S6["<b>Stage 6</b><br/>Polish pipeline"] --> S7["<b>Stage 7</b><br/>De-slop<br/>remove AI residue"]
+    end
+
+    subgraph D ["④ SUBMIT"]
+      direction LR
+      S8["<b>Stage 8</b><br/>Simulated review & revision<br/>referee + response"] --> S9["<b>Stage 9</b><br/>Journal selection & submission<br/>shortlist + cover letter"]
+    end
+
+    A --> B --> C
+    C --> QG{"Draft Quality Gate<br/>7-dimension scorecard"}
+    QG -.->|below bar · auto-rework| C
+    QG ==>|pass = submission-ready draft| D
+    D --> PAPER(["Submission-ready paper · main.tex + package"]):::io
+
+    classDef io fill:#4F46E5,stroke:#312E81,color:#fff,font-weight:bold;
+    classDef gate fill:#FFF7ED,stroke:#D97706,color:#7C2D12,font-weight:bold,stroke-width:2px;
+    class MG,QG gate;
+    style A fill:#F8FAFC,stroke:#CBD5E1,color:#0F172A
+    style B fill:#F8FAFC,stroke:#CBD5E1,color:#0F172A
+    style C fill:#F8FAFC,stroke:#CBD5E1,color:#0F172A
+    style D fill:#F8FAFC,stroke:#CBD5E1,color:#0F172A
+```
+
 > [!IMPORTANT]
-> **Two hard gates, not vibes.** A Method Gate fires after Stage 3 (identification + robustness) and a Draft Quality Gate after Stage 7 (writing + reproducibility). Either failure routes back to the weakest stage automatically — passing both is what "submission-ready" means here.
+> **Two hard gates, not vibes.** A Method Gate fires after Stage 3 (identification + robustness) and a Draft Quality Gate after Stage 7 (writing + reproducibility). Either failure routes back to the weakest stage automatically — passing both is what "submission-ready" means here. Stage 0 (Intake & Setup) runs silently up front: workspace, entry routing, interaction tier, state file.
+
+## Why an Orchestrator, Not Another Writing Tool
+
+| Typical AI writing tool | Paper-WorkFlow |
+|---|---|
+| Polishes / continues one passage | Runs the whole pipeline from topic to submission |
+| You must remember the next step | `workflow_state.json` tracks progress; resume from any breakpoint |
+| One model grinds through everything | Multi-agent + context protection: subagents write to disk, return short summaries |
+| Prone to fabricating results on long tasks | Truth-first: citation checks, data fetching, and econometric robustness go through verifiable tools |
+| Sprints to the end no matter what | Fails backward: broken parallel trends / weak instruments trigger fallbacks, flagged in red |
 
 ## From Lecture Map To Executable Workflow
 
@@ -158,6 +208,22 @@ You do not need to start from an empty idea.
 | A finished manuscript for submission | Stage 9: journal selection and submission |
 
 ## Quickstart
+
+### Install
+
+The skill ships through two entry points; the **parent repository is recommended** (it contains all 47 orchestrated sub-skills):
+
+```bash
+# Recommended: clone the parent repo (this directory is skills/69-Paper-WorkFlow/, a submodule)
+git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills.git
+
+# Or: orchestrator only (standalone repo — the CI badge above points here; sub-skills provided separately)
+git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
+```
+
+Use it from Claude Code by opening the parent repository (its root routing `SKILL.md` registers the `/paper-workflow` trigger), or copy the skill directories you need into your project's `.claude/skills/` (or `~/.claude/skills/` for global use). The only dependency install is for local self-checks: `pip install -r requirements-dev.txt` (used solely by the notebook-execution gate; normal runs need nothing).
+
+### Trigger
 
 > [!TIP]
 > Board at whatever station you arrive at — just tell it what you already have.
