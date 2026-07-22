@@ -88,7 +88,7 @@ Both were cloned and read in full (147 and 98 skills respectively). Evidence-bac
 |---|---|:--:|:--:|:--:|
 | 1 | End-to-end lifecycle **orchestrator** (gated, resumable) | ✅ 10-stage + breakpoints | ❌ flat catalog | ✅ two-loop |
 | 2 | **Econometrics / causal-identification** depth (DiD/IV/RDD/SC) | ✅ core vertical | ❌ none | ❌ none (ML) |
-| 3 | **Executable** deterministic gates (not prose self-grade) | ✅ `check_workspace_gates.py` + 6 checkers | ❌ security only | 🟡 prose "ARA Seal" |
+| 3 | **Executable** deterministic gates (not prose self-grade) | ✅ 28 `check_*.py` checkers（33 道 gate，见 [RIGOR.md](RIGOR.md) badge） | ❌ security only | 🟡 prose "ARA Seal" |
 | 4 | **Method / identification gate** (design register, min-evidence pack) | ✅ hard gate, ordering-enforced | ❌ | 🟡 prose rubric |
 | 5 | **Citation integrity** (existence + retraction + temporal/look-ahead) | ✅ `check_citation_integrity.py --final` | 🟡 opt-in DOI | ❌ advice only |
 | 6 | **Claim fidelity** audit (number / quote / claim↔evidence) | ✅ `claim_integrity_audit` gated | ❌ | 🟡 prose entailment |
@@ -148,22 +148,29 @@ our executable-rigor stance rather than copied as prose:
 
 ---
 
-## 6. Roadmap — turning the moat into a product (the "month" of work)
+## 6. Roadmap — turning the moat into a product (the "month" of work) — **all five phases shipped**
 
 Sequenced so each phase ships a verifiable artifact, respects the complexity ratchet (new load-bearing logic
 goes into `scripts/` + `templates/`, never bloats the always-loaded `SKILL.md`), and is independently testable.
 
-- **Phase 1 — Make the moat legible & credible.** This `RELATED-WORK.md`; a `scripts/generate_rigor_report.py`
-  that runs every checker and emits a public **`RIGOR.md`** gate-coverage report (our `SECURITY.md` analog).
-- **Phase 2 — Pre-registration & provenance layer.** `templates/preregistration.md` + `scripts/check_preregistration.py`
-  enforcing spec-lock-before-estimation and confirmatory/exploratory labeling; wired into the Method Gate.
-- **Phase 3 — Two-tier review formalization.** Name the L1 (executable) / L2 (semantic) split; add severity
-  findings + mandatory verbatim-evidence spans to the quality rubric and claim-integrity templates.
-- **Phase 4 — Deepen citation integrity past both peers.** Extend `check_citation_integrity.py` toward
-  quote-vs-source faithfulness and citation-laundering depth; formalize the identification/estimation contract.
-- **Phase 5 — Consolidate, validate, eval, complexity-budget check, worklogs, commit.**
+- ✅ **Phase 1 — Make the moat legible & credible.** This `RELATED-WORK.md`; `scripts/generate_rigor_report.py`
+  runs every checker and emits the public **[`RIGOR.md`](RIGOR.md)** gate-coverage report (our `SECURITY.md` analog).
+  *(shipped — see `worklogs/2026-06-23-competitive-rigor-layer.md`)*
+- ✅ **Phase 2 — Pre-registration & provenance layer.** `templates/preregistration.md` + `scripts/check_preregistration.py`
+  enforce spec-lock-before-estimation and confirmatory/exploratory labeling; wired into the Method Gate.
+- ✅ **Phase 3 — Two-tier review formalization.** L1 (executable) / L2 (semantic) split is named and enforced by
+  `scripts/check_review_scorecard.py`; severity findings + verbatim-evidence spans live in the quality rubric
+  and claim-integrity templates.
+- ✅ **Phase 4 — Citation integrity past both peers.** `scripts/check_citation_integrity.py` +
+  `references/citation-and-temporal-integrity.md` cover existence, retraction, look-ahead/vintage;
+  `scripts/check_cn_claim_audit.py` extends the audit to the CN data-source/journal ledgers.
+- ✅ **Phase 5 — Consolidate, validate, eval, complexity-budget check, worklogs.** The complexity ratchet
+  (`evals/check_complexity_budget.py` + `scripts/check_compactness.py`) holds SKILL.md under its 32 KB target;
+  the full battery is the CI gate.
 
-Progress is tracked in `worklogs/` and gated by `validate_skill.py` + `evals/`.
+Progress is tracked in `worklogs/` and gated by `validate_skill.py` + `evals/`. Current frontier work
+(post-roadmap): chaos coverage for orchestrator failure modes, replication-accuracy gold cases, and
+backend parity — see the latest `worklogs/` entries.
 
 ---
 

@@ -14,13 +14,26 @@ and generalizes, precisely *because* the optimizer prunes as hard as it adds.
 So: has importing SkillOpt's vocabulary, without its pruning half, been pulling
 the repo off course?
 
-## The evidence (measured, not guessed)
+## Status update (2026-07-22)
 
-As of 2026-06-23:
+**The consolidation goal below has been reached.** Measured today:
 
 | Layer | Size | Note |
 |---|---|---|
-| SKILL.md (**always loaded**) | 38.7 KB ≈ 9.7k tokens | still above the local 32 KB target |
+| SKILL.md (**always loaded**) | **31.9 KB ≈ 8.0k tokens** | **under the 32 KB target** (107 bytes of headroom); held there by the ratchet + `scripts/check_compactness.py` |
+| references | 32 files ≈ 572 KB on disk | on-demand; count and bytes ratcheted in `complexity_baseline.json` |
+| templates | 30 files | on-demand |
+
+The 2026-06-23 numbers below are kept as the historical record of the drift
+this audit diagnosed. Remaining open item: the "wiring snippets" in the last
+section (parsimony scoring dimension, bidirectional-loop policy text) are
+still NOT applied.
+
+## The evidence (measured 2026-06-23, historical)
+
+| Layer | Size | Note |
+|---|---|---|
+| SKILL.md (**always loaded**) | 38.7 KB ≈ 9.7k tokens | was above the local 32 KB target |
 | references | 29 files ≈ 95k tokens | on-demand; file count is now ratcheted |
 | templates | 24 files ≈ 15.6k tokens | on-demand |
 
@@ -77,7 +90,8 @@ python3 evals/check_complexity_budget.py --update-baseline --note "why this must
   the recorded ceiling ([`complexity_baseline.json`](complexity_baseline.json))
   without a justified `--update-baseline`.
 - It reports headroom toward an aspirational SKILL.md target (32 KB ≈ 8k tokens):
-  currently **6.7 KB over**, which is the concrete goal for a consolidation pass.
+  was **6.7 KB over** when this audit was written; **within target since
+  2026-07-21/22** (see the status update at the top).
 
 The ratchet is a brake, not a demand to shrink today — flat edits pass; only
 growth trips it. It stops the bleeding now; the slimming is a separate,
