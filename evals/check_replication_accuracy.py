@@ -45,9 +45,11 @@ Usage
         --case evals/replication_cases/did_demo_self.json \
         --candidate 03_analysis/results/estimates.json
 
-    # Score every real (non-template) case in the suite against a candidate
+    # Score ONE suite case against a project's estimates (the normal per-run
+    # form: suite cases share a flat coefficient namespace, so pick your case)
     python3 evals/check_replication_accuracy.py \
-        --cases evals/replication_cases --candidate path/to/estimates.json
+        --cases evals/replication_cases --case-id did_demo_self \
+        --candidate path/to/estimates.json
 
     # Just validate the case suite's schema (no candidate needed)
     python3 evals/check_replication_accuracy.py --validate-suite evals/replication_cases
@@ -390,6 +392,17 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--case", help="a single case JSON to score")
     p.add_argument("--cases", help="a directory of case JSONs to score")
+    p.add_argument(
+        "--case-id",
+        action="append",
+        dest="case_ids",
+        metavar="ID",
+        help="score only the case(s) with this id (repeatable). Needed when "
+        "scoring one project against a directory: cases share a flat "
+        "coefficient namespace (e.g. two cases both pin 'att' with "
+        "different golds), so scoring every case against one candidate "
+        "guarantees spurious misses.",
+    )
     p.add_argument("--candidate", help="candidate estimates JSON (coefficients map)")
     p.add_argument("--validate-suite", help="schema-validate a case directory and exit")
     p.add_argument("--json", action="store_true", help="machine-readable output")
@@ -422,6 +435,15 @@ def main(argv: list[str] | None = None) -> int:
         for prob in problems:
             print(f"  {prob}", file=sys.stderr)
         return 2
+
+    if args.case_ids:
+        known = {case["id"] for case in cases}
+        unknown = [cid for cid in args.case_ids if cid not in known]
+        if unknown:
+            print(f"ERROR: unknown --case-id: {', '.join(unknown)} "
+                  f"(known: {', '.join(sorted(known))})", file=sys.stderr)
+            return 2
+        cases = [case for case in cases if case["id"] in set(args.case_ids)]
 
     try:
         candidate = json.loads(Path(args.candidate).read_text(encoding="utf-8"))

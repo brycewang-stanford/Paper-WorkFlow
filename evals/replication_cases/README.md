@@ -32,29 +32,67 @@ templates and refuses to score a placeholder as if it were real**. This mirrors
 the skill's own anti-fabrication discipline: we never invent a number to grade
 against.
 
-## What ships
+## What ships (10 files, 3 provenance classes)
 
-- [`did_demo_self.json`](did_demo_self.json) — the one case whose gold we **own**.
-  The repo's `did_demo.ipynb` simulates a staggered panel with `TRUE_ATT = 2.0`,
-  so a faithful Callaway-Sant'Anna / Sun-Abraham / BJS estimate must recover
-  ~2.0 and a naive TWFE is the cautionary contrast. Use it to confirm the scorer
-  and a Stage 3 backend agree before trusting transcribed cases.
-- [`card_krueger_1994_minwage.json`](card_krueger_1994_minwage.json) — the first
-  **published** case: Card & Krueger (1994, AER) Table 3's +2.76 FTE
-  difference-in-differences (and Table 4's regression-adjusted +2.30), both
-  transcribed directly from the published tables and re-verified against the
-  paper's PDF on 2026-07-02. A replication on the public survey data must land
-  a POSITIVE NJ−PA differential of this magnitude.
+**Class A — recomputable in this repo** (the gold can be re-derived by running
+shipped code):
+
+- [`did_demo_self.json`](did_demo_self.json) — the one case whose gold we **own
+  with shipped code**. The repo's `did_demo.ipynb` simulates a staggered panel
+  with `TRUE_ATT = 2.0`, so a faithful Callaway-Sant'Anna / Sun-Abraham / BJS
+  estimate must recover ~2.0 and a naive TWFE is the cautionary contrast. Use it
+  to confirm the scorer and a Stage 3 backend agree before trusting transcribed
+  cases.
+
+**Class B — transcribed from published tables** (gold is an external published
+fact; trust chain is the citation, re-verified against the PDF):
+
+- [`card_krueger_1994_minwage.json`](card_krueger_1994_minwage.json) — Card &
+  Krueger (1994, AER) Table 3's +2.76 FTE difference-in-differences (and Table
+  4's regression-adjusted +2.30), transcribed from the published tables and
+  re-verified against the paper's PDF on 2026-07-02.
+- [`card_1995_iv_schooling.json`](card_1995_iv_schooling.json) — Card (1995)
+  college-proximity IV return-to-schooling estimates, transcribed from the
+  published chapter (see the case's `gold_source` for exact table/column).
 - [`lalonde_nsw_experimental.json`](lalonde_nsw_experimental.json) — the NSW
   experimental benchmark (~+$1,794, Dehejia & Wahba 1999). The gold constant and
   the data ship in the parent AERS repo's audited numeric benchmark, where a
-  deterministic checker recomputes it — a recomputable fact, not a memory.
-  Deliberately looser tolerances: observational adjustment is scored on sign
-  and rough magnitude, not on nailing the experimental point.
+  deterministic checker recomputes it. Deliberately looser tolerances:
+  observational adjustment is scored on sign and rough magnitude.
+
+**Class C — China-scenario simulations, DGP described but not yet shipped as
+code** (⚠️ known limitation): these five cases pin gold values from a *described*
+data-generating process (`gold_source` spells out the DGP and true parameters),
+but no generator script ships in this repo yet, so the gold is not mechanically
+recomputable the way `did_demo_self` is. They are kept `active` because the DGP
+description fixes the truth unambiguously; promoting them to Class A by shipping
+one deterministic generator per case is the tracked follow-up.
+
+- [`digital_economy_pilot_simulation.json`](digital_economy_pilot_simulation.json) — staggered DiD (CS), TRUE_ATT=0.08
+- [`digital_transformation_psm_did_simulation.json`](digital_transformation_psm_did_simulation.json) — PSM-DID
+- [`regional_compete_threshold_simulation.json`](regional_compete_threshold_simulation.json) — threshold panel (Hansen 1999)
+- [`spatial_sdm_simulation.json`](spatial_sdm_simulation.json) — SDM, TRUE_ρ=0.3
+- [`threshold_panel_simulation.json`](threshold_panel_simulation.json) — threshold panel
+
+**Template:**
+
 - [`published_case_template.json`](published_case_template.json) — copy-to-extend
-  template for a published-replication case (gold transcribed from a paper that
-  ships a replication package). Left as a template on purpose: it has no real
-  gold until you read one from a cited table.
+  template for a published-replication case. Left as a template on purpose: it
+  has no real gold until you read one from a cited table, and the scorer refuses
+  to score templates.
+
+## Scoring one project against the suite
+
+Cases share a **flat coefficient namespace** (e.g. `att` appears with gold 2.0
+in `did_demo_self` and 0.08 in `digital_economy_pilot_simulation`), so scoring a
+single project's `estimates.json` against the whole directory guarantees
+spurious misses. Always pick the case that matches your project:
+
+```bash
+python3 evals/check_replication_accuracy.py \
+    --cases evals/replication_cases --case-id did_demo_self \
+    --candidate 03_analysis/results/estimates.json
+```
 
 ## Adding a published case
 
@@ -63,11 +101,11 @@ against.
 2. Copy the template, set `status: "active"`, fill `gold_source` with the exact
    table/column, and set each primary coefficient's `value`.
 3. Point Stage 3 at the same data; let it write `03_analysis/results/estimates.json`.
-4. Score it:
+4. Score it (always with `--case-id`, see above):
 
    ```bash
    python3 evals/check_replication_accuracy.py \
-       --cases evals/replication_cases \
+       --cases evals/replication_cases --case-id <your_case_id> \
        --candidate 03_analysis/results/estimates.json
    ```
 
