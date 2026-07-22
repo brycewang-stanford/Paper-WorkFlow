@@ -8,10 +8,8 @@ description: >
   从选题到投稿、端到端 empirical paper、已有 proposal/数据/初稿要推进到投稿，或明确要求
   用 Stata / R/fixest / Python-StatsPAI 完整复现。
 
-  When invoked by parent (e.g. root `SKILL.md` routing logic): if the parent's
-  invocation contains any trigger phrase above, jump directly to Stage 0
-  Setup without re-asking for the trigger -- the parent has already classified
-  this as a full-pipeline task.
+  Parent-invoked with any trigger above: jump straight to Stage 0 Setup
+  without re-asking.
 allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch, NotebookEdit
 argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [目标期刊(可选)]"
 ---
@@ -202,12 +200,12 @@ DAS、存档计划、重跑耗时、数据治理红旗）并更新 `workflow_sta
 ## 关键约束（务必遵守）
 
 - **绝不替子 skill 重新发明轮子**：识别策略、表格规范、查新、审稿口吻都在既有 skill 里，本编排器只在对的时点把对的 skill 喂对的输入。
-- **绝不伪造数据 / 结果 / 文献**：引用核验交给 `reference-verify` / StatsPAI `bibtex`（`paper.bib` 唯一真源），数据交给 `data-fetcher`，计量结论以真实运行为准；后端选择见 [`analysis-backends.md`](references/analysis-backends.md)、默认路径见 [`statspai-analysis.md`](references/statspai-analysis.md)。
-- **绝不贴空方法标签**：DiD/IV/RDD/SDID/DML/causal forest 等必须对应 [`research-grade-methods.md`](references/research-grade-methods.md) 与 [`design-gate-cards.md`](references/design-gate-cards.md) 的证据包；缺 `method_gate.md`、闸门未过或 ledger 不允许该强度，就不得写成主因果发现。
+- **绝不伪造数据 / 结果 / 文献**：引用核验交给 `reference-verify` / StatsPAI `bibtex`（`paper.bib` 唯一真源），数据交给 `data-fetcher`，计量结论以真实运行为准；后端选择见 `analysis-backends.md`、默认路径见 `statspai-analysis.md`。
+- **绝不贴空方法标签**：DiD/IV/RDD/SDID/DML/causal forest 等必须对应 `research-grade-methods.md` 与 `design-gate-cards.md` 的证据包；缺 `method_gate.md`、闸门未过或 ledger 不允许该强度，就不得写成主因果发现。
 - **绝不让估计样本漂移**：`sample_audit.md` 未说明 raw→clean→estimation 的 N、drop 原因、treated/control 数、missingness/balance/overlap 与聚类层级时，不得宣称已过方法闸门。
 - **绝不让不确定性量化错位**：聚类层级 ≥ 处理分配层级；G≲30–50 用 wild bootstrap / CR2 / 随机化推断；多 outcome / 子样本要预指定或族内校正；弱工具用 AR/tF 区间——口径写进 `inference_report.md`，缺则按 [`inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 在质量门封顶。
 - **绝不把机制当主回归的赠品**：按 [`mechanism-and-channels.md`](references/mechanism-and-channels.md) 分清描述性分解 / 因果中介 / 异质性，中介绝不进主设定，措辞退到证据支持的档位。
-- **绝不把识别威胁留在散文里**：OVB、反向因果、选择、坏控制、spillover/SUTVA、外部效度、attrition、specification search、选择性报告必须进 [`design-risk-ledger.md`](references/design-risk-ledger.md) 与 `03_analysis/design_risk_ledger.md`；有 blocking threat 时 Method Gate 不能 `PASS`。
+- **绝不把识别威胁留在散文里**：OVB、反向因果、选择、坏控制、spillover/SUTVA、外部效度、attrition、specification search、选择性报告必须进 `design-risk-ledger.md`（reference）与 `03_analysis/design_risk_ledger.md`；有 blocking threat 时 Method Gate 不能 `PASS`。
 - **人类决策点不可跳过**（除非 `全自动` 档位且已显式授权）：定标题、定目标期刊、识别策略拍板、投稿终审——在阶段闸门处守住。
 - **数据治理不可绕过**：受限数据、PII、IRB/DUA、许可证、archive boundary 按 [`data-governance.md`](references/data-governance.md) 记录；公共复现包不得含不可公开材料。
 - **运行时退化必须披露**：工具 / 网络 / MCP / 统计软件缺失时按 [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化执行；影响最低证据包或复现的必须降低闸门状态/分数，不得把工具缺失伪装成已验证。
