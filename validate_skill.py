@@ -519,39 +519,12 @@ def check_init_workspace(template: dict) -> None:
 
 
 def check_python_compile() -> None:
+    # Glob instead of a hand-maintained list so a newly added checker can
+    # never be silently excluded from the compile gate.
     files = [
         ROOT / "validate_skill.py",
-        ROOT / "scripts" / "smoke_workspace.py",
-        ROOT / "scripts" / "check_demo_execution.py",
-        ROOT / "scripts" / "check_backend_capabilities.py",
-        ROOT / "scripts" / "check_backend_parity.py",
-        ROOT / "scripts" / "check_stage_scenario.py",
-        ROOT / "scripts" / "check_stage_adversarial.py",
-        ROOT / "scripts" / "check_design_gate_contract.py",
-        ROOT / "scripts" / "check_method_specific_failures.py",
-        ROOT / "scripts" / "check_method_gate_card.py",
-        ROOT / "scripts" / "check_runtime_fallbacks.py",
-        ROOT / "scripts" / "check_workspace_gates.py",
-        ROOT / "scripts" / "check_state_template_paths.py",
-        ROOT / "scripts" / "check_contract_matrix.py",
-        ROOT / "scripts" / "check_bilingual_docs.py",
-        ROOT / "scripts" / "check_numeric_claims.py",
-        ROOT / "scripts" / "check_final_report_contract.py",
-        ROOT / "scripts" / "check_monthly_worklog.py",
-        ROOT / "scripts" / "check_rigor_registry.py",
-        ROOT / "scripts" / "check_reproducibility_scaffold.py",
-        ROOT / "scripts" / "check_skillopt_packet.py",
-        ROOT / "scripts" / "check_verification_log.py",
-        ROOT / "scripts" / "check_citation_integrity.py",
-        ROOT / "scripts" / "check_cross_references.py",
-        ROOT / "scripts" / "check_gate_integration.py",
-        ROOT / "scripts" / "check_preregistration.py",
-        ROOT / "scripts" / "check_review_scorecard.py",
-        ROOT / "scripts" / "generate_rigor_report.py",
-        ROOT / "evals" / "score_skill.py",
-        ROOT / "evals" / "check_complexity_budget.py",
-        ROOT / "evals" / "check_replication_accuracy.py",
-        ROOT / "evals" / "check_quality_judge.py",
+        *sorted((ROOT / "scripts").glob("*.py")),
+        *sorted((ROOT / "evals").glob("*.py")),
     ]
     for path in files:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
@@ -572,15 +545,20 @@ def check_skillopt_packet_checker() -> None:
 
 
 def check_compactness_checker() -> None:
-    """Advisory orphan-reference scan; never blocks, only reports."""
+    """Advisory orphan-reference scan. The script itself exits 0 in advisory
+    mode, so check=True only surfaces genuine crashes (never advisory WARNs)."""
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_compactness.py")],
-        check=False,
+        check=True,
     )
 
 
 def check_cn_claim_audit_checker() -> None:
     """Blocking audit gate on the CN-claim ledger."""
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_cn_claim_audit.py"), "--selftest"],
+        check=True,
+    )
     subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "check_cn_claim_audit.py")],
         check=True,
@@ -588,10 +566,11 @@ def check_cn_claim_audit_checker() -> None:
 
 
 def check_chaos_coverage_checker() -> None:
-    """Advisory chaos-coverage scan; pairs with evals/chaos/."""
+    """Chaos-coverage scan; pairs with evals/chaos/. Runs --strict because
+    coverage is currently complete -- the ratchet must not regress."""
     subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_chaos_coverage.py")],
-        check=False,
+        [sys.executable, str(ROOT / "scripts" / "check_chaos_coverage.py"), "--strict"],
+        check=True,
     )
 
 

@@ -13,9 +13,9 @@ this out explicitly). This checker turns that risk into explicit metadata:
      pointing readers at the ledger. (A `--update-banners` flag
      regenerates the banners from the live ledger counts.)
 
-Default gate threshold: ledger must have >= 50 rows. If the ledger falls
-below the threshold the script exits 1; otherwise it exits 0 and prints
-a short summary.
+Default gate threshold: ledger must have >= MIN_ROWS (currently 10) rows.
+If the ledger falls below the threshold the script exits 1; otherwise it
+exits 0 and prints a short summary.
 
 Usage:
     python3 scripts/check_cn_claim_audit.py            # report; exit 0/1 per gate
