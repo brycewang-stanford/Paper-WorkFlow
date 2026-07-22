@@ -340,15 +340,14 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   `00_meta/quality_scorecard.md`**，本轮分数追加进 `logs/quality_gate.md`。
   若存在 `03_analysis/design_risk_ledger.md`，critic 也必须读取；有 blocking threat 时识别/稳健/解读相关维度按
   rubric 封顶，不能因为稿件写得顺就放行。
-- 7 维：① 贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 解读克制度 ⑤ 写作与结构 ⑥ 引用真实性 ⑦ 可复现性。
 
-**达标判定（三条同时满足才 `pass`）**：每维 ≥ 7 **且** 总分 ≥ 56/70 **且** ②③⑥ 无任何致命红旗。
+**7 维定义、达标线（每维/总分/红旗三条件）与「短板 → 回退阶段」映射**：唯一真源是
+[`quality-rubric.md`](quality-rubric.md)（SKILL.md 质量门协议引用同一处）——不在此复述，避免三处漂移。
 
 **revise / 回退**
 - `pass` → `workflow_state.json` 置 `quality_gate=pass`、`draft_milestone=done`；进入可选 Stage 8–9。
-- `not pass` → 按评分卡的「短板 → 回退阶段」映射退回对应阶段重做（识别→Stage 3、贡献→Stage 1、
-  写作→Stage 5/6、引用→reference-verify、复现→Stage 2/3）。**同一维最多回退 2 轮**；2 轮后仍卡，
-  在闸门**显著标红**告知用户「已知短板 + 当前分」，由用户裁决是否带病进入投稿（绝不静默放行）。
+- `not pass` → 按 rubric 的「短板 → 回退阶段」映射退回重做；回退轮次预算与「2 轮仍卡则标红交用户裁决」
+  的规则同样以 rubric / SKILL.md 协议为准（绝不静默放行）。
 - 每次回退记入 `logs/quality_gate.md` 与 `workflow_state.json` 的 `decisions`。
 
 > 质量门 ≠ Stage 6 打磨（改语言）≠ Stage 8 评审（挑学术硬伤）；它只做一件事——**按统一 rubric

@@ -14,12 +14,6 @@
 > Stage 9 投稿前必须刷一次各刊官网最新《投稿须知》或《征稿简则》，并把刷新记录写入
 > `09_submission/submission_checklist.md`。
 
----
-
-## 0. 快速索引
-
-### 0.1 按研究主题看选刊
-
 <!-- CN-CLAIM-AUDIT-BANNER -->
 ## Claim audit status
 
@@ -27,6 +21,13 @@
 
 Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
 <!-- /CN-CLAIM-AUDIT-BANNER -->
+
+---
+
+## 0. 快速索引
+
+### 0.1 按研究主题看选刊
+
 | 研究主题 | 首选顶刊 | 第二梯队 | 备选 / 应用类 |
 |---|---|---|---|
 | **宏观 / 增长 / 政策评估** | 经济研究、经济学（季刊）、管理世界 | 财贸经济、经济科学、经济学动态 | 改革、经济理论与经济管理 |

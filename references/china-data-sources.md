@@ -9,10 +9,6 @@
 > 保护法、数据出境安全评估办法、人类遗传资源管理条例）；识别威胁与样本审计仍以
 > [`empirical-audit.md`](empirical-audit.md) 为准。
 
----
-
-## 0. 快速索引（按研究主题）
-
 <!-- CN-CLAIM-AUDIT-BANNER -->
 ## Claim audit status
 
@@ -20,6 +16,11 @@
 
 Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
 <!-- /CN-CLAIM-AUDIT-BANNER -->
+
+---
+
+## 0. 快速索引（按研究主题）
+
 | 研究主题 | 首选数据源 | 备选 / 增强 | 关键字段警示 |
 |---|---|---|---|
 | **公司金融 / 公司治理** | CSMAR + WIND + CNINFO | RESSET、巨潮资讯网 | 行业代码（GB/T 4754 vs 证监会 2012）冲突；ST/\*ST 状态识别 |

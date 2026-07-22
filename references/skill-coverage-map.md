@@ -13,21 +13,20 @@
 | 上游库 | 路径 | skill 数 | 在 README / SKILL.md 中的角色 |
 |---|---|---|---|
 | `67-econfin-workflow-toolkit` | `skills/67-econfin-workflow-toolkit/` | ~43 | **主线**——几乎所有 Stage 1–9 的默认 skill（粗体）来自这里，是唯一一套为实证论文全流程设计的、可彼此组合的 skill 集。 |
-| `66-...-reviewers` | `skills/66-.../reviewers/` | 8 (`did-reviewer`, `econ-reviewer`, `grillme`, `latex-table`, `citation-fidelity`, `codebook-pass`, `R-optimizer` + 1 套件) | **专项增强**——Stage 8 模拟评审 / 引用核验 / LaTeX 表的 reviewer 集合。 |
-| `00-Full-empirical-analysis-skill_*` | `skills/00-Full-empirical-analysis-skill_*` | 3 套件（Python / Stata / R） | **三套分析后端**——Stage 3 默认走 StatsPAI Python，但 `.do` / `reghdfe` / `esttab`（Stata）和 `fixest` / `modelsummary`（R）也通过它们落地。 |
-| `69-Paper-WorkFlow` | 本仓库 | 1（`defense_pptx.py` + 30 个 references/templates/scripts） | **编排器自身**——不重复造子能力，只在每个阶段用 `Skill` / `Agent` 把上面的库串起来。 |
+| `66-...-reviewers` | `skills/66-.../reviewers/` | 库内约 8 个资产（`did-reviewer`, `econ-reviewer`, `grillme`, `latex-table`, `citation-fidelity`, `codebook-pass`, `R-optimizer` + 1 套件）；**其中 5 个计入 47**（§2.4） | **专项增强**——Stage 8 模拟评审 / 引用核验 / LaTeX 表的 reviewer 集合。 |
+| `00-Full-empirical-analysis-skill_*` | `skills/00-Full-empirical-analysis-skill_*` | 3 套件（Python / Stata / R）；Stata/R 两套以注册名计入 §2.1 | **三套分析后端**——Stage 3 默认走 StatsPAI Python，但 `.do` / `reghdfe` / `esttab`（Stata）和 `fixest` / `modelsummary`（R）也通过它们落地。 |
+| `69-Paper-WorkFlow` | 本仓库 | **0 计入 47**（`defense_pptx.py` 与 references/templates/scripts/evals 均为编排器内部资产，见 §2 尾注） | **编排器自身**——不重复造子能力，只在每个阶段用 `Skill` / `Agent` 把上面的库串起来。 |
 | 其余 0–65、68 等 68 个集合 | `skills/00–65, 68/` | ~20 处引用（只在「Stage N 增强 / 替代」列出现） | **专项替换**——比如 Stage 1 选题可换 `25-HosungYou-Diverga`，Stage 7 去 AI 味可换 `44–49` 那一组。 |
 
-**为什么是 47？** 把它分成 4 类加总：
+**为什么是 47？** 把它分成 4 类加总（与 §2.1–2.4 一一对应，编排器自身资产不计入）：
 
 | 类别 | 数 | 说明 |
 |---|---|---|
-| 主线 `67/` skill | 33 | §A（skill-map.md 主线路由）的 Stage 1–9 默认列 |
-| 横切 `67/` skill | 4 | web-access / web-research / agent-browser / arxiv |
-| Stage 0/9 配套 `67/` skill | 4 | md-to-docx / markitdown / marp-slides-creator / marp-export / chinese-ppt（合到 5 个是为了凑整） |
-| `66/` reviewer | 5 | did-reviewer / econ-reviewer / grillme / latex-table / codebook-pass（reviewer 套件中常被并联调用） |
-| 本仓库编排器自带入口 | 1 | `69/defense_pptx.py` + `SKILL.md`（不计入 skill 数，仅 1 个脚本入口） |
-| **合计** | **~47** | 与 README / SKILL.md 顶部 badge 一致 |
+| 主线 `67/` skill（含 Stata/R 后端注册名） | 33 | §2.1 = skill-map.md §A 主线路由的 Stage 1–9 默认列 |
+| 横切 `67/` skill | 4 | §2.2：web-access / web-research / agent-browser / arxiv |
+| 转换 / 演示配套 `67/` skill | 5 | §2.3：md-to-docx / markitdown / marp-slides-creator / marp-export / chinese-ppt2 |
+| `66/` reviewer | 5 | §2.4：did-reviewer / econ-reviewer / grillme / latex-table / codebook-pass |
+| **合计** | **47** | 33 + 4 + 5 + 5，与 README / SKILL.md 顶部 badge 一致 |
 
 > **维护约定**：当上游任意库的 skill 数量变动 > 1，必须同步更新本文件 §2/§3 的清单与本表，并在
 > [`worklogs/`](../worklogs/) 留一个 `chore(skill-count): ...` 工作日志，否则 RIGOR 计数 badge 会
@@ -162,5 +161,9 @@ guard（见 `.github/workflows/ci.yml`）。任何修改触发下列流程：
 
 ### Changelog
 
+- **2026-07-22**：修复 §1 内部矛盾（「Stage 0/9 配套」行计数写 4 却列 5 项；分类加总与 §2.1–2.4
+  口径不一；`66/` 行库内资产数与计入数混写）。§1 加总现与 §2 严格一一对应：33 + 4 + 5 + 5 = 47，
+  编排器自身资产计 0。同日起 executable-gates badge 数字由 `generate_rigor_report.REGISTRY` 动态
+  派生，不再手工登记。
 - **2026-07-08**：首版（worklog `2026-07-08-week-recap.md` 提议 → 本文件落地）。`scripts/check_numeric_claims.py`
-  同步上线，把 47 / 10 / 2 / 3 / 29/29 五个数字纳入跨文档一致性 guard。
+  同步上线，把 47 / 10 / 2 / 3 / 29/29（后者现为动态 badge）五个数字纳入跨文档一致性 guard。

@@ -147,12 +147,17 @@ def update_banners() -> int:
         )
         new_text, n = pattern.subn(body, text)
         if n == 0:
-            # Insert after the first blockquote or first heading.
+            # Insert after the document intro: right before the first `---`
+            # separator (so the banner never lands inside a later section),
+            # falling back to right after the H1 title.
             lines = text.splitlines(keepends=True)
-            insert_at = 0
-            for i, line in enumerate(lines[:30]):
-                if line.startswith(">") or line.startswith("#"):
-                    insert_at = i + 1
+            insert_at = None
+            for i, line in enumerate(lines):
+                if line.strip() == "---":
+                    insert_at = i
+                    break
+            if insert_at is None:
+                insert_at = 1 if lines and lines[0].startswith("#") else 0
             lines.insert(insert_at, "\n" + body)
             new_text = "".join(lines)
         ref.write_text(new_text, encoding="utf-8")
