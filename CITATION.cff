@@ -19,7 +19,8 @@ authors:
 repository-code: "https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills"
 url: "https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills/tree/main/skills/69-Paper-WorkFlow"
 license: MIT
-date-released: "2026-06-23"
+version: "2026.07-21"
+date-released: "2026-07-21"
 keywords:
   - empirical economics
   - causal inference
