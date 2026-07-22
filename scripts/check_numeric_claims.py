@@ -11,6 +11,11 @@ The README, SKILL.md and RIGOR.md each cite the same headline numbers:
   - N / N executable gates (the RIGOR badge; N is derived live from the
     rigor registry, so adding a gate never requires editing this checker)
 
+The 47-skill claim is additionally anchored to disk: the numbered rows of
+references/skill-coverage-map.md §2 (the skill provenance table) must
+enumerate exactly 47 skills with sequential numbering, so the badge can
+never drift from the auditable inventory.
+
 If any of these drift independently in one doc but not the others, the
 upstream reviewer / recruiter sees an inconsistent surface. This checker
 guards against that drift.
@@ -54,6 +59,23 @@ def _badge_count() -> int:
 
 BADGE_COUNT = _badge_count()
 BADGE = f"{BADGE_COUNT}/{BADGE_COUNT}"
+
+COVERAGE_MAP = ROOT / "references" / "skill-coverage-map.md"
+
+
+def _coverage_map_count(text: str) -> int:
+    """Count the numbered skill rows (`| N | \\`skill\\` | ...`) in the
+    coverage map's §2 provenance tables.
+
+    Returns -1 if the numbering is non-sequential (a corrupted or
+    double-counted table must fail loudly, not pass with the right total).
+    """
+    nums = [int(m.group(1)) for m in re.finditer(r"^\|\s*(\d+)\s*\|\s*`", text, re.MULTILINE)]
+    if not nums:
+        return 0
+    if sorted(nums) != list(range(1, len(nums) + 1)):
+        return -1
+    return len(nums)
 
 
 def _normalise(text: str) -> str:
@@ -155,7 +177,7 @@ def _doc_present(text: str, patterns: list[str]) -> bool:
     return any(re.search(p, text) for p in patterns)
 
 
-def evaluate(docs: dict[str, str]) -> dict:
+def evaluate(docs: dict[str, str], coverage_count: int | None = None) -> dict:
     errors: list[str] = []
     per_claim = []
     for claim in CLAIMS:
@@ -175,12 +197,29 @@ def evaluate(docs: dict[str, str]) -> dict:
                 f"{claim['id']}: doc {missing!r} missing a recognised signal for "
                 f"{claim['summary']}; looked for {claim['per_doc'][missing]!r}"
             )
+
+    # Disk anchor for skills_47: the badge must equal the coverage map's
+    # enumerated inventory, not merely agree across prose surfaces.
+    if coverage_count is not None:
+        claimed = next(c["value"] for c in CLAIMS if c["id"] == "skills_47")
+        if coverage_count == -1:
+            errors.append(
+                "skills_47 anchor: skill-coverage-map.md §2 numbering is "
+                "non-sequential (corrupted or double-counted table)"
+            )
+        elif coverage_count != claimed:
+            errors.append(
+                f"skills_47 anchor: skill-coverage-map.md §2 enumerates "
+                f"{coverage_count} skills but the badge claims {claimed}"
+            )
+
     return {
         "ok": not errors,
         "errors": errors,
         "per_claim": per_claim,
         "claim_count": len(CLAIMS),
         "doc_count": len(docs),
+        "coverage_count": coverage_count,
     }
 
 
@@ -190,6 +229,10 @@ def render(result: dict) -> str:
         f"  claims checked: {result['claim_count']}",
         f"  docs checked: {result['doc_count']}",
     ]
+    if result.get("coverage_count") is not None:
+        lines.append(
+            f"  coverage-map inventory: {result['coverage_count']} enumerated skills"
+        )
     for entry in result["per_claim"]:
         flag = "OK" if not entry["missing_docs"] else "MISS"
         lines.append(
@@ -286,6 +329,24 @@ def _selftest() -> int:
     for expected in ["10 阶段", "47 技能", "Stage 0-9"]:
         assert expected in norm, f"normaliser dropped {expected!r} from {norm!r}"
 
+    # Coverage-map disk anchor: counting, sequencing, and mismatch detection.
+    rows = "\n".join(f"| {i} | `skill_{i}` | `67/x` | Stage |" for i in range(1, 48))
+    assert _coverage_map_count(rows) == 47
+    good_docs = {k: _normalise(v) for k, v in _good_docs().items()}
+    assert evaluate(good_docs, coverage_count=47)["ok"], "matching anchor must pass"
+    result = evaluate(good_docs, coverage_count=46)
+    assert not result["ok"] and any("skills_47 anchor" in e for e in result["errors"]), (
+        f"anchor mismatch must fail: {result['errors']}"
+    )
+    gap = rows.replace("| 20 | `skill_20` | `67/x` | Stage |\n", "")
+    assert _coverage_map_count(gap) == -1, "a numbering gap must be flagged, not recounted"
+    assert not evaluate(good_docs, coverage_count=-1)["ok"], "corrupted table must fail"
+    assert _coverage_map_count("no tables here") == 0
+
+    # The live coverage map must anchor the live claim.
+    live = _coverage_map_count(_read(COVERAGE_MAP))
+    assert live == 47, f"live skill-coverage-map.md enumerates {live}, expected 47"
+
     print("selftest OK: numeric-claims cross-doc invariants hold")
     return 0
 
@@ -305,7 +366,7 @@ def main(argv: list[str] | None = None) -> int:
         "SKILL.md": _normalise(_read(SKILL_MD)),
         "RIGOR.md": _normalise(_read(RIGOR_MD)),
     }
-    result = evaluate(docs)
+    result = evaluate(docs, coverage_count=_coverage_map_count(_read(COVERAGE_MAP)))
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
