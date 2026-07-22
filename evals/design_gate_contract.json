@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "references/design-gate-cards.md",
   "template": "templates/method_gate.md",
-  "minimum_design_count": 9,
+  "minimum_design_count": 12,
   "minimum_guardrail_count": 10,
   "required_template_markers": [
     "Design Gate Card",
@@ -186,6 +186,69 @@
         "Ordering / scheme sensitivity",
         "Structural break screen",
         "IRF/forecast inference"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "psm_did_matching",
+      "heading": "PSM-DID / 截面匹配 + DID（Heckman-Robbins 组合）",
+      "method_gate_label": "PSM-DID",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "协变量平衡表",
+        "共同支持诊断",
+        "PS 模型设定",
+        "匹配方法 + caliper",
+        "双重差分估计表",
+        "替代匹配方法",
+        "隐藏偏差诊断"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "spatial_econometrics",
+      "heading": "空间计量（Spatial Durbin / SAR / SEM / SDM）",
+      "method_gate_label": "Spatial",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "空间权重矩阵说明",
+        "权重矩阵敏感性",
+        "Moran I 检验",
+        "LM 检验序列",
+        "直接/间接效应分解",
+        "共同因子检验",
+        "ML vs GMM 对比"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "threshold_panel",
+      "heading": "门槛面板回归（Threshold Panel — Hansen 1999 / Kremer et al. 2009）",
+      "method_gate_label": "Threshold Panel",
+      "minimum_required_artifacts": 7,
+      "required_items": [
+        "门槛值显著性检验",
+        "门槛值置信区间",
+        "门槛效应分区间表",
+        "Bootstrap 临界值表",
+        "多门槛检验",
+        "线性 vs 门槛对比",
+        "门槛值稳健性"
       ],
       "claim_levels": [
         "causal",

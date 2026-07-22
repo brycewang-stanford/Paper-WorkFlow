@@ -36,7 +36,7 @@ Auditor: method-gate critic subagent
 
 Reference: `references/design-gate-cards.md`
 
-Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / Time Series-VAR / other
+Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / Time Series-VAR / PSM-DID / Spatial / Threshold Panel / other
 
 | Gate item | Required artifact | Path | Present? | Pass? | Claim consequence |
 |---|---|---|---:|---:|---|

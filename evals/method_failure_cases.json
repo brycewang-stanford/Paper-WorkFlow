@@ -3,7 +3,7 @@
   "design_gate_contract": "evals/design_gate_contract.json",
   "checker": "scripts/check_method_gate_card.py",
   "require_all_design_cards": true,
-  "minimum_case_count": 9,
+  "minimum_case_count": 12,
   "cases": [
     {
       "id": "did_staggered_without_modern_estimator",
@@ -103,6 +103,39 @@
       "bad_claim_consequence": "descriptive",
       "hard_flag": "Runtime fallback used",
       "expected_error": "Stationarity / unit-root test"
+    },
+    {
+      "id": "psm_did_no_rosenbaum_bounds",
+      "design_card_id": "psm_did_matching",
+      "method_gate_label": "PSM-DID",
+      "gate_item": "隐藏偏差诊断",
+      "bad_present": "no",
+      "bad_pass": "no",
+      "bad_claim_consequence": "descriptive",
+      "hard_flag": "Missingness, balance, or overlap",
+      "expected_error": "隐藏偏差诊断"
+    },
+    {
+      "id": "spatial_moran_insignificant_still_sdm",
+      "design_card_id": "spatial_econometrics",
+      "method_gate_label": "Spatial",
+      "gate_item": "Moran I 检验",
+      "bad_present": "yes",
+      "bad_pass": "no",
+      "bad_claim_consequence": "descriptive",
+      "hard_flag": "Parallel trends / exclusion / continuity / overlap",
+      "expected_error": "Moran I 检验"
+    },
+    {
+      "id": "threshold_no_bootstrap_significance_test",
+      "design_card_id": "threshold_panel",
+      "method_gate_label": "Threshold Panel",
+      "gate_item": "门槛值显著性检验",
+      "bad_present": "yes",
+      "bad_pass": "no",
+      "bad_claim_consequence": "descriptive",
+      "hard_flag": "Inference level, weights, or clustering",
+      "expected_error": "门槛值显著性检验"
     }
   ]
 }
