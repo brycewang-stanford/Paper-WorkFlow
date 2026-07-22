@@ -530,301 +530,73 @@ def check_python_compile() -> None:
         subprocess.run([sys.executable, "-m", "py_compile", str(path)], check=True)
 
 
-def check_gate_verifier() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_workspace_gates.py"), "--selftest"],
-        check=True,
-    )
+# --------------------------------------------------------------------------- #
+# gate battery (table-driven)                                                  #
+# --------------------------------------------------------------------------- #
+# Each entry: (script path relative to ROOT, argv variants run in order).
+# Adding a checker = adding ONE row here; the compile gate globs the same
+# directories, and the wiring/rigor-registry invariants read this file's text,
+# so the filename appearing in this table satisfies them.
+#
+# An entry with an empty variants list is wired-but-delegated: the script runs
+# elsewhere in the battery (see the inline comment on the row).
+CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
+    # Full notebook execution. Deliberately delegated: generate_rigor_report
+    # --check (below) executes every registered checker's selftest, including
+    # this one, so a direct invocation here would run the single most
+    # expensive gate twice per validate_skill.py run.
+    ("scripts/check_demo_execution.py", []),
+    ("scripts/check_backend_capabilities.py", [["--selftest"]]),
+    ("scripts/check_backend_parity.py", [["--selftest"], []]),
+    ("scripts/check_stage_scenario.py", [["--selftest"], []]),
+    ("scripts/check_stage_adversarial.py", [["--selftest"], []]),
+    ("scripts/check_design_gate_contract.py", [["--selftest"], []]),
+    ("scripts/check_method_specific_failures.py", [["--selftest"], []]),
+    ("scripts/check_method_gate_card.py", [["--selftest"]]),
+    ("scripts/check_runtime_fallbacks.py", [["--selftest"]]),
+    ("scripts/smoke_workspace.py", [["--quiet"]]),
+    ("scripts/check_gate_integration.py", [[]]),
+    ("scripts/check_workspace_gates.py", [["--selftest"]]),
+    ("scripts/check_state_template_paths.py", [["--selftest"], []]),
+    ("scripts/check_contract_matrix.py", [["--selftest"], []]),
+    ("scripts/check_bilingual_docs.py", [["--selftest"], []]),
+    ("scripts/check_numeric_claims.py", [["--selftest"], []]),
+    ("scripts/check_final_report_contract.py", [["--selftest"], []]),
+    ("scripts/check_monthly_worklog.py", [["--selftest"], []]),
+    ("scripts/check_rigor_registry.py", [["--selftest"], []]),
+    # RIGOR.md + README badges must mirror the live checker roster. --check
+    # re-runs every registered checker's selftest (incl. the notebook).
+    ("scripts/generate_rigor_report.py", [["--check"]]),
+    ("scripts/check_reproducibility_scaffold.py", [["--selftest"], []]),
+    ("scripts/check_skillopt_packet.py", [["--selftest"]]),
+    # Advisory orphan-reference scan; the script exits 0 in advisory mode, so
+    # check=True only surfaces genuine crashes (never advisory WARNs).
+    ("scripts/check_compactness.py", [[]]),
+    ("scripts/check_cn_claim_audit.py", [["--selftest"], []]),
+    # --strict: chaos coverage is complete today; the ratchet must not regress.
+    ("scripts/check_chaos_coverage.py", [["--strict"]]),
+    ("scripts/check_verification_log.py", [["--selftest"], []]),
+    ("scripts/check_citation_integrity.py", [["--selftest"]]),
+    ("scripts/check_preregistration.py", [["--selftest"]]),
+    ("scripts/check_review_scorecard.py", [["--selftest"]]),
+    ("scripts/check_cross_references.py", [["--selftest"], []]),
+    ("evals/score_skill.py", [["--selftest"]]),
+    ("evals/check_complexity_budget.py", [["--selftest"], []]),
+    ("evals/check_replication_accuracy.py", [["--selftest"]]),
+    # DGP truths for the five simulation replication cases must match the
+    # shipped golds (and, when numpy is present, generate deterministically).
+    ("evals/replication_cases/generate_simulation_data.py", [["--selftest"]]),
+    ("evals/check_quality_judge.py", [["--selftest"]]),
+]
 
 
-def check_skillopt_packet_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_skillopt_packet.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_compactness_checker() -> None:
-    """Advisory orphan-reference scan. The script itself exits 0 in advisory
-    mode, so check=True only surfaces genuine crashes (never advisory WARNs)."""
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_compactness.py")],
-        check=True,
-    )
-
-
-def check_cn_claim_audit_checker() -> None:
-    """Blocking audit gate on the CN-claim ledger."""
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_cn_claim_audit.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_cn_claim_audit.py")],
-        check=True,
-    )
-
-
-def check_chaos_coverage_checker() -> None:
-    """Chaos-coverage scan; pairs with evals/chaos/. Runs --strict because
-    coverage is currently complete -- the ratchet must not regress."""
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_chaos_coverage.py"), "--strict"],
-        check=True,
-    )
-
-
-def check_contract_matrix_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_contract_matrix.py")],
-        check=True,
-    )
-
-
-def check_bilingual_docs_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_bilingual_docs.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_bilingual_docs.py")],
-        check=True,
-    )
-
-
-def check_numeric_claims_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_numeric_claims.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_numeric_claims.py")],
-        check=True,
-    )
-
-
-def check_final_report_contract_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_final_report_contract.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_final_report_contract.py")],
-        check=True,
-    )
-
-
-def check_monthly_worklog_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_monthly_worklog.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_monthly_worklog.py")],
-        check=True,
-    )
-
-
-def check_rigor_registry_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_rigor_registry.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_rigor_registry.py")],
-        check=True,
-    )
-
-
-def check_rigor_report_current() -> None:
-    """RIGOR.md and the README rigor badges must mirror the live checker roster."""
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "generate_rigor_report.py"), "--check"],
-        check=True,
-    )
-
-
-def check_state_template_paths_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_state_template_paths.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_state_template_paths.py")],
-        check=True,
-    )
-
-
-def check_reproducibility_scaffold_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_reproducibility_scaffold.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_reproducibility_scaffold.py")],
-        check=True,
-    )
-
-
-def check_demo_execution_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_demo_execution.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_backend_capabilities_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_backend_capabilities.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_backend_parity_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_backend_parity.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_backend_parity.py")],
-        check=True,
-    )
-
-
-def check_stage_scenario_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_stage_scenario.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_stage_scenario.py")],
-        check=True,
-    )
-
-
-def check_stage_adversarial_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_stage_adversarial.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_stage_adversarial.py")],
-        check=True,
-    )
-
-
-def check_design_gate_contract_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_design_gate_contract.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_design_gate_contract.py")],
-        check=True,
-    )
-
-
-def check_method_specific_failures_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_method_specific_failures.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_method_specific_failures.py")],
-        check=True,
-    )
-
-
-def check_method_gate_card_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_method_gate_card.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_runtime_fallbacks_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_runtime_fallbacks.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_verification_log() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_verification_log.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_verification_log.py")],
-        check=True,
-    )
-
-
-def check_citation_integrity_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_citation_integrity.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_preregistration_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_preregistration.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_review_scorecard_checker() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_review_scorecard.py"), "--selftest"],
-        check=True,
-    )
-
-
-def check_cross_references_linter() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_cross_references.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_cross_references.py")],
-        check=True,
-    )
-
-
-def check_smoke_workspace() -> None:
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "smoke_workspace.py"), "--quiet"], check=True)
-
-
-def check_gate_integration() -> None:
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "check_gate_integration.py")], check=True)
-
-
-def check_maintenance_evals() -> None:
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "score_skill.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "check_complexity_budget.py")],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "check_replication_accuracy.py"), "--selftest"],
-        check=True,
-    )
-    subprocess.run(
-        [sys.executable, str(ROOT / "evals" / "check_quality_judge.py"), "--selftest"],
-        check=True,
-    )
+def run_checker_battery() -> None:
+    for rel, variants in CHECKER_RUNS:
+        script = ROOT / rel
+        if not script.exists():
+            raise SystemExit(f"FAIL: battery entry missing on disk: {rel}")
+        for argv in variants:
+            subprocess.run([sys.executable, str(script), *argv], check=True)
 
 
 def main() -> None:
@@ -837,37 +609,7 @@ def main() -> None:
     check_notebook()
     check_init_workspace(template)
     check_python_compile()
-    check_demo_execution_checker()
-    check_backend_capabilities_checker()
-    check_backend_parity_checker()
-    check_stage_scenario_checker()
-    check_stage_adversarial_checker()
-    check_design_gate_contract_checker()
-    check_method_specific_failures_checker()
-    check_method_gate_card_checker()
-    check_runtime_fallbacks_checker()
-    check_smoke_workspace()
-    check_gate_integration()
-    check_gate_verifier()
-    check_state_template_paths_checker()
-    check_contract_matrix_checker()
-    check_bilingual_docs_checker()
-    check_numeric_claims_checker()
-    check_final_report_contract_checker()
-    check_monthly_worklog_checker()
-    check_rigor_registry_checker()
-    check_rigor_report_current()
-    check_reproducibility_scaffold_checker()
-    check_skillopt_packet_checker()
-    check_compactness_checker()
-    check_cn_claim_audit_checker()
-    check_chaos_coverage_checker()
-    check_verification_log()
-    check_citation_integrity_checker()
-    check_preregistration_checker()
-    check_review_scorecard_checker()
-    check_cross_references_linter()
-    check_maintenance_evals()
+    run_checker_battery()
     print("OK: Paper-WorkFlow skill checks passed")
 
 
