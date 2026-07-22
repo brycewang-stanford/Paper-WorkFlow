@@ -8,7 +8,8 @@ The README, SKILL.md and RIGOR.md each cite the same headline numbers:
   - 2 hard gates (method gate + draft quality gate)
   - 3 analysis backends (Python/StatsPAI, Stata, R)
   - 1 audit-able workspace
-  - 29 / 29 executable gates (the RIGOR badge)
+  - N / N executable gates (the RIGOR badge; N is derived live from the
+    rigor registry, so adding a gate never requires editing this checker)
 
 If any of these drift independently in one doc but not the others, the
 upstream reviewer / recruiter sees an inconsistent surface. This checker
@@ -33,6 +34,26 @@ ZH_README = ROOT / "README.md"
 EN_README = ROOT / "README.en.md"
 SKILL_MD = ROOT / "SKILL.md"
 RIGOR_MD = ROOT / "RIGOR.md"
+
+
+def _badge_count() -> int:
+    """Live gate count from the rigor registry (no selftests are run).
+
+    Mirrors generate_rigor_report.evaluate(): an entry is *active* unless it
+    is optional AND its script is missing (that combination renders PLANNED).
+    """
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import generate_rigor_report as _grr  # noqa: PLC0415 -- deliberate lazy import
+
+    return sum(
+        1
+        for entry in _grr.REGISTRY
+        if not (entry.get("optional") and not (ROOT / entry["path"]).exists())
+    )
+
+
+BADGE_COUNT = _badge_count()
+BADGE = f"{BADGE_COUNT}/{BADGE_COUNT}"
 
 
 def _normalise(text: str) -> str:
@@ -110,14 +131,19 @@ CLAIMS = [
         },
     },
     {
-        "id": "executable_gates_29_of_29",
-        "value": "33/33",
-        "summary": "33 / 33 executable gates (RIGOR badge -- the count is dynamic; update on every new gate)",
+        "id": "executable_gates_badge",
+        "value": BADGE,
+        "summary": (
+            f"{BADGE} executable gates (RIGOR badge -- count derived live "
+            "from the rigor registry)"
+        ),
         "per_doc": {
-            "README.md": [r"33\s*/\s*33"],
-            "README.en.md": [r"33\s*/\s*33"],
+            "README.md": [rf"{BADGE_COUNT}\s*/\s*{BADGE_COUNT}"],
+            "README.en.md": [rf"{BADGE_COUNT}\s*/\s*{BADGE_COUNT}"],
+            # SKILL.md deliberately carries no badge (always-loaded byte
+            # budget); the empty list means "no signal required here".
             "SKILL.md": [],
-            "RIGOR.md": [r"33\s*/\s*33", r"33/33 green"],
+            "RIGOR.md": [rf"{BADGE_COUNT}\s*/\s*{BADGE_COUNT}"],
         },
     },
 ]
@@ -188,14 +214,14 @@ def _good_docs() -> dict[str, str]:
             "<b>2</b> 道硬闸门 · <b>3</b> 套分析后端\n"
             "47 个技能如何被编排\n"
             "Stage 0–9 协议\n"
-            "33/33 闸门\n"
+            f"{BADGE} 闸门\n"
         ),
         "README.en.md": (
             "<b>10</b> stages · <b>47</b> skills · "
             "<b>2</b> hard gates · <b>3</b> analysis backends\n"
             "Stage 0-9 execution protocol\n"
             "Two hard gates\n"
-            "33/33 gates\n"
+            f"{BADGE} gates\n"
         ),
         "SKILL.md": (
             "Stage 0–9 可断点续跑流水线\n"
@@ -204,7 +230,7 @@ def _good_docs() -> dict[str, str]:
             "Python/StatsPAI、Stata、R 三种分析后端\n"
         ),
         "RIGOR.md": (
-            "33/33 green\n"
+            f"{BADGE} green\n"
             "Stage 0-9 黄金路径\n"
         ),
     }
@@ -230,14 +256,15 @@ def _selftest() -> int:
         f"errors should mention skills_47 drift: {result['errors']}"
     )
 
-    # Drop the 33/33 from RIGOR.md -> must fail.
+    # Drift the badge in RIGOR.md to a stale count -> must fail.
     bad = dict(good)
-    bad["RIGOR.md"] = good["RIGOR.md"].replace("33/33", "29/29")
+    stale = f"{BADGE_COUNT - 1}/{BADGE_COUNT - 1}"
+    bad["RIGOR.md"] = good["RIGOR.md"].replace(BADGE, stale)
     normalised = {k: _normalise(v) for k, v in bad.items()}
     result = evaluate(normalised)
-    assert not result["ok"], "executable_gates_29_of_29 drift in RIGOR.md must fail"
-    assert any("executable_gates_29_of_29" in e for e in result["errors"]), (
-        f"errors should mention executable_gates_29_of_29 drift: {result['errors']}"
+    assert not result["ok"], "executable_gates_badge drift in RIGOR.md must fail"
+    assert any("executable_gates_badge" in e for e in result["errors"]), (
+        f"errors should mention executable_gates_badge drift: {result['errors']}"
     )
 
     # Drop the Stage 0-9 from SKILL.md -> must fail.

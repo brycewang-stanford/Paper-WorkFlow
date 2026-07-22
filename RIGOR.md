@@ -40,7 +40,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_final_report_contract.py`](scripts/check_final_report_contract.py) | ✅ pass | Final-report contract: delivery handoffs must include validation commands, changed files/commits, failures and fixes, residual risks, and child/parent remote-parity status. |
 | [`scripts/check_cross_references.py`](scripts/check_cross_references.py) | ✅ pass | Cross-reference contract: every internal link, named artifact, and script path referenced from SKILL.md and references actually resolves. |
 | [`scripts/check_bilingual_docs.py`](scripts/check_bilingual_docs.py) | ✅ pass | Bilingual README parity: the Chinese and English user surfaces expose the same reference docs, script inventory, validation commands, and load-bearing workflow artifacts. |
-| [`scripts/check_numeric_claims.py`](scripts/check_numeric_claims.py) | ✅ pass | Numeric-claims cross-doc parity: load-bearing counts (10 stages / 47 skills / 2 hard gates / 3 backends / 29-of-29 executable gates) appear consistently across README.md, README.en.md, SKILL.md, and RIGOR.md; a drift fails CI. |
+| [`scripts/check_numeric_claims.py`](scripts/check_numeric_claims.py) | ✅ pass | Numeric-claims cross-doc parity: load-bearing counts (10 stages / 47 skills / 2 hard gates / 3 backends / the live rigor-badge gate count) appear consistently across README.md, README.en.md, SKILL.md, and RIGOR.md; a drift fails CI. |
 | [`scripts/check_contract_matrix.py`](scripts/check_contract_matrix.py) | ✅ pass | Contract matrix: each quality theme has named owner files, validators, and docs, and high-leverage repo artifacts are covered by at least one maintained invariant. |
 | [`scripts/check_rigor_registry.py`](scripts/check_rigor_registry.py) | ✅ pass | RIGOR registry completeness: every checker discovered under scripts/ or evals/ must be registered in this report, and registry drift is a blocking maintenance failure. |
 | [`scripts/check_monthly_worklog.py`](scripts/check_monthly_worklog.py) | ✅ pass | Long-horizon maintenance evidence: the month-long worklog records the goal window, baseline PASS evidence, week plan, packet-level validation, and anti-cheat guards that prevent premature closure. |
@@ -58,4 +58,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-07-21 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-07-22 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.

@@ -296,9 +296,9 @@ REGISTRY: list[dict] = [
         "layer": MAINT,
         "enforces": (
             "Numeric-claims cross-doc parity: load-bearing counts (10 stages / "
-            "47 skills / 2 hard gates / 3 backends / 29-of-29 executable gates) "
-            "appear consistently across README.md, README.en.md, SKILL.md, and "
-            "RIGOR.md; a drift fails CI."
+            "47 skills / 2 hard gates / 3 backends / the live rigor-badge gate "
+            "count) appear consistently across README.md, README.en.md, "
+            "SKILL.md, and RIGOR.md; a drift fails CI."
         ),
     },
     {
