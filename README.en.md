@@ -25,7 +25,7 @@
 
 <br/>
 
-[Mental Model](#mental-model)&nbsp;·&nbsp;[Research Standards](#research-standards)&nbsp;·&nbsp;[Quickstart](#quickstart)&nbsp;·&nbsp;[Outputs](#workspace-outputs)&nbsp;·&nbsp;[中文说明](README.md)
+[30-Second Fit Check](#30-second-fit-check)&nbsp;·&nbsp;[Mental Model](#mental-model)&nbsp;·&nbsp;[Entry Points](#entry-points)&nbsp;·&nbsp;[Quickstart](#quickstart)&nbsp;·&nbsp;[Research Standards](#research-standards)&nbsp;·&nbsp;[Outputs](#workspace-outputs)&nbsp;·&nbsp;[中文说明](README.md)
 
 <br/>
 <br/>
@@ -55,6 +55,16 @@
 `Paper-WorkFlow` is a meta-orchestrator. It does not reimplement the underlying research skills. It routes each stage to the right local skill, subagent, method gate, reproducibility artifact, and human decision point.
 
 The old 30-page PDF lecture has been folded into this README. The durable content is now maintained as text: the eight-stage teaching map, the 47-skill map, the DiD teaching checklist, the exhibit standards, and the writing/review/submission path. The PDF file itself is no longer part of the package.
+
+## 30-Second Fit Check
+
+| Confirm first | What it means |
+|---|---|
+| **What it is** | A meta-orchestrator: `Stage 0-9`, two hard gates, and one workspace route existing skills, analysis backends, and subagents. It is not a monolithic app that reimplements every research capability. |
+| **Where you can start** | Not only from a one-line idea. A proposal, cleaned dataset, regression results, `main.tex`, or reviewer comments can enter at the matching stage. |
+| **What it does not promise** | “End to end” describes workflow coverage. It does not guarantee data access, statistical significance, valid identification, gate passage, or publication; failures must remain auditable. |
+
+For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. A standalone clone can run this repository's CI, self-checks, templates, and demos, but a research run still needs the relevant sub-skills, data access, literature-search capability, and the selected Python/StatsPAI, Stata, or R backend. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
 
 ## Mental Model
 
@@ -221,7 +231,7 @@ git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empiri
 git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 ```
 
-Use it from Claude Code by opening the parent repository (its root routing `SKILL.md` registers the `/paper-workflow` trigger), or copy the skill directories you need into your project's `.claude/skills/` (or `~/.claude/skills/` for global use). The only dependency install is for local self-checks: `pip install -r requirements-dev.txt` (used solely by the notebook-execution gate; normal runs need nothing).
+Use it from Claude Code by opening the parent repository (its root routing `SKILL.md` registers the `/paper-workflow` trigger), or copy the skill directories you need into your project's `.claude/skills/` (or `~/.claude/skills/` for global use). This repository's own Python package requirements are only for local self-checks: `pip install -r requirements-dev.txt` (used by the notebook-execution gate). Real research runs still require the selected analysis backend and any dependencies declared by the invoked sub-skills.
 
 ### Trigger
 
@@ -250,6 +260,9 @@ Before execution, the skill resolves the interaction mode, target journal, manus
 Backend choices are `python-statspai` (default), `stata`, and `r`. Backend choice controls Stage 3-4 scripts and export tools; it is separate from manuscript language.
 
 If the user explicitly asks for autonomous execution, the skill infers conservative defaults, records assumptions in `00_meta/intake.md` and `00_meta/analysis_backend.md`, and continues without blocking on preferences.
+
+> [!NOTE]
+> **When entering with existing material, pass its dependencies too.** A dataset should include keys, time/treatment variables, a variable dictionary, and the research design; regression results should include generating code, specifications, and sample definitions; `main.tex` should arrive with its `.bib`, figures, and custom class/style files. Relative paths resolve from the agent's current working directory, so use absolute paths when uncertain. If inputs are incomplete, Stage 0 must record the gap and degrade or pause instead of assuming traceability.
 
 ## Workspace Outputs
 

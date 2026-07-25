@@ -25,7 +25,7 @@
 
 <br/>
 
-[一图看懂](#一图看懂)&nbsp;·&nbsp;[研究级标准](#研究级标准)&nbsp;·&nbsp;[怎么用](#怎么用)&nbsp;·&nbsp;[产物清单](#跑完你会得到什么)&nbsp;·&nbsp;[English](README.en.md)
+[30 秒速判](#30-秒速判)&nbsp;·&nbsp;[一图看懂](#一图看懂)&nbsp;·&nbsp;[从哪里接入](#你带什么进来就从哪一站上车)&nbsp;·&nbsp;[怎么用](#怎么用)&nbsp;·&nbsp;[研究级标准](#研究级标准)&nbsp;·&nbsp;[产物清单](#跑完你会得到什么)&nbsp;·&nbsp;[English](README.en.md)
 
 <br/>
 <br/>
@@ -51,6 +51,18 @@
 <sub><strong>Stanford REAP × CoPaper.AI</strong> · 面向实证研究的产学 AI 工具箱 · Paper-WorkFlow 是其中的论文总编排器</sub>
 
 </div>
+
+---
+
+## 30 秒速判
+
+| 先确认 | 这意味着什么 |
+|---|---|
+| **它是什么** | 一个 meta-orchestrator：用 `Stage 0–9`、两道硬闸门和统一工作区，路由已有 skill、分析后端与子代理；它不是自行重写所有研究能力的单体应用。 |
+| **你可以从哪里开始** | 不只是一句话 idea。已有 proposal、干净数据、回归结果、`main.tex` 或审稿意见，都可从对应阶段接入。 |
+| **它不承诺什么** | “端到端”指覆盖研究链条，不保证数据一定可得、结果显著、识别假设通过、质量门放行或论文录用；失败也必须形成可审计记录。 |
+
+完整运行推荐使用含 47 个被编排子 skill 的[母仓库](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)。单独 clone 本仓库可以运行 CI、自检、模板和演示，但研究任务仍需要相应子 skill、数据权限、文献检索能力，以及所选 Python/StatsPAI、Stata 或 R 后端。作者始终对数据合规、识别有效性、事实引用和最终投稿负责。
 
 ---
 
@@ -252,7 +264,7 @@ git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empiri
 git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 ```
 
-在 Claude Code 中使用：进入母仓库目录直接开聊（仓库根的路由 `SKILL.md` 会注册 `/paper-workflow` 触发语），或把 `skills/` 下需要的目录放入项目的 `.claude/skills/`（个人全局则放 `~/.claude/skills/`）。安装依赖只有本地自检需要：`pip install -r requirements-dev.txt`（仅 notebook 执行闸门用，日常运行不需要）。
+在 Claude Code 中使用：进入母仓库目录直接开聊（仓库根的路由 `SKILL.md` 会注册 `/paper-workflow` 触发语），或把 `skills/` 下需要的目录放入项目的 `.claude/skills/`（个人全局则放 `~/.claude/skills/`）。本仓库自身的 Python 包依赖只用于本地自检：`pip install -r requirements-dev.txt`（notebook 执行闸门用）；真实研究运行仍需安装所选分析后端和被调用子 skill 各自声明的依赖。
 
 ### 触发
 
@@ -268,16 +280,18 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 /paper-workflow 初稿在 ./paper/main.tex，从打磨开始
 ```
 
-开跑前只问一次，四件套搞定（之后不再来回打断）：
+开跑前一次确认四项：**交互模式、目标期刊、稿件语言和分析后端**。交互模式三选一：
 
-| 选项 | 含义 |
+| 交互模式 | 含义 |
 |---|---|
 | `全自动` | 无人值守，只在最终交付时汇报 |
 | `阶段确认`（推荐） | 每阶段末给摘要卡，等你放行再进下一阶段 |
 | `全程交互` | 每个子 skill 跑自己原生的逐项审批，投稿前终版用 |
-| `python-statspai` / `stata` / `r` | Stage 3–4 的分析后端；缺省 `python-statspai` |
 
-外加目标期刊、稿件语言（中 / 英 / 双语）与分析后端——一次问清，全程不卡。
+分析后端可选 `python-statspai`（默认）、`stata` 或 `r`，决定 Stage 3–4 的脚本与导出工具，和稿件语言相互独立。
+
+> [!NOTE]
+> **接入已有材料时，请把依赖一起交给工作流。** 数据至少应附主键、时间 / 处理变量、变量说明与研究设计；回归结果应附生成代码、规格和样本口径；`main.tex` 应连同 `.bib`、图片以及自定义 class / style 文件传入。相对路径按 agent 当前工作目录解析，拿不准时使用绝对路径。材料不足时，Stage 0 应先记录缺口并降级或暂停，不能假定结果可追溯。
 
 ---
 
