@@ -53,7 +53,7 @@
 | **你可以从哪里开始** | 不只是一句话 idea。已有 proposal、干净数据、回归结果、`main.tex` 或审稿意见，都可从对应阶段接入。 |
 | **它不承诺什么** | “端到端”指覆盖研究链条，不保证数据一定可得、结果显著、识别假设通过、质量门放行或论文录用；失败也必须形成可审计记录。 |
 
-完整运行推荐使用含 47 个被编排子 skill 的[母仓库](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)。单独 clone 本仓库可以运行 CI、自检、模板和演示，但研究任务仍需要相应子 skill、数据权限、文献检索能力，以及所选 Python/StatsPAI、Stata 或 R 后端。作者始终对数据合规、识别有效性、事实引用和最终投稿负责。
+完整运行推荐使用含 47 个被编排子 skill 的[母仓库](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)。Stage 9 还可选接入 [Awesome Journal Skills（AJS）](https://github.com/brycewang-stanford/Awesome-Journal-Skills)，调用已安装的目标期刊 skill 做 fit、house style 与投稿材料预检；AJS 不计入 47 个内置 skill，也不会替代官网规则或研究硬闸门。单独 clone 本仓库可以运行 CI、自检、模板和演示，但研究任务仍需要相应子 skill、数据权限、文献检索能力，以及所选 Python/StatsPAI、Stata 或 R 后端。作者始终对数据合规、识别有效性、事实引用和最终投稿负责。
 
 ---
 
@@ -119,7 +119,7 @@ flowchart TD
 | ⑤ 呈现 | Stage 4 | 审稿人能否一眼读懂结果和识别直觉 | 按所选后端出 Word/Excel/LaTeX 三格式表 + PDF/PNG 图：StatsPAI / `esttab`+`outreg2` / `modelsummary`+Quarto |
 | ⑥ 写作 | Stage 5–7 | 初稿是否结构完整、论证克制、引用真实、没有 AI 味 | `paper-writer`、`paper-pipeline`、`readability` / `fix-chinese` → `main.tex`、质量评分卡 |
 | ⑦ 评审 | Stage 8 | 在投稿前先暴露识别威胁、稳健性缺口和叙事问题 | `referee-report`、`paper-referee-revise` → 审稿意见、回应信、修订稿 |
-| ⑧ 投稿 | Stage 9 | 期刊是否匹配，格式和材料是否一次准备齐 | `paper-submission`、`reference-verify` → journal shortlist、cover letter、投稿包 |
+| ⑧ 投稿 | Stage 9 | 期刊是否匹配，格式和材料是否一次准备齐 | `paper-submission` → 可选 AJS 期刊适配 → `reference-verify` → journal shortlist、期刊专属预检、cover letter、投稿包 |
 
 贯穿全程的横向能力包括 `web-research` / `arxiv` 查文献，`stata` / `stats` 做计量底座，`reference-verify` 核验引用，`markitdown` / `md-to-docx` 做文档互转。它们不是独立阶段，而是每个阶段的验证和转换工具。
 
@@ -167,7 +167,7 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 | 表与图 | StatsPAI `regtable`/`collect`、Stata `esttab`/`outreg2`、R `modelsummary`/Quarto、`table`、`figure` | Stage 4，生成出版级 exhibits |
 | 写作与润色 | `paper-writer`、`paper-style`、`paper-polish`、`paper-self-revise`、`paper-pipeline`、`readability` | Stage 5–7，从初稿到目标期刊风格 |
 | 评审与引用 | `referee-report`、`paper-referee-revise`、`reference-verify` | Stage 8 和终审，做模拟审稿、修订与引用核验 |
-| 投稿 | `paper-submission` | Stage 9，生成期刊清单、cover letter 与投稿材料 |
+| 投稿 | `paper-submission` + 可选 AJS adapter | Stage 9，生成期刊清单，并用真实匹配的 AJS skill 做期刊专属预检，再完成 cover letter 与投稿材料 |
 | 横向工具 | `web-research`、`arxiv`、`agent-browser`、`markitdown`、`md-to-docx`、`fix-chinese`、`marp-slides-creator`、`chinese-ppt` | 按需穿插，用于检索、转换、中文修订和展示材料 |
 
 ---

@@ -33,6 +33,7 @@
 | LaTeX / PDF 工具缺失 | 生成 `.tex`、`.md`、`.docx` 替代；投稿前补 PDF render | 缺失命令 | 写作可继续，submission checklist 不可过 |
 | 受限数据不可访问 | 用公开样例/合成数据跑代码结构；真实估计标 blocked | 数据访问限制 | 主结果不可声称真实；复现 `not_ready` |
 | 目标期刊政策页不可访问 | 用本文件官方入口 + 已知模板先占位；投稿前刷新 | policy URL blocked | Stage 9 checklist 未完成 |
+| AJS 未安装 / 无精确期刊 skill / 调用失败 | 写 `09_submission/ajs/adapter_report.md` 标 `not_installed` / `no_exact_match` / `failed`，继续 `paper-submission` + 官网核验 + `reference-verify` | 发现方式、候选 pack、错误与降级原因 | AJS 本身不阻断；官网规则未核则 Stage 9 仍不得 `ready` |
 
 ---
 

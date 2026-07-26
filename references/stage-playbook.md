@@ -398,6 +398,11 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **execute**
 - `Skill` 调用 `67/paper-submission`，评估贡献新颖度、匹配 SSCI/ABS 星级、给出 ~20 本目标期刊清单，
   落 `09_submission/journal_shortlist.md`。结合 Stage 0 选定的目标期刊收敛到 1 主 + 2 备。
+- **AJS 期刊适配（可选）**：主投期刊确定后，按
+  [`peer-review-and-submission.md`](peer-review-and-submission.md) §5 发现并调用已安装的
+  [Awesome Journal Skills](https://github.com/brycewang-stanford/Awesome-Journal-Skills) 精确匹配 workflow /
+  submission / venue-profile skill，把结果隔离写到 `09_submission/ajs/adapter_report.md`。不得猜 skill 名、
+  不得隐式安装、不得覆盖 canonical manuscript；AJS 缺失或无精确匹配时记录降级，继续核心流程。
 - **中文期刊选刊**：加载 [`chinese-journals.md`](chinese-journals.md) §0.1（按研究主题的选刊速查）、
   §3（5 大顶刊详细规范）与 §4（第二梯队），按"研究主题 × 字数 × 审稿周期 × 拒稿率"过滤出
   **1 主投 + 2 备投**的国内 CSSCI 期刊短名单；学位论文场景按 §6.2-6.3 准备相应章节、创新点声明、答辩PPT。
@@ -426,7 +431,7 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   跑通，**不能因脚本报错就跳过答辩 PPT**——这是本硕博毕业流程的硬交付物。
 
 **review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明、
-IRB/DUA 与公开复现包边界）。
+IRB/DUA 与公开复现包边界）；若调用 AJS，同时核对 `adapter_report.md`，按「官网 > AJS > 通用建议」解决冲突。
 
 **revise / 交付**：定稿投稿包到 `09_submission/`。
 

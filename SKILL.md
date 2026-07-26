@@ -43,7 +43,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | **6** | 全流程打磨 | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify） | 打磨后的 `main.tex` |
 | **7** | 语言与去 AI 味 | `readability` / `fix-chinese` + （`44`/`47`/`48`/`49` 去 AIGC 集合） | 去味后的稿件 |
 | **8** | 模拟评审与修订 | `referee-report` → `paper-referee-revise`（或 `paper-self-revise`） | 修订稿 + response letter |
-| **9** | 选刊与投稿 | `paper-submission` + `reference-verify`（终审） | 期刊清单 + cover letter |
+| **9** | 选刊与投稿 | `paper-submission` → 可选 AJS 目标期刊适配器 → `reference-verify`（终审） | 期刊清单 + 期刊专属预检 + cover letter |
 | **—** | 复盘与交付 | *(编排器本体)* | `FINAL_REPORT.md` + 打包交付物 |
 
 > 完整阶段细节、每阶段的 plan→execute→review→revise 微循环、subagent 派发模板，全部在

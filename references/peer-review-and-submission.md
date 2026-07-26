@@ -112,7 +112,47 @@ R&R 是作者与审稿人之间的**隐性合同**：把 Essential 问题令人�
 
 ---
 
-## 5. Cover Letter：过初筛的单点
+## 5. AJS 目标期刊适配器（可选外部工具）
+
+[Awesome Journal Skills（AJS）](https://github.com/brycewang-stanford/Awesome-Journal-Skills) 可在主投期刊确定后，
+为 Stage 9 境内外期刊提供 venue-specific fit、house style 与 submission preflight。它是**增强层，不是依赖项**；
+AJS 未安装、没有精确匹配或调用失败时，记录降级并继续本文件的通用投稿流程。
+
+### 5.1 发现与调用顺序
+
+1. **只查真实注册项**：先枚举运行时已注册的 AJS skills / plugins；若用户给了本地 AJS checkout，再读
+   `shared-resources/journal-selection/venue-index.tsv` 找目标期刊的精确条目。不得从期刊简称臆造 skill 名。
+2. **解析 canonical skill**：读取匹配 pack 的 plugin manifest 与实际 `SKILL.md` frontmatter。AJS 根目录的
+   期刊别名文件夹可能只是导航入口，不能因目录名存在就宣称可调用。
+3. **优先深度工作流**：若有目标刊完整 workflow，先调用其 workflow router，再调用其 submission skill；
+   若只有 venue profile，则用它做 fit / scope / style / preflight。没有精确匹配就跳过，不拿相似刊冒充。
+4. **不得擅自安装**：未安装时报告所需 pack 与来源；只有用户明确授权，才安装 plugin、clone 仓库或改全局
+   skills 目录。安装行为不是 Stage 9 的隐式副作用。
+
+### 5.2 调用契约与落盘
+
+给 AJS 的最小输入：目标期刊全名、当前定稿路径、`ref.bib`、摘要与贡献、`method_gate.md`、
+`evidence_ledger.md`、`claim_integrity_audit.md`、DAS / replication 状态、语言，以及已刷新的官网规则 URL 与时间。
+要求 AJS 把结果写到 `09_submission/ajs/`，至少生成 `adapter_report.md`，记录：
+
+- `status`: `used | not_installed | no_exact_match | failed`；
+- 实际调用的 pack、skill frontmatter `name`、来源路径，以及可得的版本 / commit；
+- fit 判断、house-style 修改建议、投稿 checklist 增量、生成文件与未决问题；
+- 与官网规则、Paper-WorkFlow 硬闸门冲突的项目及最终取舍。
+
+AJS 不得直接覆盖 canonical manuscript 或既有投稿材料。建议先写到 `09_submission/ajs/`；接受的改动经 Stage 9
+review 后再合并，并把调用与取舍追加到 `logs/stage_9.md` 和 `workflow_state.json.decisions`。
+
+### 5.3 权威顺序与硬边界
+
+冲突时固定采用：**目标期刊实时官方 Author Guidelines / submission portal > AJS 期刊包 > 本文件通用建议**。
+AJS 不得降低 Method Gate、Draft Quality Gate、引用 / 时序完整性、claim integrity、数据治理或 replication
+要求；也不得把「期刊适配完成」表述为录用概率或投稿合规保证。最终仍须执行 §7 checklist 与
+`reference-verify`。
+
+---
+
+## 6. Cover Letter：过初筛的单点
 
 高拒稿率刊（desk-reject 50–80%）的编辑读每封 cover letter，并在**找停下读的理由**。cover letter 要在
 30 秒内让编辑看到「这篇该送外审」：
@@ -146,7 +186,7 @@ R&R 是作者与审稿人之间的**隐性合同**：把 Essential 问题令人�
 
 ---
 
-## 6. 投稿包 checklist（Stage 9 交付前逐项核）
+## 7. 投稿包 checklist（Stage 9 交付前逐项核）
 
 critic 走一遍目标期刊的 submission checklist，缺项即补。**先刷新目标刊官网**：Author Guidelines、
 data/code policy、匿名化规则、word/LaTeX 模板、supplement / replication package 要求都以官网为准；
@@ -165,15 +205,16 @@ data/code policy、匿名化规则、word/LaTeX 模板、supplement / replicatio
 
 ---
 
-## 7. 接入点小结
+## 8. 接入点小结
 
 | Stage | 本层做什么 | 落盘 |
 |---|---|---|
 | **8 模拟评审** | 按 §2 五维 + Essential/Desirable 分级生成审稿报告 | `08_review/referee_report.md` |
 | **8 修订与回应** | 按 §3 逐条、可追溯、有礼地写 response letter | `08_review/response_letter.md` |
 | **9 选刊** | 按 §4 决策序收敛成 1 主 + 2 备下投链 | `09_submission/journal_shortlist.md` |
-| **9 cover letter** | 按 §5 每刊定制 + desk-reject 自检 | `09_submission/cover_letter.md` |
-| **9 投稿包** | 按 §6 checklist 备齐并终审引用 | `09_submission/` |
+| **9 AJS 适配（可选）** | 按 §5 调用真实匹配的期刊 skill，并与官网规则对账 | `09_submission/ajs/adapter_report.md` |
+| **9 cover letter** | 按 §6 每刊定制 + desk-reject 自检 | `09_submission/cover_letter.md` |
+| **9 投稿包** | 按 §7 checklist 备齐并终审引用 | `09_submission/` |
 
 > 一句话：**先把自己当审稿人毙一遍（Stage 8），再把刊投对、把信写对（Stage 9）。** 研究的可信度由
 > 前面的方法闸门与质量门保证；本层保证「可信的研究被投到对的地方、以专业的方式」。

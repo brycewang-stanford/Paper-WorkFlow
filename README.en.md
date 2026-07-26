@@ -55,7 +55,7 @@ The old 30-page PDF lecture has been folded into this README. The durable conten
 | **Where you can start** | Not only from a one-line idea. A proposal, cleaned dataset, regression results, `main.tex`, or reviewer comments can enter at the matching stage. |
 | **What it does not promise** | “End to end” describes workflow coverage. It does not guarantee data access, statistical significance, valid identification, gate passage, or publication; failures must remain auditable. |
 
-For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. A standalone clone can run this repository's CI, self-checks, templates, and demos, but a research run still needs the relevant sub-skills, data access, literature-search capability, and the selected Python/StatsPAI, Stata, or R backend. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
+For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. Stage 9 can also use [Awesome Journal Skills (AJS)](https://github.com/brycewang-stanford/Awesome-Journal-Skills) as an optional adapter for journal-specific fit, house style, and submission preflight. AJS is not included in the 47 built-in skills and never replaces official journal rules or the research gates. A standalone clone can run this repository's CI, self-checks, templates, and demos, but a research run still needs the relevant sub-skills, data access, literature-search capability, and the selected Python/StatsPAI, Stata, or R backend. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
 
 ## Mental Model
 
@@ -138,7 +138,7 @@ The lecture version presented eight teaching stages. The current skill keeps tha
 | 5. Tables/Figures | Stage 4 | Can reviewers read the result and identification logic quickly? | Backend-native Word/Excel/LaTeX tables and PDF/PNG figures: StatsPAI, Stata `esttab`/`outreg2`, or R `modelsummary`/Quarto |
 | 6. Writing | Stage 5-7 | Is the draft complete, restrained, citation-faithful, and free of AI residue? | `paper-writer`, `paper-pipeline`, `readability` / `fix-chinese` -> `main.tex`, quality scorecard |
 | 7. Review | Stage 8 | What would a reviewer attack before submission? | `referee-report`, `paper-referee-revise` -> referee report, response letter, revised draft |
-| 8. Submission | Stage 9 | Is the journal fit right, and is the package complete? | `paper-submission`, `reference-verify` -> journal shortlist, cover letter, submission package |
+| 8. Submission | Stage 9 | Is the journal fit right, and is the package complete? | `paper-submission` -> optional AJS journal adapter -> `reference-verify` -> shortlist, journal-specific preflight, cover letter, submission package |
 
 Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `stats` for estimation support, `reference-verify` for citation checks, and `markitdown` / `md-to-docx` for document conversion.
 
@@ -168,7 +168,7 @@ Paper-WorkFlow orchestrates the research action; the underlying action comes fro
 | Tables and figures | StatsPAI `regtable`/`collect`, Stata `esttab`/`outreg2`, R `modelsummary`/Quarto, `table`, `figure` | Produce publication-grade exhibits |
 | Writing and polishing | `paper-writer`, `paper-style`, `paper-polish`, `paper-self-revise`, `paper-pipeline`, `readability` | Move from draft to journal-specific manuscript |
 | Review and citations | `referee-report`, `paper-referee-revise`, `reference-verify` | Simulate review, revise, and verify references |
-| Submission | `paper-submission` | Prepare the journal shortlist, cover letter, and submission materials |
+| Submission | `paper-submission` + optional AJS adapter | Build the shortlist, run an exact-match AJS journal preflight when available, then prepare the cover letter and submission materials |
 | Cross-cutting tools | `web-research`, `arxiv`, `agent-browser`, `markitdown`, `md-to-docx`, `fix-chinese`, `marp-slides-creator`, `chinese-ppt` | Search, conversion, Chinese cleanup, and presentation support |
 
 ## Research Standards
