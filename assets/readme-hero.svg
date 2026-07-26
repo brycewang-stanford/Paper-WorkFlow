@@ -21,7 +21,7 @@
 
     <!-- Hero title -->
     <text x="78" y="230" class="serif" fill="#142033" font-size="124" font-weight="700" letter-spacing="-4">Paper</text>
-    <line x1="416" y1="188" x2="516" y2="188" stroke="#B08A54" stroke-width="5"/>
+    <line x1="438" y1="188" x2="512" y2="188" stroke="#B08A54" stroke-width="4"/>
     <text x="546" y="230" class="serif" fill="#142033" font-size="124" font-weight="700" letter-spacing="-4">WorkFlow</text>
     <text x="82" y="302" class="sans" fill="#8C2633" font-size="25" font-weight="750" letter-spacing="5.8">FROM QUESTION TO AUDITABLE SUBMISSION</text>
     <text x="82" y="374" class="serif" fill="#4B5563" font-size="31" font-style="italic">Evidence that can be inspected, reproduced, challenged,</text>
