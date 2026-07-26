@@ -1,8 +1,8 @@
-<svg width="1440" height="620" viewBox="0 0 1440 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="1440" height="1240" viewBox="0 0 1440 1240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Paper-WorkFlow — an auditable empirical research workflow</title>
-  <desc id="desc">An editorial banner inspired by academic journals, showing a paper, evidence chart, and a five-step research sequence.</desc>
+  <desc id="desc">A tall editorial poster inspired by academic journals, showing a five-stage research spine and a working paper with verified evidence.</desc>
   <defs>
-    <clipPath id="frame"><rect width="1440" height="620" rx="20"/></clipPath>
+    <clipPath id="frame"><rect width="1440" height="1240" rx="24"/></clipPath>
     <style>
       .sans { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       .serif { font-family: Georgia, "Times New Roman", serif; }
@@ -10,93 +10,103 @@
   </defs>
 
   <g clip-path="url(#frame)">
-    <rect width="1440" height="620" fill="#F3F0E9"/>
-    <rect x="1" y="1" width="1438" height="618" rx="19" stroke="#D7D0C3" stroke-width="2"/>
-    <rect width="18" height="620" fill="#8C2633"/>
+    <rect width="1440" height="1240" fill="#F3F0E9"/>
+    <rect x="1" y="1" width="1438" height="1238" rx="23" stroke="#D7D0C3" stroke-width="2"/>
+    <rect width="22" height="1240" fill="#8C2633"/>
 
-    <!-- Quiet editorial rules -->
-    <path d="M72 58H1368" stroke="#C9C1B3"/>
-    <path d="M72 530H1368" stroke="#C9C1B3"/>
-    <text x="72" y="42" class="sans" fill="#675F55" font-size="13" font-weight="700" letter-spacing="3">EMPIRICAL RESEARCH SYSTEM · V10</text>
-    <text x="1368" y="42" class="sans" fill="#675F55" font-size="13" font-weight="700" letter-spacing="2" text-anchor="end">METHOD · EVIDENCE · MANUSCRIPT</text>
+    <!-- Running head -->
+    <path d="M76 78H1364" stroke="#C9C1B3" stroke-width="2"/>
+    <text x="76" y="55" class="sans" fill="#675F55" font-size="16" font-weight="700" letter-spacing="4">EMPIRICAL RESEARCH SYSTEM · V10</text>
+    <text x="1364" y="55" class="sans" fill="#675F55" font-size="16" font-weight="700" letter-spacing="3" text-anchor="end">METHOD · EVIDENCE · MANUSCRIPT</text>
 
-    <!-- Main editorial typography -->
-    <text x="76" y="194" class="serif" fill="#142033" font-size="100" font-weight="700" letter-spacing="-3">Paper</text>
-    <line x1="348" y1="159" x2="430" y2="159" stroke="#B08A54" stroke-width="4"/>
-    <text x="454" y="194" class="serif" fill="#142033" font-size="100" font-weight="700" letter-spacing="-3">WorkFlow</text>
-    <text x="78" y="248" class="sans" fill="#8C2633" font-size="20" font-weight="750" letter-spacing="4.4">FROM QUESTION TO AUDITABLE SUBMISSION</text>
+    <!-- Hero title -->
+    <text x="78" y="230" class="serif" fill="#142033" font-size="124" font-weight="700" letter-spacing="-4">Paper</text>
+    <line x1="416" y1="188" x2="516" y2="188" stroke="#B08A54" stroke-width="5"/>
+    <text x="546" y="230" class="serif" fill="#142033" font-size="124" font-weight="700" letter-spacing="-4">WorkFlow</text>
+    <text x="82" y="302" class="sans" fill="#8C2633" font-size="25" font-weight="750" letter-spacing="5.8">FROM QUESTION TO AUDITABLE SUBMISSION</text>
+    <text x="82" y="374" class="serif" fill="#4B5563" font-size="31" font-style="italic">Evidence that can be inspected, reproduced, challenged,</text>
+    <text x="82" y="418" class="serif" fill="#4B5563" font-size="31" font-style="italic">and written into a paper.</text>
 
-    <text x="78" y="318" class="serif" fill="#4B5563" font-size="27" font-style="italic">Evidence that can be inspected, reproduced,</text>
-    <text x="78" y="356" class="serif" fill="#4B5563" font-size="27" font-style="italic">challenged, and written into a paper.</text>
+    <path d="M76 472H1364" stroke="#C9C1B3" stroke-width="2"/>
+    <text x="80" y="518" class="sans" fill="#675F55" font-size="14" font-weight="800" letter-spacing="3.2">THE RESEARCH SPINE</text>
 
-    <!-- Five-step sequence: compact, typeset like a journal running footer -->
-    <g transform="translate(78 430)" class="sans">
-      <g>
-        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">01</text>
-        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">IDEA</text>
+    <!-- Vertical research spine -->
+    <g transform="translate(82 565)" class="sans">
+      <line x1="23" y1="24" x2="23" y2="466" stroke="#B08A54" stroke-width="2"/>
+
+      <g transform="translate(0 0)">
+        <circle cx="23" cy="23" r="12" fill="#F3F0E9" stroke="#8C2633" stroke-width="4"/>
+        <text x="66" y="8" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="2">01</text>
+        <text x="66" y="42" fill="#142033" font-size="25" font-weight="780" letter-spacing="2">IDEA</text>
+        <text x="250" y="42" fill="#675F55" font-size="18">question · novelty · significance</text>
       </g>
-      <line x1="78" y1="13" x2="143" y2="13" stroke="#B08A54"/>
-      <g transform="translate(165 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">02</text>
-        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">DESIGN</text>
+      <g transform="translate(0 108)">
+        <circle cx="23" cy="23" r="12" fill="#F3F0E9" stroke="#8C2633" stroke-width="4"/>
+        <text x="66" y="8" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="2">02</text>
+        <text x="66" y="42" fill="#142033" font-size="25" font-weight="780" letter-spacing="2">DESIGN</text>
+        <text x="250" y="42" fill="#675F55" font-size="18">estimand · counterfactual · data</text>
       </g>
-      <line x1="261" y1="13" x2="326" y2="13" stroke="#B08A54"/>
-      <g transform="translate(348 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">03</text>
-        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">EVIDENCE</text>
+      <g transform="translate(0 216)">
+        <circle cx="23" cy="23" r="12" fill="#F3F0E9" stroke="#8C2633" stroke-width="4"/>
+        <text x="66" y="8" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="2">03</text>
+        <text x="66" y="42" fill="#142033" font-size="25" font-weight="780" letter-spacing="2">EVIDENCE</text>
+        <text x="250" y="42" fill="#675F55" font-size="18">estimate · diagnose · stress-test</text>
       </g>
-      <line x1="461" y1="13" x2="526" y2="13" stroke="#B08A54"/>
-      <g transform="translate(548 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">04</text>
-        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">MANUSCRIPT</text>
+      <g transform="translate(0 324)">
+        <circle cx="23" cy="23" r="12" fill="#F3F0E9" stroke="#8C2633" stroke-width="4"/>
+        <text x="66" y="8" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="2">04</text>
+        <text x="66" y="42" fill="#142033" font-size="25" font-weight="780" letter-spacing="2">MANUSCRIPT</text>
+        <text x="320" y="42" fill="#675F55" font-size="18">tables · figures · claims · citations</text>
       </g>
-      <line x1="687" y1="13" x2="752" y2="13" stroke="#B08A54"/>
-      <g transform="translate(774 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">05</text>
-        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">SUBMIT</text>
+      <g transform="translate(0 432)">
+        <circle cx="23" cy="23" r="12" fill="#8C2633" stroke="#8C2633" stroke-width="4"/>
+        <circle cx="23" cy="23" r="4" fill="#F3F0E9"/>
+        <text x="66" y="8" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="2">05</text>
+        <text x="66" y="42" fill="#142033" font-size="25" font-weight="780" letter-spacing="2">SUBMIT</text>
+        <text x="250" y="42" fill="#675F55" font-size="18">review · revise · package · reproduce</text>
       </g>
     </g>
 
-    <!-- Paper + evidence mark -->
-    <g transform="translate(1038 91) scale(1.18)">
-      <rect x="32" y="24" width="250" height="310" fill="#DED8CC"/>
-      <rect x="0" y="0" width="250" height="310" fill="#FBFAF7" stroke="#BDB5A7" stroke-width="2"/>
-      <path d="M0 0H250V14H0Z" fill="#142033"/>
-      <text x="28" y="48" class="sans" fill="#8C2633" font-size="10" font-weight="800" letter-spacing="2.2">WORKING PAPER</text>
-      <path d="M28 70H205" stroke="#142033" stroke-width="5"/>
-      <path d="M28 84H171" stroke="#142033" stroke-width="5"/>
-      <path d="M28 111H218M28 122H218M28 133H188" stroke="#A9A195" stroke-width="2"/>
+    <!-- Large working-paper evidence mark -->
+    <g transform="translate(855 535)">
+      <rect x="50" y="38" width="420" height="520" fill="#DED8CC"/>
+      <rect x="0" y="0" width="420" height="520" fill="#FBFAF7" stroke="#BDB5A7" stroke-width="3"/>
+      <path d="M0 0H420V24H0Z" fill="#142033"/>
+      <text x="46" y="78" class="sans" fill="#8C2633" font-size="16" font-weight="800" letter-spacing="3.2">WORKING PAPER</text>
+      <path d="M46 118H348" stroke="#142033" stroke-width="8"/>
+      <path d="M46 143H286" stroke="#142033" stroke-width="8"/>
+      <path d="M46 184H364M46 202H364M46 220H316" stroke="#A9A195" stroke-width="3"/>
 
-      <!-- Small coefficient plot -->
-      <path d="M44 175H218M62 151V252" stroke="#C9C1B3"/>
-      <path d="M88 192H120M104 182V202" stroke="#8C2633" stroke-width="2"/>
-      <circle cx="104" cy="192" r="4" fill="#8C2633"/>
-      <path d="M128 217H176M152 207V227" stroke="#142033" stroke-width="2"/>
-      <circle cx="152" cy="217" r="4" fill="#142033"/>
-      <path d="M80 242H132M106 232V252" stroke="#142033" stroke-width="2"/>
-      <circle cx="106" cy="242" r="4" fill="#142033"/>
-      <text x="181" y="196" class="serif" fill="#8C2633" font-size="12" font-style="italic">β</text>
+      <!-- Coefficient plot -->
+      <path d="M78 285H364M104 250V424" stroke="#C9C1B3" stroke-width="2"/>
+      <path d="M145 318H207M176 300V336" stroke="#8C2633" stroke-width="3"/>
+      <circle cx="176" cy="318" r="7" fill="#8C2633"/>
+      <path d="M215 365H305M260 347V383" stroke="#142033" stroke-width="3"/>
+      <circle cx="260" cy="365" r="7" fill="#142033"/>
+      <path d="M132 410H224M178 392V428" stroke="#142033" stroke-width="3"/>
+      <circle cx="178" cy="410" r="7" fill="#142033"/>
+      <text x="320" y="326" class="serif" fill="#8C2633" font-size="22" font-style="italic">β</text>
+      <path d="M46 468H225" stroke="#A9A195" stroke-width="3"/>
+      <path d="M46 488H174" stroke="#A9A195" stroke-width="3"/>
 
-      <path d="M28 276H134" stroke="#A9A195" stroke-width="2"/>
-      <path d="M28 287H105" stroke="#A9A195" stroke-width="2"/>
-
-      <!-- Editorial annotation -->
-      <path d="M216 104C230 98 242 102 247 112" stroke="#8C2633" stroke-width="2" stroke-linecap="round"/>
-      <path d="M247 112L241 108M247 112L243 118" stroke="#8C2633" stroke-width="2" stroke-linecap="round"/>
-      <text x="271" y="116" class="serif" fill="#8C2633" font-size="14" font-style="italic">verified</text>
-      <text x="271" y="135" class="serif" fill="#8C2633" font-size="14" font-style="italic">on disk</text>
+      <!-- Human editorial annotation -->
+      <path d="M360 170C387 158 409 169 416 191" stroke="#8C2633" stroke-width="3" stroke-linecap="round"/>
+      <path d="M416 191L405 182M416 191L408 204" stroke="#8C2633" stroke-width="3" stroke-linecap="round"/>
+      <text x="448" y="196" class="serif" fill="#8C2633" font-size="25" font-style="italic">verified</text>
+      <text x="448" y="228" class="serif" fill="#8C2633" font-size="25" font-style="italic">on disk</text>
     </g>
 
-    <!-- Footer facts -->
-    <g transform="translate(76 572)" class="sans" fill="#675F55" font-size="14" font-weight="700" letter-spacing="1.4">
+    <!-- Footer -->
+    <path d="M76 1130H1364" stroke="#C9C1B3" stroke-width="2"/>
+    <g transform="translate(78 1185)" class="sans" fill="#675F55" font-size="17" font-weight="700" letter-spacing="1.6">
       <text x="0" y="0">10 STAGES</text>
-      <circle cx="104" cy="-4" r="2" fill="#B08A54"/>
-      <text x="126" y="0">2 HARD GATES</text>
-      <circle cx="262" cy="-4" r="2" fill="#B08A54"/>
-      <text x="284" y="0">3 ANALYSIS BACKENDS</text>
-      <circle cx="485" cy="-4" r="2" fill="#B08A54"/>
-      <text x="507" y="0">1 AUDITABLE WORKSPACE</text>
+      <circle cx="126" cy="-5" r="3" fill="#B08A54"/>
+      <text x="154" y="0">2 HARD GATES</text>
+      <circle cx="318" cy="-5" r="3" fill="#B08A54"/>
+      <text x="346" y="0">3 ANALYSIS BACKENDS</text>
+      <circle cx="594" cy="-5" r="3" fill="#B08A54"/>
+      <text x="622" y="0">1 AUDITABLE WORKSPACE</text>
     </g>
-    <text x="1367" y="572" class="serif" fill="#142033" font-size="17" font-style="italic" text-anchor="end">Evidence before prose.</text>
+    <text x="1364" y="1185" class="serif" fill="#142033" font-size="22" font-style="italic" text-anchor="end">Evidence before prose.</text>
   </g>
 </svg>
