@@ -2,7 +2,7 @@
 
 # Paper-WorkFlow
 
-<img src="assets/readme-hero.svg" alt="Paper-WorkFlow — empirical research orchestration from question to auditable submission package" width="100%" />
+<img src="assets/readme-hero.png" alt="Paper-WorkFlow — empirical research orchestration from question to auditable submission package" width="100%" />
 
 <br/>
 

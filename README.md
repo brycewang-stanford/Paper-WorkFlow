@@ -2,7 +2,7 @@
 
 # Paper-WorkFlow
 
-<img src="assets/readme-hero.svg" alt="Paper-WorkFlow — 从研究问题到可审计投稿包的端到端实证研究工作流" width="100%" />
+<img src="assets/readme-hero.png" alt="Paper-WorkFlow — 从研究问题到可审计投稿包的端到端实证研究工作流" width="100%" />
 
 <br/>
 
