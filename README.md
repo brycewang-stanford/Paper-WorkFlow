@@ -1,12 +1,8 @@
 <div align="center">
 
-<br/>
-
 # Paper-WorkFlow
 
-**经管 / 社科实证论文的研究级 Workflow**
-
-<samp>idea&nbsp;&nbsp;→&nbsp;&nbsp;design&nbsp;&nbsp;→&nbsp;&nbsp;evidence&nbsp;&nbsp;→&nbsp;&nbsp;manuscript&nbsp;&nbsp;→&nbsp;&nbsp;submission&nbsp;pack</samp>
+<img src="assets/readme-hero.svg" alt="Paper-WorkFlow — 从研究问题到可审计投稿包的端到端实证研究工作流" width="100%" />
 
 <br/>
 
@@ -19,18 +15,13 @@
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
 
-<br/>
-
-<samp><b>10</b>&nbsp;阶段&nbsp;&nbsp;·&nbsp;&nbsp;<b>47</b>&nbsp;技能&nbsp;&nbsp;·&nbsp;&nbsp;<b>2</b>&nbsp;道硬闸门&nbsp;&nbsp;·&nbsp;&nbsp;<b>3</b>&nbsp;套分析后端&nbsp;&nbsp;·&nbsp;&nbsp;<b>1</b>&nbsp;个可审计工作区</samp>
+<h3>10 阶段&nbsp;&nbsp;·&nbsp;&nbsp;47 技能&nbsp;&nbsp;·&nbsp;&nbsp;2 道硬闸门&nbsp;&nbsp;·&nbsp;&nbsp;3 套分析后端&nbsp;&nbsp;·&nbsp;&nbsp;1 个可审计工作区</h3>
 
 <br/>
 
 [30 秒速判](#30-秒速判)&nbsp;·&nbsp;[一图看懂](#一图看懂)&nbsp;·&nbsp;[从哪里接入](#你带什么进来就从哪一站上车)&nbsp;·&nbsp;[怎么用](#怎么用)&nbsp;·&nbsp;[研究级标准](#研究级标准)&nbsp;·&nbsp;[产物清单](#跑完你会得到什么)&nbsp;·&nbsp;[English](README.en.md)
 
-<br/>
-<br/>
-
-**你给一个研究方向，它交付一套可审计的实证论文工程。**
+<h2>你给一个研究方向，它交付一套可审计的实证论文工程。</h2>
 
 <sub>从选题、数据、识别设计、估计、表图、写作、打磨、去 AI 味、模拟评审，到投稿包<br/>—— 全部沉淀在一个可断点续跑、可审计的工作区里。</sub>
 

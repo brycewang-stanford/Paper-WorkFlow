@@ -1,12 +1,8 @@
 <div align="center">
 
-<br/>
-
 # Paper-WorkFlow
 
-**Research-grade orchestration for empirical social-science papers**
-
-<samp>idea&nbsp;&nbsp;→&nbsp;&nbsp;design&nbsp;&nbsp;→&nbsp;&nbsp;data&nbsp;&nbsp;→&nbsp;&nbsp;identification&nbsp;&nbsp;→&nbsp;&nbsp;exhibits&nbsp;&nbsp;→&nbsp;&nbsp;manuscript&nbsp;&nbsp;→&nbsp;&nbsp;review&nbsp;&nbsp;→&nbsp;&nbsp;submission</samp>
+<img src="assets/readme-hero.svg" alt="Paper-WorkFlow — empirical research orchestration from question to auditable submission package" width="100%" />
 
 <br/>
 
@@ -19,18 +15,13 @@
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
 
-<br/>
-
-<samp><b>10</b>&nbsp;stages&nbsp;&nbsp;·&nbsp;&nbsp;<b>47</b>&nbsp;skills&nbsp;&nbsp;·&nbsp;&nbsp;<b>2</b>&nbsp;hard gates&nbsp;&nbsp;·&nbsp;&nbsp;<b>3</b>&nbsp;analysis backends&nbsp;&nbsp;·&nbsp;&nbsp;<b>1</b>&nbsp;auditable workspace</samp>
+<h3>10 stages&nbsp;&nbsp;·&nbsp;&nbsp;47 skills&nbsp;&nbsp;·&nbsp;&nbsp;2 hard gates&nbsp;&nbsp;·&nbsp;&nbsp;3 analysis backends&nbsp;&nbsp;·&nbsp;&nbsp;1 auditable workspace</h3>
 
 <br/>
 
 [30-Second Fit Check](#30-second-fit-check)&nbsp;·&nbsp;[Mental Model](#mental-model)&nbsp;·&nbsp;[Entry Points](#entry-points)&nbsp;·&nbsp;[Quickstart](#quickstart)&nbsp;·&nbsp;[Research Standards](#research-standards)&nbsp;·&nbsp;[Outputs](#workspace-outputs)&nbsp;·&nbsp;[中文说明](README.md)
 
-<br/>
-<br/>
-
-**You bring a research direction; it delivers an auditable empirical-paper engine.**
+<h2>You bring a research direction; it delivers an auditable empirical-paper engine.</h2>
 
 <sub>From ideation, data, identification, estimation, exhibits, writing, polishing, de-slopping and mock review, all the way to a submission package<br/>— captured in a single resumable, auditable workspace.</sub>
 
