@@ -1,8 +1,8 @@
-<svg width="1440" height="500" viewBox="0 0 1440 500" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+<svg width="1440" height="620" viewBox="0 0 1440 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Paper-WorkFlow — an auditable empirical research workflow</title>
   <desc id="desc">An editorial banner inspired by academic journals, showing a paper, evidence chart, and a five-step research sequence.</desc>
   <defs>
-    <clipPath id="frame"><rect width="1440" height="500" rx="20"/></clipPath>
+    <clipPath id="frame"><rect width="1440" height="620" rx="20"/></clipPath>
     <style>
       .sans { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       .serif { font-family: Georgia, "Times New Roman", serif; }
@@ -10,55 +10,55 @@
   </defs>
 
   <g clip-path="url(#frame)">
-    <rect width="1440" height="500" fill="#F3F0E9"/>
-    <rect x="1" y="1" width="1438" height="498" rx="19" stroke="#D7D0C3" stroke-width="2"/>
-    <rect width="18" height="500" fill="#8C2633"/>
+    <rect width="1440" height="620" fill="#F3F0E9"/>
+    <rect x="1" y="1" width="1438" height="618" rx="19" stroke="#D7D0C3" stroke-width="2"/>
+    <rect width="18" height="620" fill="#8C2633"/>
 
     <!-- Quiet editorial rules -->
     <path d="M72 58H1368" stroke="#C9C1B3"/>
-    <path d="M72 424H1368" stroke="#C9C1B3"/>
-    <text x="72" y="42" class="sans" fill="#675F55" font-size="11" font-weight="700" letter-spacing="3">EMPIRICAL RESEARCH SYSTEM · V10</text>
-    <text x="1368" y="42" class="sans" fill="#675F55" font-size="11" font-weight="700" letter-spacing="2" text-anchor="end">METHOD · EVIDENCE · MANUSCRIPT</text>
+    <path d="M72 530H1368" stroke="#C9C1B3"/>
+    <text x="72" y="42" class="sans" fill="#675F55" font-size="13" font-weight="700" letter-spacing="3">EMPIRICAL RESEARCH SYSTEM · V10</text>
+    <text x="1368" y="42" class="sans" fill="#675F55" font-size="13" font-weight="700" letter-spacing="2" text-anchor="end">METHOD · EVIDENCE · MANUSCRIPT</text>
 
     <!-- Main editorial typography -->
-    <text x="76" y="156" class="serif" fill="#142033" font-size="74" font-weight="700" letter-spacing="-2.2">Paper</text>
-    <line x1="281" y1="131" x2="349" y2="131" stroke="#B08A54" stroke-width="3"/>
-    <text x="370" y="156" class="serif" fill="#142033" font-size="74" font-weight="700" letter-spacing="-2.2">WorkFlow</text>
-    <text x="78" y="200" class="sans" fill="#8C2633" font-size="15" font-weight="750" letter-spacing="4.6">FROM RESEARCH QUESTION TO AUDITABLE SUBMISSION</text>
+    <text x="76" y="194" class="serif" fill="#142033" font-size="100" font-weight="700" letter-spacing="-3">Paper</text>
+    <line x1="348" y1="159" x2="430" y2="159" stroke="#B08A54" stroke-width="4"/>
+    <text x="454" y="194" class="serif" fill="#142033" font-size="100" font-weight="700" letter-spacing="-3">WorkFlow</text>
+    <text x="78" y="248" class="sans" fill="#8C2633" font-size="20" font-weight="750" letter-spacing="4.4">FROM QUESTION TO AUDITABLE SUBMISSION</text>
 
-    <text x="78" y="255" class="serif" fill="#4B5563" font-size="22" font-style="italic">A disciplined path from an idea to evidence that can be inspected,</text>
-    <text x="78" y="286" class="serif" fill="#4B5563" font-size="22" font-style="italic">reproduced, challenged, and written into a paper.</text>
+    <text x="78" y="318" class="serif" fill="#4B5563" font-size="27" font-style="italic">Evidence that can be inspected, reproduced,</text>
+    <text x="78" y="356" class="serif" fill="#4B5563" font-size="27" font-style="italic">challenged, and written into a paper.</text>
 
     <!-- Five-step sequence: compact, typeset like a journal running footer -->
-    <g transform="translate(78 342)" class="sans">
+    <g transform="translate(78 430)" class="sans">
       <g>
-        <text x="0" y="0" fill="#8C2633" font-size="11" font-weight="800" letter-spacing="1.5">01</text>
-        <text x="0" y="25" fill="#142033" font-size="13" font-weight="750" letter-spacing="1.7">IDEA</text>
+        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">01</text>
+        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">IDEA</text>
       </g>
       <line x1="78" y1="13" x2="143" y2="13" stroke="#B08A54"/>
       <g transform="translate(165 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="11" font-weight="800" letter-spacing="1.5">02</text>
-        <text x="0" y="25" fill="#142033" font-size="13" font-weight="750" letter-spacing="1.7">DESIGN</text>
+        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">02</text>
+        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">DESIGN</text>
       </g>
       <line x1="261" y1="13" x2="326" y2="13" stroke="#B08A54"/>
       <g transform="translate(348 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="11" font-weight="800" letter-spacing="1.5">03</text>
-        <text x="0" y="25" fill="#142033" font-size="13" font-weight="750" letter-spacing="1.7">EVIDENCE</text>
+        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">03</text>
+        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">EVIDENCE</text>
       </g>
       <line x1="461" y1="13" x2="526" y2="13" stroke="#B08A54"/>
       <g transform="translate(548 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="11" font-weight="800" letter-spacing="1.5">04</text>
-        <text x="0" y="25" fill="#142033" font-size="13" font-weight="750" letter-spacing="1.7">MANUSCRIPT</text>
+        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">04</text>
+        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">MANUSCRIPT</text>
       </g>
       <line x1="687" y1="13" x2="752" y2="13" stroke="#B08A54"/>
       <g transform="translate(774 0)">
-        <text x="0" y="0" fill="#8C2633" font-size="11" font-weight="800" letter-spacing="1.5">05</text>
-        <text x="0" y="25" fill="#142033" font-size="13" font-weight="750" letter-spacing="1.7">SUBMIT</text>
+        <text x="0" y="0" fill="#8C2633" font-size="14" font-weight="800" letter-spacing="1.5">05</text>
+        <text x="0" y="30" fill="#142033" font-size="16" font-weight="750" letter-spacing="1.7">SUBMIT</text>
       </g>
     </g>
 
     <!-- Paper + evidence mark -->
-    <g transform="translate(1052 83)">
+    <g transform="translate(1038 91) scale(1.18)">
       <rect x="32" y="24" width="250" height="310" fill="#DED8CC"/>
       <rect x="0" y="0" width="250" height="310" fill="#FBFAF7" stroke="#BDB5A7" stroke-width="2"/>
       <path d="M0 0H250V14H0Z" fill="#142033"/>
@@ -88,7 +88,7 @@
     </g>
 
     <!-- Footer facts -->
-    <g transform="translate(76 454)" class="sans" fill="#675F55" font-size="11" font-weight="700" letter-spacing="1.4">
+    <g transform="translate(76 572)" class="sans" fill="#675F55" font-size="14" font-weight="700" letter-spacing="1.4">
       <text x="0" y="0">10 STAGES</text>
       <circle cx="104" cy="-4" r="2" fill="#B08A54"/>
       <text x="126" y="0">2 HARD GATES</text>
@@ -97,6 +97,6 @@
       <circle cx="485" cy="-4" r="2" fill="#B08A54"/>
       <text x="507" y="0">1 AUDITABLE WORKSPACE</text>
     </g>
-    <text x="1367" y="454" class="serif" fill="#142033" font-size="13" font-style="italic" text-anchor="end">Evidence before prose.</text>
+    <text x="1367" y="572" class="serif" fill="#142033" font-size="17" font-style="italic" text-anchor="end">Evidence before prose.</text>
   </g>
 </svg>
