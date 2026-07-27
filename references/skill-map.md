@@ -69,15 +69,38 @@ args / subagent prompt 里显式覆盖输出目录为本工作区路径**：
 `OUTPUT_DIR` / `WORK_DIR` 覆盖为工作区子目录。**其余子 skill 默认接受外部传入的目标路径**，按各阶段
 playbook 指定的工作区子目录落盘即可。
 
+### 0.3 外部 skill 接入：`literature-review-tools`（文献底座，**不在母仓库内**）
+
+文献能力由外部仓库 [`lit-review-agent-tools`](https://github.com/brycewang-stanford/lit-review-agent-tools)
+的 skill **`literature-review-tools`** 提供（CC0-1.0）。它既是 70+ 开源文献工具的选型目录，又自带启动器
+`scripts/litrun.py`，能真正把 arXiv/OpenAlex/PubMed 检索、PDF→Markdown、PaperQA2 带引用问答串成命名工作流。
+**它不在母仓库 `67/` 里**，所以调用比其它子 skill 多一步「先确认可达」：
+
+1. `Skill(skill="literature-review-tools", args=...)`（注册名 = 文件夹名）；
+2. not found → 依次 `Read` `~/.claude/skills/`、`.claude/skills/`、`~/.claude/plugins/**/lit-review-agent-tools/skills/`
+   下的 `literature-review-tools/SKILL.md`，启动器即同目录 `scripts/litrun.py`；
+3. 都找不到 → 在闸门问用户一次再装（`/plugin marketplace add brycewang-stanford/lit-review-agent-tools`
+   或 `git clone`）；**装不上就降级**到 `WebSearch` + `67/arxiv` + `59-shiquda-openalex-skill` 做轻量扫描，
+   并在闸门标注「文献底座为降级模式」——**绝不因为装不上就凭记忆编文献**。
+
+**第三条输出重定向（与 §0.2 同性质，必做）**：`litrun.py workflow run` 把语料写到
+`~/.lit-review-tools/workspace/runs/<workflow-id>/`（**按 workflow id 命名，重跑会覆盖**），把带引用的
+回答打到 **stdout（不落盘）**。因此每次调用后必须 `tee` 接住 stdout、`cp -R` 把语料拷进
+`{{WS}}/01_proposal/literature/`——工作区内副本才是权威。
+
+> 完整接入说明（命令速查、各工作流参数、API key / 重装 / 干跑护栏、与既有 skill 的分工边界）见
+> **[`lit-review-integration.md`](lit-review-integration.md)**。
+
 ---
 
 ## A. 按阶段的主线路由（默认用这些）
 
 | Stage | 任务 | 默认 skill | 关键增强 / 替代 |
 |---|---|---|---|
-| 1 | 选题漏斗 | **`67/econfin-idea-finder`** | `25-HosungYou-Diverga`、`61-phdemotions-research-methods` |
+| **1L** | **文献底座**（检索 + 下载语料 + 带引用扫描） | **`literature-review-tools`**（外部，见 §0.3）：`workflow run topic-to-review-multi` | 降级路径：`67/arxiv` + `59-shiquda-openalex-skill` + `WebSearch` |
+| 1 | 选题漏斗 | **`67/econfin-idea-finder`** | `25-HosungYou-Diverga`、`61-phdemotions-research-methods`；扫描摘要由 Stage 1L 供给 |
 | 1 | 写计划书 | **`67/econfin-proposal`** | `14-luischanci-claude-code-research-starter` |
-| 1 | 查新 / 重复性 | **`67/novelty-check`** | `59-shiquda-openalex-skill`、`62-PHY041-claude-skill-citation-checker` |
+| 1 | 查新 / 重复性 | **`67/novelty-check`** | 以 1L 语料为证据底座；`59-shiquda-openalex-skill`、`62-PHY041-claude-skill-citation-checker` |
 | 1 | 重要性 / 贡献论证 | **`67/significance-search`** | `11-James-Traina-compound-science` |
 | 1 | 目标期刊口味扫描 | **`67/journal-digest`** | `09-meleantonio-awesome-econ-ai-stuff` |
 | 2 | 取数 | **`67/data-fetcher`** | `57-dgunning-edgartools`(SEC/EDGAR)、`58-charlescoverdale-econstack`、`mcp__fred-mcp-server`、FRED/WRDS |
@@ -95,12 +118,13 @@ playbook 指定的工作区子目录落盘即可。
 | 4 | 回归表（LaTeX 三线） | **`67/table`** | `66/latex-table` |
 | 4 | 图 | **`67/figure`** | `39-vincentarelbundock-marginaleffects`、`55-ab604-claude-code-r-skills` |
 | 5 | 从表图写论文 | **`67/paper-writer`** | `01-lishix520-academic-paper-skills`、`04-K-Dense-AI-claude-scientific-writer`、`35-bahayonghang-academic-writing-skills` |
-| 5 | 文献综述 | `36-taoyunudt-literature-review-skill` | `52-keemanxp-slr-prisma`、`53-keemanxp-thematic-analysis-skill`、`59-shiquda-openalex-skill` |
+| 5 | 文献综述 / related work | **`literature-review-tools`**（`workflow run topic-to-related-work` 起草带引用段落）→ 交 `67/paper-writer` 成文 | `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、`53-keemanxp-thematic-analysis-skill`、`59-shiquda-openalex-skill` |
+| 5 | 千级摘要 PRISMA 系统筛选（真做系统综述时） | **`literature-review-tools`** 的 `asreview` | `52-keemanxp-slr-prisma`（方法学） |
 | 6 | 打磨流水线（编排级） | **`67/paper-pipeline`** | 其内部串：`paper-polish`/`paper-self-revise`/`paper-style`/`reference-verify` |
 | 6 | 单步：校对 | `67/paper-polish` | `38-peternka-academic-proofreader` |
 | 6 | 单步：自评修订 | `67/paper-self-revise` | — |
 | 6 | 单步：期刊风格 | `67/paper-style` | — |
-| 6 | 单步：引用核验 | `67/reference-verify` | `62-PHY041-claude-skill-citation-checker`、`66/citation-fidelity`、Zotero MCP `scite_check_retractions` |
+| 6 | 单步：引用核验 | `67/reference-verify` | `62-PHY041-claude-skill-citation-checker`、`66/citation-fidelity`、Zotero MCP `scite_check_retractions`；1L 语料 `manifest.json` 作「确有此文」旁证 |
 | 7 | 英文可读性 | **`67/readability`** | `56-hanlulong-econ-writing-skill` |
 | 7 | 英文去 AI 套话 | `44-matsuikentaro1-humanizer_academic` | `45-stephenturner-skill-deslop`、`46-hardikpandya-stop-slop`、`47-conorbronsdon-avoid-ai-writing` |
 | 7 | 中文去翻译腔/混排 | **`67/fix-chinese`** + `67/chinese-quote-converter` | `48-copaper-ai-chinese-de-aigc`、`49-voidborne-d-humanize-chinese` |
@@ -119,8 +143,9 @@ playbook 指定的工作区子目录落盘即可。
 | 能力 | skill / 工具 |
 |---|---|
 | 联网搜索 / 抓取 / 登录后操作 | **`67/web-access`**（中文站点首选）、`67/web-research`、`67/agent-browser`、`WebSearch`/`WebFetch` |
-| arXiv / NBER / 预印本 | `67/arxiv`、`68-research-productivity-skills/nber-working-papers-api`、`68/.../academic-paper-search`、`68/.../unpaywall-api` |
-| 文献库管理 / 引用入库 | Zotero MCP（`zotero_*`、`scite_*`）、`59-shiquda-openalex-skill` |
+| **文献检索 + 语料 + 带引用问答**（横切，任何阶段可复用 1L 语料） | **`literature-review-tools`**（外部，§0.3）：`topic-to-*` 建语料、`pdf-corpus-qa` 复用语料再问、`pdf-to-markdown`(MinerU) 转 Markdown、`asreview` 做 PRISMA |
+| arXiv / NBER / 预印本 | `67/arxiv`、`literature-review-tools` 的 `arxiv-fetch`/`openalex-fetch`/`pubmed-fetch`（均免钥）、`68-research-productivity-skills/nber-working-papers-api`、`68/.../academic-paper-search`、`68/.../unpaywall-api` |
+| 文献库管理 / 引用入库 | Zotero MCP（`zotero_*`、`scite_*`）、`literature-review-tools` 的 `litrun.py mcp zotero-mcp`、`59-shiquda-openalex-skill` |
 | 因果推断 MCP（agent-native） | **StatsPAI MCP**：`detect_design → preflight → recommend → fit(as_handle) → audit_result → *_from_result → bibtex` |
 | Stata MCP 执行 | `mcp__stata-code`（结构化输出优先）、`mcp__stata-mcp`（do-file 执行）|
 | 宏观数据 MCP | `mcp__fred-mcp-server`（`fred_search`/`fred_get_series`） |
@@ -146,6 +171,10 @@ playbook 指定的工作区子目录落盘即可。
 3. **语言分流**（Stage 7）：英文走 `readability` + 44/45/46/47；中文走 `fix-chinese` +
    `chinese-quote-converter` + 48/49。
 4. **能用 MCP 验证就别凭记忆**：引用真实性、计量稳健性、宏观数据都有对应 MCP/skill 兜底。
+5. **文献先建语料、后下判断**：凡涉及「有没有人做过 / 相对谁前进了一步 / related work 怎么写」，
+   一律先跑 Stage 1L 用 `literature-review-tools` 把**真实语料**拉下来，再让 `novelty-check` /
+   `significance-search` / `paper-writer` 在语料上作业。语料建好后**全程复用**（`pdf-corpus-qa`
+   直接对 `01_proposal/literature/corpus/` 再问），别为每个问题重新下载一遍。
 
 ---
 

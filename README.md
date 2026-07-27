@@ -37,7 +37,7 @@ flowchart TD
 
     subgraph A ["① 构思 · CONCEIVE"]
       direction LR
-      S1["<b>Stage 1 · 选题与设计</b><br/>idea-finder → novelty-check<br/>→ significance → proposal"]
+      S1L["<b>Stage 1L · 文献底座</b><br/>literature-review-tools<br/>检索 → 真实语料 → 带引用扫描"] --> S1["<b>Stage 1 · 选题与设计</b><br/>idea-finder → novelty-check<br/>→ significance → proposal"]
     end
 
     subgraph B ["② 实证 · EVIDENCE"]
@@ -100,8 +100,8 @@ flowchart TD
 
 | 你带来的 | 从哪进入 |
 |---|---|
-| 只有一句话想法 / 一个研究方向 | **Stage 1** · 完整走选题漏斗 |
-| 一份成形的 proposal（X→M→Y、识别策略、样本） | **Stage 2** · 直接取数 |
+| 只有一句话想法 / 一个研究方向 | **Stage 1L → 1** · 先建文献底座，再走完整选题漏斗 |
+| 一份成形的 proposal（X→M→Y、识别策略、样本） | **Stage 1L → 2** · 仍先建文献底座（写综述要用），再取数 |
 | 已清洗好的数据 + 设计 | **Stage 3** · 直接估计 |
 | 已有回归结果 / 表图 | **Stage 5** · 直接写初稿 |
 | 一份 `main.tex` 初稿 | **Stage 6** · 直接进打磨流水线 |
@@ -133,6 +133,36 @@ flowchart TD
 
 ---
 
+## 📚 文献底座：让引用有出处，而不是「像是真的」
+
+AI 写论文最容易翻车的地方是**文献**——凭记忆生成的文献名看着像真的，一查全是幻觉。
+Paper-WorkFlow 用一个前置微阶段 **Stage 1L** 把这件事从根上堵住：**先把真实文献下载到本地，
+建成一个可反复检索的语料底座，后面所有文献动作都在这个语料上作业。**
+
+这一步由外部 skill **[`literature-review-tools`](https://github.com/brycewang-stanford/lit-review-agent-tools)**（CC0-1.0）提供 ——
+它自带一个能真正把工具装起来跑的启动器 `litrun.py`，把 arXiv / OpenAlex / PubMed 检索、
+PDF→Markdown（MinerU）、PaperQA2 带引用问答、ASReview PRISMA 筛选串成命名工作流。
+
+```text
+/plugin marketplace add brycewang-stanford/lit-review-agent-tools
+/plugin install lit-review-agent-tools@lit-review-marketplace
+```
+
+| 用在哪 | 做什么 |
+|---|---|
+| **Stage 1L**（新增前置） | 检索 → 下载语料 → 产出带引用的文献扫描：**Saturated（已做透）/ Opportunity（空白）/ 关键对标文献** |
+| **Stage 1** 选题漏斗 | 把扫描摘要喂给 `novelty-check`，查新有真实证据，不靠模型印象 |
+| **Stage 5** 写作 | 在同一份语料上起草**带引用**的 related work，交 `paper-writer` 消化成正式一节 |
+| **Stage 6 / 9** 引用核验 | 语料 `manifest.json` 作「确有此文且我们真读过」的旁证，配合 `reference-verify` 终审 |
+
+> **装不上也不会卡住流水线**：自动降级为 `WebSearch` + `arxiv` + OpenAlex 的轻量扫描，
+> 并在闸门**显著标注「文献底座为降级模式，引用需加倍核验」**——
+> 但**任何情况下都不会凭记忆编造文献充数**。
+> 接入细节（安装回退、输出重定向、API key / 重装 / 干跑护栏）见
+> [`references/lit-review-integration.md`](references/lit-review-integration.md)。
+
+---
+
 ## 📦 跑完你会得到什么（一个自包含工作区）
 
 运行后所有产物沉淀在 `paper_workspace/<研究短名>_<时间戳>/`，可打包、可复现、可断点续跑：
@@ -141,6 +171,7 @@ flowchart TD
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/workflow_state.json     ★唯一权威进度文件（断点续跑依据）
 │   └── quality_scorecard.md        ★初稿质量门 7 维评分卡（放行/回炉判定）
+├── 01_proposal/literature/         ★文献底座：真实语料 corpus/ + 带引用的 scan_digest.md
 ├── 01_proposal/proposal.md         ★定稿计划书：后续所有阶段的「合同」
 ├── 02_data/clean.parquet + codebook.md
 ├── 03_analysis/results/ + robustness/
@@ -197,7 +228,8 @@ response letter、期刊清单 + cover letter，以及一份 `FINAL_REPORT.md` �
 
 1. **能调用就不要重写** —— 编排器只在对的时点把对的 skill 喂对的输入，绝不复制其逻辑。
 2. **上下文保护优先** —— 任何要灌大段文本回主代理的操作，一律改成「子代理写盘 + 回传摘要」。
-3. **真实优先，绝不编造** —— 引用核验、数据来源、计量结论都以可验证的真实运行结果为准。
+3. **真实优先，绝不编造** —— 文献先建**真实语料底座**（Stage 1L）再作业，引用核验、数据来源、
+   计量结论都以可验证的真实运行结果为准；工具装不上就降级并标注，绝不用记忆顶包。
 4. **失败要回退而非硬写成功** —— 平行趋势不过 / 弱工具 / 不显著时自动切备选，并在闸门标红。
 5. **人类决策点守在阶段闸门** —— 定标题、定期刊、识别策略拍板、投稿前终审，必须经人放行。
 6. **调用要稳，不靠运气** —— 子 skill 是仓库文件夹、不保证已注册；调用优先 `Skill(<注册名>)`，
@@ -216,8 +248,9 @@ Paper-WorkFlow/
 ├── SKILL.md                          # 总编排器（入口 · 完整执行协议）
 ├── README.md                         # 本文件（流程理念海报）
 ├── references/
-│   ├── stage-playbook.md             # 10 阶段逐阶段操作手册
+│   ├── stage-playbook.md             # 逐阶段操作手册（Stage 0–9 + 前置微阶段 1L）
 │   ├── skill-map.md                  # 「任务 → 用哪个 skill」全量路由表
+│   ├── lit-review-integration.md     # 外部 skill literature-review-tools 接入协议（安装回退 + 输出重定向 + 护栏）
 │   ├── quality-rubric.md             # 初稿质量门 7 维评分卡（达标阈值 + 短板→回退映射）
 │   ├── subagent-templates.md         # subagent 派发模板（含上下文保护契约）
 │   └── workspace-and-state.md        # 工作区布局 + 状态字段 + 子代理 I/O 约定
@@ -237,6 +270,7 @@ Paper-WorkFlow/
 > 进一步阅读（按需加载）：[`SKILL.md`](SKILL.md) ｜
 > [阶段操作手册](references/stage-playbook.md) ｜
 > [skill 路由表](references/skill-map.md) ｜
+> [文献底座接入](references/lit-review-integration.md) ｜
 > [质量门评分卡](references/quality-rubric.md) ｜
 > [subagent 模板](references/subagent-templates.md) ｜
 > [工作区与状态](references/workspace-and-state.md)
@@ -251,6 +285,9 @@ Paper-WorkFlow 是 **[Auto-Empirical-Research-Skills](https://github.com/brycewa
 
 - 执行范式模仿自 `do-agent`（多代理 + 上下文保护，母仓库授权模仿）。
 - 编排范式来自 `67-econfin-workflow-toolkit/paper-pipeline`（固定顺序 + 断点续跑 + 交互档位）。
+- **文献能力**来自母仓库之外的独立 skill
+  [`literature-review-tools`](https://github.com/brycewang-stanford/lit-review-agent-tools)（CC0-1.0），
+  同样**按需调用、不复制进本仓库**（接入协议见 [`lit-review-integration.md`](references/lit-review-integration.md)）。
 - 混合来源集合的再分发请各自核对其上游许可。
 
 ---

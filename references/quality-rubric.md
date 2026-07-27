@@ -133,7 +133,14 @@
 - **存在编造/张冠李戴的引用**（幻觉文献、作者或年份错配、引用与论点不符）。
 - 关键对标文献缺席，导致贡献被高估。
 
-**回退**：→ `reference-verify`（终审核验）+ Stage 5 文献综述（配 `36`/`52`/`59` 补做结构化综述）。
+**证据来源**：以 `06_polish/ref_verify_report.xlsx`（`reference-verify` 的逐条核验）为准；
+`01_proposal/literature/corpus/manifest.json`（Stage 1L 真实下载的语料）作为「确有此文且我们真读过」
+的**旁证**——引用出现在 manifest 里可减少误判，但**不能替代核验**。若
+`workflow_state.json` 的 `literature.degraded=true`（文献底座走了降级模式），本维**从严打分**并在
+评分卡里显式注明该风险。
+
+**回退**：→ `reference-verify`（终审核验）+ Stage 5 文献综述（用 `literature-review-tools` 在 1L 语料上
+重跑 §S5L 起草；语料不足则先补跑 Stage 1L 扩语料，再配 `36`/`52`/`59` 补做结构化综述）。
 
 ---
 
@@ -196,7 +203,7 @@
 | ③ 稳健 | Stage 3 | 补稳健性矩阵 subagent / 修聚类 / StatsPAI `audit_result` 补缺 |
 | ④ 解读 | Stage 5/6 | 重写结果与结论段，克制因果语气 |
 | ⑤ 写作 | Stage 5/6（表图问题→Stage 4） | 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
-| ⑥ 引用 | `reference-verify` + Stage 5 | 终审核验 / 补结构化文献综述 |
+| ⑥ 引用 | `reference-verify` + Stage 5（语料不足则先回 Stage 1L） | 终审核验 / 在 1L 语料上重起草 related work / 补语料后补结构化文献综述 |
 | ⑦ 复现 | Stage 2/3 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 |
 
 **回退上限**：同一维最多回退 **2 轮**。2 轮后仍不达标 → 在 `logs/quality_gate.md` 记「已知短板」，

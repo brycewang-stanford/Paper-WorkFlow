@@ -13,5 +13,5 @@ if [[ -e "$workspace" ]]; then
   exit 1
 fi
 
-mkdir -p "$workspace"/{00_meta,01_proposal/candidates,02_data/raw,03_analysis/results,03_analysis/robustness,04_results,05_draft,06_polish,07_dehumanize,08_review,09_submission,logs,backups}
+mkdir -p "$workspace"/{00_meta,01_proposal/candidates,01_proposal/literature/corpus,02_data/raw,03_analysis/results,03_analysis/robustness,04_results,05_draft,06_polish,07_dehumanize,08_review,09_submission,logs,backups}
 printf '# Paper workflow workspace\n\nCreated for staged empirical-paper orchestration.\n' > "$workspace/README.md"

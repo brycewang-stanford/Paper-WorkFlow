@@ -11,6 +11,66 @@
 
 ---
 
+## Stage 1L · 文献底座（Literature Base）— Stage 1 之前的前置微阶段
+
+**目的**：在动选题漏斗之前，先用真实文献**建一个可反复检索的本地语料底座**，产出一份**带引用的
+文献扫描**。它是后面所有文献动作的地基：Stage 1 的查新有证据、Stage 5 的 related work 有出处、
+Stage 6/9 的引用核验有物证、质量门维度 ⑥ 有旁证。
+
+> **入口规则**：从 Stage 1 或 Stage 2 进入流水线时**必跑**；从 Stage 5 及之后进入时，若
+> `01_proposal/literature/` 不存在而又需要写/补文献综述，则**按需补跑一次**（只跑检索+语料，
+> 扫描问题换成 related-work 视角）。从 Stage 6+ 进入且不动文献综述时可 `skipped`。
+
+**plan**
+- 从用户给的研究方向（或已有 `proposal.md`）抽出 **2–4 组检索式**：核心主题、识别方法、
+  被解释变量领域、制度背景。中文选题要**同时给英文检索式**（arXiv/OpenAlex 主要索引英文）。
+- **确认 skill 可达**：按 [`skill-map.md`](skill-map.md) §0.3 的三级回退拿到 `literature-review-tools`
+  与启动器路径 `{{LITRUN}}`；先 `python3 {{LITRUN}} doctor` 看工具链与已配的 API key。
+  缺 `OPENAI_API_KEY` 就在闸门问用户一次（`litrun.py env --set`，**绝不回显全值**）；用户不给 →
+  只跑免钥的检索/下载步，问答步跳过并标注。
+- **重活先干跑**：`--dry-run` 看解析出的真实命令与目标路径，确认无误再实跑（全自动档位可不等确认，
+  但 dry-run 结果仍要写进 `logs/stage_1L.md`）。
+
+**execute**（派 **1 个** subagent，模板见 [`subagent-templates.md`](subagent-templates.md) §S1L）
+- 主用工作流 **`topic-to-review-multi`**（arXiv + OpenAlex 合并语料，单源被限流时仍能出结果）：
+
+  ```bash
+  python3 {{LITRUN}} workflow run topic-to-review-multi \
+    --query "<英文检索式>" --max 8 \
+    --question "本领域已被做透的问题(Saturated)有哪些？尚存的空白(Opportunity)有哪些？必须对标的关键文献是哪几篇？" \
+    2>&1 | tee "{{WS}}/01_proposal/literature/scan_raw.txt"
+  ```
+
+- 生物医学主题改走 `pubmed-fetch`；只要语料不要问答用 `topic-to-pdfs`（免钥）。
+- **⚠️ 输出重定向（必做）**：litrun 把语料写在 `~/.lit-review-tools/workspace/runs/<workflow-id>/`
+  （**按 id 命名、重跑即覆盖**）、把答案打到 stdout（不落盘）。所以每轮跑完立刻
+  `cp -R .../corpus/. {{WS}}/01_proposal/literature/corpus/`，并把 stdout `tee` 成文件。
+  **工作区内副本才是权威**，`~/.lit-review-tools/` 一律视作可被覆盖的临时缓存。
+- 多组检索式**串行**跑（同名 workdir 会互相覆盖），每轮拷完再跑下一轮；语料合并进同一个
+  `corpus/`，`manifest.json` 逐轮追加。
+- 最后由 subagent 把各轮答案归并成结构化的
+  `{{WS}}/01_proposal/literature/scan_digest.md`，固定三节：**Saturated（已做透）/ Opportunity
+  （空白）/ Key references（关键对标文献，每条带出处）**。
+
+**review**
+- 主代理抽查 `scan_digest.md`：每条论断是否都指向 `corpus/` 里真实存在的文件？关键对标文献是否
+  在 `manifest.json` 里？发现无出处的论断就打回重跑，**不要放行**。
+
+**交付**
+- `01_proposal/literature/corpus/`（PDF/txt + `manifest.json`）、`scan_digest.md`、`scan_raw.txt`；
+  在 `workflow_state.json` 的 `literature` 块记 `corpus_dir` / `scan_digest` / `n_items` /
+  `tools_used` / `degraded`。
+
+**失败回退**
+- skill 装不上 / 用户拒装 / 网络不通 → **降级模式**：`WebSearch` + `Skill(67/arxiv)` +
+  `59-shiquda-openalex-skill` 做一次轻量扫描，`literature.degraded=true`，并在闸门**显著标注
+  「文献底座为降级模式，引用需在 Stage 6 加倍核验」**。
+- 检索几乎无结果 → 换检索式（更宽的上位词 / 换英文表述 / 换数据库），最多换 3 轮；仍无果则标红，
+  提示用户这个方向可能过窄或表述不对。
+- **任何情况下都不允许凭记忆编造文献名充数**——宁可降级并标注，也不要假语料。
+
+---
+
 ## Stage 1 · 选题与设计
 
 **目的**：把一个研究方向收敛成一份可直接进入实证的 proposal（X→M→Y、识别策略、样本、贡献边际、
@@ -18,6 +78,9 @@
 
 **plan**
 - 若用户已给方向，直接用；否则 `AskUserQuestion` 问方向 + 想要的候选标题数 N（缺省 5）。
+- **先确认 Stage 1L 已完成**：`01_proposal/literature/scan_digest.md` 就是下面 §S1 模板里
+  `{{LITERATURE_SCAN_DIGEST}}` 的**唯一来源**（只取其 Saturated / Opportunity 两节，别灌全文）。
+  没跑 1L 就先跑 1L——**不要让 subagent 凭记忆想象文献版图**。
 - 读 `67/econfin-idea-finder/SKILL.md`，按其漏斗逻辑运行。
 
 **execute（并行 subagent，强制调用子 skill）** — 直接套用
@@ -139,13 +202,26 @@
 **目的**：从表图产出一份结构完整的 LaTeX 初稿。
 
 **execute**
+- **先起草 related work（派 1 个 subagent，模板见 [`subagent-templates.md`](subagent-templates.md) §S5L）**：
+  用 `literature-review-tools` 在 **Stage 1L 已建好的语料上**跑
+  `workflow run topic-to-related-work`（或 `pdf-corpus-qa --input {{WS}}/01_proposal/literature/corpus`
+  复用语料、**不重复下载**），产出一段**带引用**的 related-work 初稿到
+  `05_draft/related_work_draft.md`，同时把命中的文献条目补进 `05_draft/ref.bib`。
+  1L 是降级模式（`literature.degraded=true`）时**跳过本步**并在日志标注，改由 `paper-writer`
+  按 `scan_digest.md` 保守成文。
 - `Skill` 调用 `67/paper-writer`，喂入 `04_results/`（表图）+ `01_proposal/proposal.md`（动机/贡献/
-  假设），让它按"Intro → 文献/制度背景 → 数据 → 识别策略 → 结果 → 机制 → 稳健性 → 结论"写出
-  `05_draft/main.tex` 与 `05_draft/ref.bib`。
-- 文献综述薄弱时，配合 `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、
-  `59-shiquda-openalex-skill` 补做结构化综述；引用入库可配 Zotero MCP。
+  假设）+ `05_draft/related_work_draft.md`（文献综述素材），让它按"Intro → 文献/制度背景 → 数据 →
+  识别策略 → 结果 → 机制 → 稳健性 → 结论"写出 `05_draft/main.tex` 与 `05_draft/ref.bib`。
+  **related-work 初稿是素材不是成品**——由 `paper-writer` 消化成正式一节、并把定位写成
+  「相对谁前进了一步」，不要整段照抄。
+- 真要做**系统综述式**的文献工作（千级摘要筛选）时，用 `literature-review-tools` 的 `asreview`
+  做 PRISMA 主动学习筛选，方法学规范配 `52-keemanxp-slr-prisma`；其余场景配
+  `36-taoyunudt-literature-review-skill`、`59-shiquda-openalex-skill`；引用入库可配 Zotero MCP
+  （`litrun.py mcp zotero-mcp` 打印配置块）。
 
-**review**：critic 通读——贡献句是否锋利、识别策略段是否说服力够、结果段是否克制（不过度解读）。
+**review**：critic 通读——贡献句是否锋利、识别策略段是否说服力够、结果段是否克制（不过度解读）、
+**文献综述里每条引用是否能在 `01_proposal/literature/corpus/manifest.json` 或 `ref.bib` 里找到出处
+（找不到出处的一律标为疑似幻觉，留给 Stage 6 的 `reference-verify` 处置）**。
 意见写 `05_draft/draft_audit.md`。
 
 **revise / 交付**：据审阅改一轮，定稿初稿。**注意**：此处只求"完整且自洽的初稿"，精修留给 Stage 6。
@@ -241,7 +317,9 @@
 - `Skill` 调用 `67/paper-submission`，评估贡献新颖度、匹配 SSCI/ABS 星级、给出 ~20 本目标期刊清单，
   落 `09_submission/journal_shortlist.md`。结合 Stage 0 选定的目标期刊收敛到 1 主 + 2 备。
 - **终审引用**：再 `Skill` 调用一次 `67/reference-verify`（投稿前最后一次，确保此前所有修订没动坏
-  引用），落 `09_submission/ref_verify_final.xlsx`。
+  引用），落 `09_submission/ref_verify_final.xlsx`。把 `01_proposal/literature/corpus/manifest.json`
+  一并喂给它作「确有此文且我们真读过」的旁证；**核验结论仍以 `reference-verify` 为准**，manifest
+  只减少误判、不替代核验。
 - 生成 cover letter / highlights / 作者贡献声明等投稿材料到 `09_submission/`。
 - 需要排版成 Word / 提交版 PDF 时用 `67/md-to-docx`、`67/markitdown`、`08-ndpvt-web-latex-document-skill`。
 

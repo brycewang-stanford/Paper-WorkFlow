@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -10,6 +10,7 @@
   },
   "stages": {
     "0_intake_setup": "pending",
+    "1L_literature_base": "pending",
     "1_topic_design": "pending",
     "2_data": "pending",
     "3_identification_estimation": "pending",
@@ -19,6 +20,15 @@
     "7_language_dehumanize": "pending",
     "8_review_revision": "pending",
     "9_submission": "pending"
+  },
+  "literature": {
+    "skill": "literature-review-tools",
+    "degraded": false,
+    "corpus_dir": "01_proposal/literature/corpus",
+    "scan_digest": "01_proposal/literature/scan_digest.md",
+    "n_items": 0,
+    "queries": [],
+    "tools_used": []
   },
   "quality_gate": {
     "draft_milestone": "pending",

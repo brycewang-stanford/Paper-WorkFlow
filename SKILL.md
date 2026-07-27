@@ -6,7 +6,9 @@ description: >
   选刊与投稿 → 复盘交付」这条端到端流水线自动跑通。本 skill **不重复实现任何子能力**，
   而是借鉴 `do-agent` 的「多代理 + 上下文保护」执行范式与 `paper-pipeline` 的「固定顺序 +
   可断点续跑 + 交互档位」编排范式，按阶段**调用既有 skill / 派发并行 subagent** 完成一篇
-  可投稿的实证论文。触发场景：用户说 "/paper-workflow"、"帮我写一篇实证论文"、
+  可投稿的实证论文。文献环节由外部 skill `literature-review-tools` 先建真实语料底座
+  （Stage 1L：arXiv/OpenAlex 检索 → 下载语料 → 带引用扫描），杜绝幻觉引用。
+  触发场景：用户说 "/paper-workflow"、"帮我写一篇实证论文"、
   "从选题到投稿"、"实证论文全流程"、"经管社科论文工作流"、"端到端跑一篇 paper"、
   "automate an empirical paper"、"end-to-end empirical research pipeline"、"paper workflow"，
   或带着一个研究方向 / 一份计划书 / 一份数据 / 一份初稿希望「一条龙」推进到投稿。
@@ -43,11 +45,12 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | Stage | 阶段 | 主要调用的 skill（位于 `67-econfin-workflow-toolkit/`，除非另注） | 产出落盘 |
 |---|---|---|---|
 | **0** | Intake & Setup | *(编排器本体)* | 工作区、`workflow_state.json`、入口路由 |
+| **1L** | 文献底座 | `literature-review-tools`（**外部 skill**：arXiv+OpenAlex 检索 → 语料 → PaperQA2 带引用扫描） | `01_proposal/literature/corpus/` + `scan_digest.md` |
 | **1** | 选题与设计 | `econfin-idea-finder` → `novelty-check` → `significance-search` → `journal-digest` → `econfin-proposal` | `01_proposal/proposal.md` |
 | **2** | 数据 | `data-fetcher` → `data-cleaning` | `02_data/clean.parquet` + `codebook.md` |
 | **3** | 计量识别与估计 | 按设计择一：`did-analysis` / `iv-estimation` / `rdd-analysis` / `synthetic-control` / `panel-data` / `ols-regression` / `time-series` / `ml-causal`（+ StatsPAI MCP） | `03_analysis/` 代码 + 原始结果 |
 | **4** | 表与图 | `table` + `figure` | `04_results/*.tex` + `*.pdf/png` |
-| **5** | 写作初稿 | `paper-writer` | `05_draft/main.tex` + `ref.bib` |
+| **5** | 写作初稿 | `literature-review-tools`（起草带引用 related work）→ `paper-writer` | `05_draft/main.tex` + `ref.bib` |
 | **6** | 全流程打磨 | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify） | 打磨后的 `main.tex` |
 | **7** | 语言与去 AI 味 | `readability` / `fix-chinese` + （`44`/`47`/`48`/`49` 去 AIGC 集合） | 去味后的稿件 |
 | **8** | 模拟评审与修订 | `referee-report` → `paper-referee-revise`（或 `paper-self-revise`） | 修订稿 + response letter |
@@ -76,8 +79,8 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 
    | 用户带来的 | 从哪进入 | 说明 |
    |---|---|---|
-   | 只有一个研究方向 / 一句话想法 | **Stage 1** | 完整走选题漏斗 |
-   | 一份已成形的 proposal（X→M→Y、识别策略、样本） | **Stage 2** | 跳过选题，直接取数 |
+   | 只有一个研究方向 / 一句话想法 | **Stage 1L → 1** | 先建文献底座，再走完整选题漏斗 |
+   | 一份已成形的 proposal（X→M→Y、识别策略、样本） | **Stage 1L → 2** | 跳过选题，但仍先建文献底座（Stage 5 写综述要用），再取数 |
    | 已清洗好的数据 + 设计 | **Stage 3** | 直接估计 |
    | 已有回归结果 / 表图 | **Stage 5** | 直接写初稿 |
    | 一份 `main.tex` 初稿 | **Stage 6** | 直接进打磨流水线 |
@@ -163,6 +166,18 @@ subagent（`Agent` 工具）或交给子 skill**，主代理只持有指针与�
    期刊摘要→`01_proposal/journal_digest.md`）。模板见
    [`references/subagent-templates.md`](references/subagent-templates.md)。
 
+4. **外部 skill（不在母仓库内）**：文献能力由
+   [`literature-review-tools`](https://github.com/brycewang-stanford/lit-review-agent-tools)（CC0-1.0）提供，
+   它**不在母仓库 `67/` 里**，因此比其它子 skill 多一步「先确认可达」：`Skill(skill="literature-review-tools")`
+   → not found 则 `Read` `~/.claude/skills/` / `.claude/skills/` / `~/.claude/plugins/**/lit-review-agent-tools/skills/`
+   下的 `literature-review-tools/SKILL.md`（启动器 = 同目录 `scripts/litrun.py`）→ 都找不到就在闸门问用户
+   一次再装（`/plugin marketplace add brycewang-stanford/lit-review-agent-tools`）。**装不上就降级**到
+   `WebSearch` + `67/arxiv` + `59-shiquda-openalex-skill` 做轻量扫描并显著标注，**绝不因为装不上就凭
+   记忆编文献**。它的 `litrun.py workflow run` 也需要输出重定向（语料写在
+   `~/.lit-review-tools/workspace/runs/<id>/`、**按 id 命名重跑即覆盖**，答案只打到 stdout）——每次跑完
+   必须 `tee` 接住 stdout、`cp -R` 把语料拷进 `01_proposal/literature/`。完整协议见
+   [`references/lit-review-integration.md`](references/lit-review-integration.md)。
+
 > **派 subagent 调子 skill 时，SKILL.md 路径必须是仓库内完整路径**——subagent 的工作目录可能与主
 > 代理不同，给错路径它就找不到文件、转而脑补，产出不可复现的劣化结果。
 
@@ -180,6 +195,8 @@ subagent（`Agent` 工具）或交给子 skill**，主代理只持有指针与�
      调用：<本阶段要用的 skill 列表>
    ════════════════════════════════════════
    ```
+
+   （前置微阶段横幅写 `Stage 1L · 文献底座`，不占用 0–9 的编号。）
 
 2. **置状态 `in_progress`** → 读 [`references/stage-playbook.md`](references/stage-playbook.md) 的
    对应章节 → 按其 plan→execute→review→revise 跑（该用 `Skill` 用 `Skill`，该派 `Agent` 派
@@ -236,9 +253,11 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
 - **一页流水线复盘表**：每个 Stage 调用了什么、产出了什么、关键数字、走过哪些回退分支；
 - **初稿质量门评分卡**（嵌入或链接 `00_meta/quality_scorecard.md`）：7 维终评分 + 达标判定 +
   回退历史，证明「高质量」不是自我宣称而是过了闸门；
-- **交付物清单**（带相对路径链接）：`proposal.md` / 清洗后数据 + codebook / 分析代码 /
-  出版级表图 / `main.tex`+`ref.bib` / response letter / 期刊清单 + cover letter；
-- **可复现说明**：环境依赖、一键重跑命令、数据来源与版权注记；
+- **交付物清单**（带相对路径链接）：文献扫描 `scan_digest.md` + 语料 `manifest.json` / `proposal.md` /
+  清洗后数据 + codebook / 分析代码 / 出版级表图 / `main.tex`+`ref.bib` / response letter /
+  期刊清单 + cover letter；
+- **可复现说明**：环境依赖、一键重跑命令、数据来源与版权注记；**文献语料只交付 `manifest.json` +
+  `scan_digest.md`，受版权保护的 PDF 本体不随交付物分发**（可据 manifest 用 `litrun.py` 重新拉取）；
 - **下一步建议**：还差哪些稳健性、投稿前最后检查清单。
 
 最后把交付物打包路径告知用户。**全程不需要人工干预即可从 Setup 跑到交付**（`全自动` 档位）；
@@ -250,7 +269,9 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
 
 - **绝不替子 skill 重新发明轮子**。识别策略、表格规范、查新逻辑、审稿口吻……都在既有 skill 里，
   本编排器只负责"在对的时点把对的 skill 喂对的输入"。
-- **绝不伪造数据 / 结果 / 文献**。引用核验交给 `reference-verify`；数据来源交给 `data-fetcher`；
+- **绝不伪造数据 / 结果 / 文献**。文献先由 Stage 1L 的 `literature-review-tools` 建**真实语料底座**，
+  再让 `novelty-check` / `paper-writer` 在语料上作业（语料建好后全程复用，别重复下载）；
+  引用核验交给 `reference-verify`；数据来源交给 `data-fetcher`；
   计量结论以真实运行结果为准（可用 StatsPAI MCP 链路：`detect_design → preflight → recommend →
   fit(as_handle) → audit_result → sensitivity_from_result → bibtex`）。
 - **人类决策点不可跳过**（除非 `全自动` 档位且用户已显式授权）：选题定标题、定目标期刊、识别
@@ -265,6 +286,10 @@ Stage 7 结束、Stage 8 开始之前，**强制插入一道质量门**。这是
   （含每阶段的 skill 调用、subagent 派发模板、失败回退分支）。
 - [`references/skill-map.md`](references/skill-map.md) — 第 0 节是**子 skill 调用机制 + 注册名对照表
   + 输出路径重定向**（编排能否跑通的关键）；其余是「任务 → 用哪个 skill」的全量路由表。
+- [`references/lit-review-integration.md`](references/lit-review-integration.md) — **外部 skill
+  `literature-review-tools` 的接入协议**：三级安装/回退、`litrun.py` 命令与工作流参数速查、输出重定向
+  （语料 + stdout）、API key / 重装 / 干跑护栏、与 `novelty-check`/`paper-writer`/`reference-verify`
+  的分工边界。**跑 Stage 1L 或 Stage 5 文献综述前先读它。**
 - [`references/quality-rubric.md`](references/quality-rubric.md) — **初稿质量门的 7 维评分卡**：每维
   评分细则、致命红旗清单、达标阈值、「短板 → 回退阶段」映射。
 - [`references/subagent-templates.md`](references/subagent-templates.md) — **可直接复制的 subagent

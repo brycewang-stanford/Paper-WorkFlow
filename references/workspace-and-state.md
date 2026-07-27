@@ -22,6 +22,10 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── quality_scorecard.md       # ★初稿质量门 7 维评分卡（决定放行/回炉）
 │   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
 ├── 01_proposal/
+│   ├── literature/                # ★Stage 1L 文献底座（litrun 输出已重定向到此，见 lit-review-integration.md）
+│   │   ├── corpus/                #   下载到本地的真实文献 + manifest.json（全程复用，别重复下载）
+│   │   ├── scan_digest.md         #   ★带引用的文献扫描：Saturated / Opportunity / Key references
+│   │   └── scan_raw.txt           #   litrun stdout 原始留档（tee 接住，否则不落盘）
 │   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
 │   ├── journal_digest.md          # journal-digest 目标期刊口味扫描（输出已重定向到此）
 │   ├── critique.md                # critic subagent 的选题审阅
@@ -44,6 +48,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 05_draft/
 │   ├── main.tex                   # ★初稿
 │   ├── ref.bib
+│   ├── related_work_draft.md      # 在 1L 语料上起草的带引用 related work（paper-writer 的素材）
+│   ├── related_work_raw.txt       # 对应的 litrun stdout 留档
 │   └── draft_audit.md
 ├── 06_polish/                     # paper-pipeline 的工作副本与产出
 │   ├── main.tex / ref.bib
@@ -78,14 +84,21 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `2`；v2 起新增 `quality_gate` 块） |
+| `schema_version` | 模板版本号（当前 `3`；v2 起新增 `quality_gate` 块，v3 起新增 `literature` 块与 `1L` 阶段键） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
 | `project.mode` | `auto` / `stage-confirm` / `interactive`（交互档位） |
 | `project.target_journal` | 目标期刊（未定则填 `"TBD-by-stage1"`） |
 | `project.language` | `en` / `zh` / `bilingual`（决定 Stage 7 分流） |
-| `stages` | 10 个阶段键（`0_intake_setup` … `9_submission`）各自的状态 |
+| `stages` | 11 个阶段键（`0_intake_setup`、`1L_literature_base`、`1_topic_design` … `9_submission`）各自的状态 |
+| `literature.skill` | 文献底座用的 skill（缺省 `literature-review-tools`；降级时填实际用的替代路径） |
+| `literature.degraded` | `true` = 外部 skill 不可用、走了 `WebSearch`+`67/arxiv` 的降级扫描——**为 true 时 Stage 5 跳过 §S5L，且必须在闸门标注「引用需加倍核验」** |
+| `literature.corpus_dir` | 语料目录相对路径（`01_proposal/literature/corpus`）——权威副本，`~/.lit-review-tools/` 下的一律视作可被覆盖的临时缓存 |
+| `literature.scan_digest` | 文献扫描文件相对路径（`01_proposal/literature/scan_digest.md`） |
+| `literature.n_items` | 语料里的文献篇数（= `corpus/manifest.json` 条目数） |
+| `literature.queries` | 实际跑过的检索式数组（续跑时据此避免重复检索） |
+| `literature.tools_used` | 用过的 litrun 工作流 / 工具 id（如 `["topic-to-review-multi","pdf-corpus-qa"]`） |
 | `quality_gate.draft_milestone` | `pending` / `done`——「可投稿级初稿」核心里程碑是否达成（质量门 `pass` 时置 `done`） |
 | `quality_gate.status` | `pending` / `pass` / `not_pass`——最近一轮质量门判定 |
 | `quality_gate.rounds` | 已执行的质量门轮次（含回退；上限 2） |
@@ -106,6 +119,7 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
 
 ```json
 {
+  "literature_scan": "01_proposal/literature/scan_digest.md",
   "proposal": "01_proposal/proposal.md",
   "clean_data": "02_data/clean.parquet",
   "main_results": "03_analysis/results/main_results.json",
@@ -153,4 +167,7 @@ Setup 时把 [`../assets/workflow_state.template.json`](../assets/workflow_state
   "一键重跑命令"，确保第三方能从 `02_data/raw/` 复跑到 `04_results/`。
 - 数据版权 / 来源在 `02_data/codebook.md` 与 `FINAL_REPORT.md` 注明；不可分发的数据只留拉取脚本
   与说明，不入库原始文件。
+- **文献语料同理**：`01_proposal/literature/corpus/` 里的 PDF 多数受版权保护，**打包交付时只保留
+  `manifest.json` + `scan_digest.md`**（可据 manifest 用 `litrun.py workflow run topic-to-pdfs` 重新
+  拉取），PDF 本体不随交付物分发、不入 git（工作区默认在 `.gitignore` 之外，勿提交）。
 - 打包交付时以工作区根目录为单位；`backups/` 与 `logs/` 可选保留作审计。
