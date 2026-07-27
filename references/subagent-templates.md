@@ -35,8 +35,12 @@
 # 强制工作流
 ## Step A — 确认可达与配置
 1. `Bash: python3 {{LITRUN}} doctor` —— 看工具链与已配 API key。
-2. 缺 OPENAI_API_KEY：**停下来回传「需要 key」**，不要自己编、不要跳过就硬跑 QA 步。
-   （主代理会问用户后用 `litrun.py env --set` 写入；用户不给则改跑免钥的 `topic-to-pdfs`，问答步跳过并标注。）
+2. 缺 OPENAI_API_KEY：**停下来回传「需要 key」**，不要自己编 key。
+   ⚠️ 缺 key 时 topic-to-review-multi 是 **fail-fast：一步都不跑、一篇语料都下不来**
+   （报错 `litrun: missing API keys for this workflow: OPENAI_API_KEY`）。
+   主代理拿到 key 后你再跑；用户不给 key 则**换成免钥的 `topic-to-pdfs`**
+   （注意它的语料落 `<workdir>/pdfs/` 而不是 `corpus/`，见下面 Step B 的降级命令），
+   扫描降级为你基于 manifest.json + 标题摘要的人工归纳，并在回传里标 degraded=true。
 3. 重活先干跑：对第一组检索式加 `--dry-run` 跑一次，把解析出的真实命令写进
    {{WS}}/logs/stage_1L.md，再去掉 --dry-run 实跑。
 
@@ -50,9 +54,20 @@
     cp -R ~/.lit-review-tools/workspace/runs/topic-to-review-multi/corpus/. \
           "{{WS}}/01_proposal/literature/corpus/"
 
+**降级路径**（无 key，改用 topic-to-pdfs）——**源子目录是 pdfs/ 不是 corpus/，别照抄上面那行**：
+
+    python3 {{LITRUN}} workflow run topic-to-pdfs --query "Q" --max 10 \
+      2>&1 | tee -a "{{WS}}/01_proposal/literature/scan_raw.txt"
+
+    cp -R ~/.lit-review-tools/workspace/runs/topic-to-pdfs/pdfs/. \
+          "{{WS}}/01_proposal/literature/corpus/"
+
 **这两步缺一不可**：litrun 把语料写在 ~/.lit-review-tools/（按 workflow id 命名、**下一轮就被覆盖**），
 把答案打到 stdout（**不落盘**）。不 tee + 不 cp 就等于这一轮白跑。
-生物医学主题改用 `pubmed-fetch`；只要语料不要问答用 `topic-to-pdfs`（免钥）。
+生物医学主题改用 `pubmed-fetch`。
+⚠️ **arXiv 对经管/政策类选题覆盖很差**（实测会返回明显跑题的条目），这类主题必须走带 OpenAlex 的
+`topic-to-review-multi`，或直接 `run openalex-fetch`——只靠 arXiv 会得到「有量但不相关」的假语料。
+拷完后**核一眼标题**：跑题条目直接从 corpus/ 删掉，别让它们进 manifest 统计。
 
 ## Step C — 归并成结构化扫描
 把各轮答案归并写入 {{WS}}/01_proposal/literature/scan_digest.md，固定三节：

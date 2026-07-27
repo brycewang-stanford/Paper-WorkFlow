@@ -88,14 +88,19 @@ python3 {{LITRUN}} mcp zotero-mcp                    # 打印 MCP 配置块（MC
 
 **本流水线用到的命名工作流**（参数与默认值以上游 `recipes/workflows.json` 为准）：
 
-| workflow id | 参数 | 用在哪个 Stage | 要 API key? |
-|---|---|---|---|
-| `topic-to-pdfs` | `--query` `--max`(默认10) | 1L · 只要语料不要问答时 | 否（arXiv 免钥） |
-| `topic-to-review-multi` | `--query` `--question` `--max`(默认8/源) | **1L 主用**：arXiv+OpenAlex 合并语料 → 带引用回答 | 是（`OPENAI_API_KEY`，QA 步） |
-| `topic-to-review` | `--query` `--question` `--max`(默认10) | 1L 备用（只要 arXiv，更快） | 是 |
-| `topic-to-related-work` | `--query` `--max`(默认10) | **5 主用**：检索 → 起草带引用 related-work 段 | 是 |
-| `pdf-corpus-qa` | `--input`(PDF 目录) `--question` | 1L/5 复用已有语料再问一次，**不重复下载** | 是 |
-| `pdf-to-markdown` | `--input` | 需要把 PDF 喂给别的 skill 时（MinerU） | 否 |
+| workflow id | 参数 | 用在哪个 Stage | 语料落在 workdir 的 | 要 API key? |
+|---|---|---|---|---|
+| `topic-to-pdfs` | `--query` `--max`(默认10) | **1L 降级主用**：只取语料不问答 | **`pdfs/`** | **否**（arXiv 免钥） |
+| `topic-to-review-multi` | `--query` `--question` `--max`(默认8/源) | **1L 主用**：arXiv+OpenAlex 合并语料 → 带引用回答 | **`corpus/`** | 是（`OPENAI_API_KEY`） |
+| `topic-to-review` | `--query` `--question` `--max`(默认10) | 1L 备用（只要 arXiv，更快） | **`corpus/`** | 是 |
+| `topic-to-related-work` | `--query` `--max`(默认10) | **5 主用**：检索 → 起草带引用 related-work 段 | **`corpus/`** | 是 |
+| `pdf-corpus-qa` | `--input`(PDF 目录) `--question` | 1L/5 复用已有语料再问一次，**不重复下载** | 原地（`--input`） | 是 |
+| `pdf-to-markdown` | `--input` | 需要把 PDF 喂给别的 skill 时（MinerU） | `markdown/` | 否 |
+
+> ⚠️ **子目录名按 workflow 而异**（已实测）：`topic-to-review*` / `topic-to-related-work` 落 `corpus/`，
+> 但 `topic-to-pdfs` 落 **`pdfs/`**。拷贝时**照着上表取对应子目录**，别一律写 `corpus/`——写错了
+> `cp` 会静默拷不到东西，这一轮就白跑了。两者内部结构一致（PDF + `manifest.json`），拷进工作区
+> 后统一归到 `01_proposal/literature/corpus/` 即可。
 
 单工具直跑里本流水线可能用到：`arxiv-fetch` / `openalex-fetch` / `pubmed-fetch`（均免钥，生物医学
 或中文经管主题走 OpenAlex/PubMed 覆盖更好）、`asreview`（真要做 PRISMA 系统综述时）。
@@ -125,7 +130,14 @@ python3 {{LITRUN}} workflow run topic-to-review-multi \
   2>&1 | tee "{{WS}}/01_proposal/literature/scan_raw.txt"
 
 # ② 语料落盘：把 run workdir 整份拷进工作区，之后所有引用都指向工作区内副本
+#    ⚠️ 子目录名按 workflow 而异：topic-to-review* / topic-to-related-work → corpus/
+#                                  topic-to-pdfs                          → pdfs/
 cp -R ~/.lit-review-tools/workspace/runs/topic-to-review-multi/corpus/. \
+      "{{WS}}/01_proposal/literature/corpus/"
+
+# 降级路径（无 OPENAI_API_KEY 时）——注意源目录是 pdfs/ 不是 corpus/
+python3 {{LITRUN}} workflow run topic-to-pdfs --query "<检索式>" --max 10
+cp -R ~/.lit-review-tools/workspace/runs/topic-to-pdfs/pdfs/. \
       "{{WS}}/01_proposal/literature/corpus/"
 ```
 
@@ -137,8 +149,12 @@ cp -R ~/.lit-review-tools/workspace/runs/topic-to-review-multi/corpus/. \
 ## 5. 护栏（写进每个用到它的 subagent prompt）
 
 1. **先 `doctor` 再跑重活**。缺 `OPENAI_API_KEY` 就**先问用户**，用 `litrun.py env --set` 写入，
-   **绝不回显 key 全值、绝不编造 key**。用户不给 → 降级到免钥路径（`topic-to-pdfs` +
-   `arxiv-fetch`/`openalex-fetch` 只取语料，问答步跳过并标注）。
+   **绝不回显 key 全值、绝不编造 key**。
+   > ⚠️ **实测：缺 key 时 workflow 是「fail-fast」——一步都不会跑，语料一篇也不会下来。**
+   > 报错形如 `litrun: missing API keys for this workflow: OPENAI_API_KEY`。
+   > 所以**不存在「检索照跑、只是问答步跳过」这回事**：用户不给 key，就必须**换成免钥的
+   > `topic-to-pdfs`**（或直接 `run arxiv-fetch` / `run openalex-fetch`）先把语料拿到手，
+   > 再把「带引用扫描」降级为主代理基于语料 `manifest.json` + 摘要的人工归纳，并标 `degraded=true`。
 2. **重装警告**：`marker` / `docling` 会拉 PyTorch，首次安装是**几个 GB 的网络下载**。跑之前先告知
    用户，别在无人值守档位里静默拉。默认优先用免装或轻装路径（`arxiv-fetch`/`openalex-fetch`/`mineru`）。
 3. **先 `--dry-run`**：重活（下载 N 篇 PDF、跑 QA）先干跑一次，把解析出的真实命令与目标路径在

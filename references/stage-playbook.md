@@ -26,8 +26,9 @@ Stage 6/9 的引用核验有物证、质量门维度 ⑥ 有旁证。
   被解释变量领域、制度背景。中文选题要**同时给英文检索式**（arXiv/OpenAlex 主要索引英文）。
 - **确认 skill 可达**：按 [`skill-map.md`](skill-map.md) §0.3 的三级回退拿到 `literature-review-tools`
   与启动器路径 `{{LITRUN}}`；先 `python3 {{LITRUN}} doctor` 看工具链与已配的 API key。
-  缺 `OPENAI_API_KEY` 就在闸门问用户一次（`litrun.py env --set`，**绝不回显全值**）；用户不给 →
-  只跑免钥的检索/下载步，问答步跳过并标注。
+  缺 `OPENAI_API_KEY` 就在闸门问用户一次（`litrun.py env --set`，**绝不回显全值**）。
+  **⚠️ 实测：缺 key 时 workflow 是 fail-fast——一步都不跑、一篇语料都下不来**，
+  所以用户不给 key 时**必须换 workflow**（`topic-to-pdfs`，免钥），而不是「跑同一个、跳过问答步」。
 - **重活先干跑**：`--dry-run` 看解析出的真实命令与目标路径，确认无误再实跑（全自动档位可不等确认，
   但 dry-run 结果仍要写进 `logs/stage_1L.md`）。
 
@@ -41,7 +42,11 @@ Stage 6/9 的引用核验有物证、质量门维度 ⑥ 有旁证。
     2>&1 | tee "{{WS}}/01_proposal/literature/scan_raw.txt"
   ```
 
-- 生物医学主题改走 `pubmed-fetch`；只要语料不要问答用 `topic-to-pdfs`（免钥）。
+- 生物医学主题改走 `pubmed-fetch`；只要语料不要问答用 `topic-to-pdfs`（免钥，**语料落
+  `<workdir>/pdfs/` 而非 `corpus/`**，拷贝时别照抄上面那行）。
+- **检索质量提示（实测）**：arXiv 对经管/政策类中文选题覆盖很差（会返回明显跑题的结果），
+  这类主题**务必用带 OpenAlex 的 `topic-to-review-multi`**，或直接 `run openalex-fetch`；
+  只用 arXiv 会得到一个看似有量、实则不相关的语料。
 - **⚠️ 输出重定向（必做）**：litrun 把语料写在 `~/.lit-review-tools/workspace/runs/<workflow-id>/`
   （**按 id 命名、重跑即覆盖**）、把答案打到 stdout（不落盘）。所以每轮跑完立刻
   `cp -R .../corpus/. {{WS}}/01_proposal/literature/corpus/`，并把 stdout `tee` 成文件。
