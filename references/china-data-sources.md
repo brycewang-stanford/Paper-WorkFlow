@@ -12,11 +12,10 @@
 <!-- CN-CLAIM-AUDIT-BANNER -->
 ## Claim audit status
 
-> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 12 claims logged as of 2026-07-21; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
+> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 13 claims logged as of 2026-08-05; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
 
 Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
 <!-- /CN-CLAIM-AUDIT-BANNER -->
-
 ---
 
 ## 0. 快速索引（按研究主题）

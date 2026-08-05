@@ -61,8 +61,10 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── robustness/                # 每个稳健性检验一份 json/png（subagent 各自写盘）
 │   └── results_audit.md
 ├── 04_results/
-│   ├── *.tex                      # 出版级三线表
+│   ├── *.tex                      # 出版级三线表（booktabs）
+│   ├── *.docx / *.xlsx            # 同一张表的 Word / Excel 版，三线结构由规整器写实
 │   ├── *.pdf / *.png              # 图
+│   ├── table_style_audit.md       # 三线表闸门结论（check_table_style.py）
 │   └── exhibits_index.md          # 每张表/图对应论文哪个论点
 ├── 05_draft/
 │   ├── main.tex                   # ★初稿
@@ -105,7 +107,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `10`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`） |
+| `schema_version` | 模板版本号（当前 `11`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -133,6 +135,15 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `analysis_backend.version_report` | 后端选择、版本检查和 fallback 记录路径（`00_meta/analysis_backend.md`） |
 | `analysis_backend.capability_report` | 本机后端能力、缺失依赖和 fallback 可用性的结构化报告（默认 `00_meta/backend_capabilities.json`） |
 | `analysis_backend.backend_parity_report` | fallback 或 secondary validation 的结果等价性报告路径（默认 `00_meta/backend_parity.json`） |
+| `table_style.format` | 表格导出格式；默认 `three-line`（经管期刊主流三线表）。改成 `journal-template` 等其他值即让三线表闸门跳过，理由必须进 `decisions` |
+| `table_style.variant` | 版式变体，`cn-journal`（宋体+Times 小五）/ `en-journal` / 空（结构统一但不动字体）；对应规整器的 `--preset` |
+| `table_style.header_rows` | 表头行数，决定栏目线画在第几行之下（默认 `1`；表格自身标了 `w:tblHeader` 时以表格为准） |
+| `table_style.panel_rules` | 是否允许多面板表在 `Panel A` / `面板A` 标题行上画一条细线（默认 `true`） |
+| `table_style.typography_preset` | 规整器 `--preset` 取值：`structure-only`（默认，只统一三线结构）/ `cn-journal` / `en-journal` |
+| `table_style.decimal_places` | 系数与标准误的小数位（默认 `3`，全文一致；改动记 `decisions`） |
+| `table_style.status` | `pending` / `pass` / `not_pass`——`scripts/check_table_style.py` 最近一次结论 |
+| `table_style.audit_report` | 表格格式审计落盘路径（默认 `04_results/table_style_audit.md`） |
+| `table_style.last_check` | 最近一次跑闸门的北京时间 |
 | `empirical_audit.status` | `pending` / `pass` / `not_pass`——样本、变量构造、missingness/balance/overlap 审计状态 |
 | `empirical_audit.sample_audit` | 样本审计报告路径（默认 `02_data/sample_audit.md`） |
 | `empirical_audit.estimand_alignment` | `pending` / `pass` / `not_pass`——估计样本是否仍对应目标 estimand |

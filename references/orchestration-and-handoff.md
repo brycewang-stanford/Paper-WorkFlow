@@ -115,9 +115,19 @@ mutating an old one.
 - Any fallback or unavailable probe goes into `logs/stage_<N>.md` and
   `workflow_state.json.decisions`.
 
-## schema_version 10
+## schema_version 11
 
-Schema v10 keeps the v9 `orchestration` block and adds ARS-inspired checkpoint
+Schema v11 keeps everything v10 shipped and adds one Stage-0 decision block,
+`workflow_state.json.table_style`: the export format for every table the run
+produces, defaulting to `three-line` (三线表). It is resolved once in the Phase 0
+intake alongside the analysis backend, enforced at Stage 4 and again at the
+Stage 9 Word export by `scripts/check_table_style.py`, and opted out of only by
+changing `table_style.format` and recording the reason in `decisions`. Field
+semantics live in [`workspace-and-state.md`](workspace-and-state.md) §2; the
+format contract and the per-backend recipes live in
+[`analysis-backends.md`](analysis-backends.md) §4.1.
+
+Schema v10 kept the v9 `orchestration` block and added ARS-inspired checkpoint
 and integrity surfaces:
 
 - `00_meta/entry_routing.md`

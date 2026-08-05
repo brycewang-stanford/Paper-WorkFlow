@@ -253,8 +253,21 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
   `fig.savefig(..., dpi=300)` 落 `04_results/*.pdf` + `*.png`；脚本顶部先跑一次 CJK+retina 设置。需要时
   `Skill` 调用 `67/figure` 或 `39-vincentarelbundock-marginaleffects`（边际效应图）作补充。
 
+- **表格格式统一走三线表**（见 [`analysis-backends.md`](analysis-backends.md) §4.1）：各后端出完
+  `.tex/.docx/.xlsx` 之后，**不要**在各自的出表工具里手调边框，而是统一跑一次规整器——
+  `python3 scripts/make_three_line_tables.py --workspace <workspace> --preset cn-journal`
+  （英文稿用 `--preset en-journal`；只要结构不要动字体用默认 `structure-only`）。
+  它幂等、只用标准库、不需要 Word/pandoc，把顶线 1.5pt / 栏目线 0.75pt / 底线 1.5pt 写实，
+  清掉竖线、表体横线和底纹，`Panel A`/`面板A` 这类面板标题行保留一条 0.75pt 细线。
+  `workflow_state.json.table_style.format` 不是 `three-line` 时（目标刊自带 Word 模板/要求全边框）
+  跳过规整，并把理由写进 `decisions`。
+
 **review**：critic 检查——表注是否齐（样本量、R²、聚类层级、显著性星标说明）、图是否自解释、
 数字与 Stage 3 结果一致。意见写 `04_results/figtab_audit.md`。
+**格式闸门**：跑 `python3 scripts/check_table_style.py <workspace>`——它只读校验 `.docx` 的三线结构
+与配套 `.tex` 的 booktabs 合规（有 `\hline`、`|` 列格式、竖线、表体横线、或边框只继承自 Word 表格样式
+都判不过）。退出码非 0 时先修表再进 Stage 5，结论写进 `04_results/table_style_audit.md` 并回填
+`table_style.status` / `last_check`。
 
 **revise / 交付**：定稿 `04_results/`，并生成一份 `04_results/exhibits_index.md` 列出每张表/图对应
 论文的哪个论点，供 Stage 5 写作直接引用。
@@ -462,6 +475,18 @@ Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引�
   author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
   若政策页无法访问，按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 标 blocked，投稿包不得标 ready。
 - 需要排版成 Word / 提交版 PDF 时用 `67/md-to-docx`、`67/markitdown`、`08-ndpvt-web-latex-document-skill`。
+- **全文 Word 定稿的表格必须是三线表**（见 [`analysis-backends.md`](analysis-backends.md) §4.1）。
+  `md-to-docx` / pandoc 转出来的表继承 Word 的 `Table` 样式，几乎一定带全框线，所以转换**之后**
+  按 `workflow_state.json.table_style` 再规整一次，最后过闸门：
+
+  ```bash
+  python3 scripts/make_three_line_tables.py 09_submission/main.docx --preset cn-journal
+  python3 scripts/check_table_style.py <workspace>            # 退出码非 0 则投稿包不得标 ready
+  ```
+
+  `--preset cn-journal` 同时套宋体 + Times New Roman 小五；英文刊用 `--preset en-journal`；
+  目标刊自带 Word 模板时把 `table_style.format` 改成 `journal-template`，闸门会跳过并记录理由。
+  规整器幂等，Stage 4 已经跑过也可以在这里放心再跑一次。
 - **中文学位论文答辩 PPT（Stage 9 子任务）**：调用
   `python3 defense_pptx.py --workspace <workspace> --type thesis --output 答辩.pptx`
   （默认 22 页结构，按 [`chinese-journals.md`](chinese-journals.md) §6.5 模板）；

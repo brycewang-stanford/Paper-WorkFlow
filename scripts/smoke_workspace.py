@@ -228,8 +228,8 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 10:
-        fail("smoke state schema_version must remain 10")
+    if state.get("schema_version") != 11:
+        fail("smoke state schema_version must remain 11")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":

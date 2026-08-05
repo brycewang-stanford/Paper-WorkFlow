@@ -113,6 +113,18 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_table_style.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Three-line table (三线表) export contract: exported .docx tables carry a "
+            "heavy top rule, a light header rule and a heavy closing rule with no "
+            "vertical or stray interior rules, borders are explicit rather than "
+            "inherited from a Word table style, and the paired .tex uses booktabs "
+            "instead of \\hline / '|' column specs."
+        ),
+    },
+    {
         "path": "scripts/check_citation_integrity.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

@@ -107,6 +107,65 @@ Setup 的一次性询问除交互档位、目标期刊、稿件语言外，还�
 
 ---
 
+## 4.1 三线表导出契约（默认表格格式）
+
+**默认值**：`workflow_state.json.table_style.format = "three-line"`。这是经管期刊（AER/QJE/JPE 与
+《经济研究》《管理世界》《中国工业经济》《经济学（季刊）》《数量经济技术经济研究》）的通行表格
+格式，也是国内学位论文格式规范的默认要求。Stage 0 可由用户改成 `journal-template`（目标刊提供了
+自己的 Word 模板/`.cls` 时）或其他值，改了就**记进 `decisions`**，不要沉默切换。
+
+**结构定义**（三条线，仅此三条）：
+
+| 线 | 位置 | 粗细 | Word 实现 | LaTeX 实现 |
+|---|---|---|---|---|
+| 顶线 | 表首行之上 | 1.5pt（`w:sz="12"`） | 首行单元格 `tcBorders/top` | `\toprule` |
+| 栏目线 | 表头行之下 | 0.75pt（`w:sz="6"`） | 表头末行 `tcBorders/bottom` | `\midrule` |
+| 底线 | 表末行之下 | 1.5pt（`w:sz="12"`） | 末行单元格 `tcBorders/bottom` | `\bottomrule` |
+
+**硬性禁止**：任何竖线（`|` 列格式、`\vline`、`w:insideV`/`left`/`right`）、表体内的横线
+（`\hline`、`w:insideH`）、单元格底纹。**唯一例外**：多面板表（`Panel A` / `面板A` / `Panel B: 稳健性`）
+可在每个面板标题行之上画一条 0.75pt 细线，跨列小计线用 `\cmidrule`（**不是** `\cline`）。
+
+**排版细则**（经管期刊主流做法，非强制但默认照做）：
+
+- 第一列（变量名/被解释变量栏）左对齐，其余列居中；系数与括号内标准误上下两行、同列对齐。
+- 中文稿：表内汉字宋体、数字与英文 Times New Roman、小五号（9pt）；英文稿全 Times New Roman 9pt。
+- 表题在表**上方**（"表 3 基准回归结果" / "Table 3. Baseline Results"），表注在表**下方**，
+  字号比表体小一号，依次写：样本与口径 → 固定效应 → 聚类层级 → 括号内是什么 → 星号定义。
+- 表头行标记为跨页重复（`w:tblHeader`），避免长表翻页后没有栏目。
+
+**各后端怎么出**（先按 §4 出三格式，再统一规整，不要在各后端里各自调边框）：
+
+- Python/StatsPAI：`sp.regtable(..., template="aer")` / `sp.paper_tables(...)` 的 `.to_latex()` 已是
+  booktabs 三线；`.to_word()` 的边框由写出器决定，**一律再过一遍规整器**。
+- Stata：`esttab ... , booktabs` 出 `.tex`；`.docx` 走 `outreg2`/`putdocx`/`collect` 后**必须**过规整器
+  （`putdocx` 默认画全框线）。
+- R：`modelsummary(..., output = "latex")` 默认 booktabs；`flextable`/`officer` 出的 `.docx` 同样过规整器。
+- Markdown → Word（Stage 9 用 `67/md-to-docx` 转全文时）：pandoc 生成的表继承 `Table` 样式，
+  **必然**不是三线表，转完必须过规整器。
+
+**规整与验收（两个命令，一写一验）**：
+
+```bash
+# 写：把工作区里所有 .docx 的表格统一成三线表（--preset cn-journal 同时套宋体/Times 小五）
+python3 scripts/make_three_line_tables.py --workspace <workspace> --preset cn-journal
+# 单文件、留原稿：
+python3 scripts/make_three_line_tables.py 05_draft/main.docx --output 09_submission/main.docx --dry-run
+
+# 验：只读闸门，同时查 .docx 三线结构与 .tex 的 booktabs 合规
+python3 scripts/check_table_style.py <workspace>
+```
+
+规整器只用标准库改 `word/document.xml`，不需要 Word / pandoc / python-docx，且**幂等**——重复跑结果
+不变，可以放心在 Stage 4 与 Stage 9 各跑一次。默认会在原地改写前留 `.bak`（`--no-backup` 关掉）。
+
+**闸门语义**：`check_table_style.py` 在 Stage 4 收尾与 Stage 9 投稿包定稿前各跑一次，退出码非 0 即
+表图不合格。它把「边框来自 Word 表格样式（如 `Table Grid`）」判为**不可验证**而非通过——因为样式
+可以在别人机器上解析成另一副样子；先跑规整器把边框写实，再验。若目标刊明确要求全边框或自带模板，
+在 `table_style.format` 里显式改值即可让闸门跳过，并把理由写进 `decisions`。
+
+---
+
 ## 5. 交叉验证与 fallback
 
 默认不要求三种后端都跑一遍；主后端跑通并产出同等 artifact 即可。以下情况建议设置

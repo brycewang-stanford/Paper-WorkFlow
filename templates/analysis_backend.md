@@ -10,6 +10,9 @@ Selected at (Beijing): <YYYY-MM-DD HH:MM>
 - Reason for choice:
 - Expected script pattern: 03_analysis/<script>.py / 03_analysis/<script>.do / 03_analysis/<script>.R
 - Child skill or route:
+- Table style (workflow_state.json.table_style.format): three-line (default) / journal-template / other
+- Table style reason (required when not three-line):
+- Typography preset for scripts/make_three_line_tables.py: structure-only / cn-journal / en-journal
 
 ## 2. Environment Check
 
@@ -19,6 +22,7 @@ Selected at (Beijing): <YYYY-MM-DD HH:MM>
 | Stata executable and packages | no | pending |  |
 | R / renv / Quarto packages | no | pending |  |
 | Table export stack | yes | pending | Word / Excel / LaTeX support |
+| Three-line table normaliser | yes | pending | scripts/make_three_line_tables.py (stdlib only) |
 | Figure export stack | yes | pending | PDF + PNG at 300 dpi |
 
 ## 3. Output Contract
@@ -31,6 +35,7 @@ Selected at (Beijing): <YYYY-MM-DD HH:MM>
 | Robustness artifacts | 03_analysis/robustness/ |  |
 | Table build script | 03_analysis/build_exhibits.<ext> |  |
 | Tables | 04_results/*.{tex,docx,xlsx} |  |
+| Table style audit | 04_results/table_style_audit.md | scripts/check_table_style.py |
 | Figures | 04_results/*.{pdf,png} |  |
 
 ## 4. Fallback

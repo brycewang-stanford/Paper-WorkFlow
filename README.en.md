@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-33%2F33_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-34%2F34_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -240,7 +240,7 @@ Use it from Claude Code with a research idea, proposal, dataset, results folder,
 /paper-workflow draft at ./paper/main.tex, polish and prepare submission package
 ```
 
-Before execution, the skill resolves the interaction mode, target journal, manuscript language, and analysis backend once:
+Before execution, the skill resolves the interaction mode, target journal, manuscript language, analysis backend, and table style once:
 
 | Mode | Meaning |
 |---|---|
@@ -249,6 +249,8 @@ Before execution, the skill resolves the interaction mode, target journal, manus
 | `interactive` | Lets each underlying skill use its native approval flow |
 
 Backend choices are `python-statspai` (default), `stata`, and `r`. Backend choice controls Stage 3-4 scripts and export tools; it is separate from manuscript language.
+
+Table style defaults to `three-line` — the booktabs-style table economics and management journals actually print. After Stage 4 exports its tables and again after the Stage 9 full-manuscript Word export, `scripts/make_three_line_tables.py` writes the top / header / bottom rules explicitly and strips vertical rules and shading, and `scripts/check_table_style.py` verifies the result read-only (it also checks the paired `.tex` for booktabs compliance). When the target journal ships its own Word template, change `workflow_state.json.table_style.format` to opt out and record why in `decisions`. See [analysis backends](references/analysis-backends.md) §4.1.
 
 If the user explicitly asks for autonomous execution, the skill infers conservative defaults, records assumptions in `00_meta/intake.md` and `00_meta/analysis_backend.md`, and continues without blocking on preferences.
 
@@ -377,6 +379,8 @@ Paper-WorkFlow/
 │   ├── check_rigor_registry.py
 │   ├── check_skillopt_packet.py
 │   ├── check_verification_log.py
+│   ├── check_table_style.py
+│   ├── make_three_line_tables.py
 │   └── generate_rigor_report.py
 ├── evals/
 │   ├── README.md

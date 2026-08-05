@@ -236,6 +236,31 @@
         "evals/complexity_audit.md",
         "worklogs/2026-06-25-month-long-quality-goal.md"
       ]
+    },
+    {
+      "id": "table_export_format",
+      "theme": "runtime_validators_evals",
+      "invariant": "Every table a run exports is in the economics/management three-line (三线表) form the target journals print: a heavy top rule, a light header rule and a heavy closing rule in the .docx with no vertical or stray interior rules and no borders inherited implicitly from a Word table style, booktabs rather than \\hline in the paired .tex, and any opt-out made explicit in workflow_state.json.table_style plus the decision log.",
+      "owner_files": [
+        "scripts/make_three_line_tables.py",
+        "scripts/check_table_style.py",
+        "assets/workflow_state.template.json",
+        "references/analysis-backends.md",
+        "references/stage-playbook.md",
+        "references/chinese-journals.md"
+      ],
+      "validators": [
+        "scripts/check_table_style.py",
+        "scripts/check_state_template_paths.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/analysis-backends.md",
+        "references/workspace-and-state.md",
+        "references/writing-craft.md",
+        "references/chinese-journals.md",
+        "RIGOR.md"
+      ]
     }
   ]
 }

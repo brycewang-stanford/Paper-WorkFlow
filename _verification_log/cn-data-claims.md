@@ -103,3 +103,11 @@ against the publisher in a maintenance pass are `verified`.
 - source: World Customs Organization HS revision cycle; UN Trade Statistics HS correspondence tables.
 - status: canonical
 - checked: 2026-07-16 · WCO revision cycle is stable public record; not live re-verified in this pass
+
+### C13 · Chinese econ/management journal table format
+- claim-tag: cn-econ-journals-three-line-tables
+- claim: Chinese economics and management journals — including the five top journals (经济研究 / 管理世界 / 经济学（季刊）/ 中国工业经济 / 数量经济技术经济研究) — print regression and descriptive tables as three-line tables (三线表: top rule, header rule, bottom rule; no vertical rules, no interior horizontal rules, no cell shading), the same structure booktabs produces for English-language econ journals. A light rule above a `Panel A` / `面板A` head is the common exception.
+- used-in: references/chinese-journals.md; references/analysis-backends.md
+- source: GB/T 7713 series recommends the three-line form for academic papers, reports and theses; consistent with the printed layout of recent issues of the five journals. 待补 — per-journal 投稿须知 and recent issues were NOT re-pulled live in this pass.
+- status: to-verify
+- checked: 2026-08-06 · added while correcting a prior claim in chinese-journals.md §9 that asserted Chinese journals "通常全边框（不用三线表）", which is wrong for the econ/management list; the corrected text tells the agent to confirm against the target journal's current notice and recent issues before relying on it

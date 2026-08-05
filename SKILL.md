@@ -38,7 +38,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | **1** | 选题与设计 | `econfin-idea-finder` → `novelty-check` → `significance-search` → `journal-digest` → `econfin-proposal` | `01_proposal/proposal.md` |
 | **2** | 数据 | `data-fetcher` → `data-cleaning` + sample/estimand audit | `02_data/clean.parquet` + `codebook.md` + `sample_audit.md` |
 | **3** | 计量识别、估计与方法闸门 | **分析后端路由**：默认 Python/StatsPAI（MCP 优先：`detect_design→preflight→recommend→fit(as_handle)→audit_result→sensitivity_from_result→bibtex`），也可按用户/复现要求切到 Stata（`00.2` `.do` pipeline）或 R（`00.3` tidyverse/fixest/Quarto pipeline）；再按设计配 `did-analysis` / `iv-estimation` / `rdd-analysis` / `synthetic-control` / `panel-data` / `ols-regression` / `time-series` / `ml-causal` + empirical audit + research-grade methods pack + design gate cards | `03_analysis/` 代码 + `design_register.md` + `method_gate.md` + `00_meta/evidence_ledger.md` |
-| **4** | 表与图 | 按同一分析后端生成出版级表图：Python/StatsPAI `regtable`/`paper_tables`/`collect`，Stata `esttab`/`outreg2`/`collect`，R `modelsummary`/`etable`/Quarto；均需 Word/Excel/LaTeX 同出 + PDF/PNG 图 | `04_results/*.{tex,docx,xlsx}` + `*.pdf/png` |
+| **4** | 表与图 | 按同一后端生成出版级表图：Python/StatsPAI `regtable`/`paper_tables`/`collect`，Stata `esttab`/`outreg2`/`collect`，R `modelsummary`/`etable`/Quarto；均需三线表 Word/Excel/LaTeX 同出 + PDF/PNG 图 | `04_results/*.{tex,docx,xlsx}` + `*.pdf/png` |
 | **5** | 写作初稿 | `paper-writer` | `05_draft/main.tex` + `ref.bib` |
 | **6** | 全流程打磨 | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify） | 打磨后的 `main.tex` |
 | **7** | 语言与去 AI 味 | `de-aigc-skills`(48 中英双语六步闭环) → `readability`/`fix-chinese` 收尾 | 降味稿 + 审计表 |
@@ -73,9 +73,9 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
    [`references/workspace-and-state.md`](references/workspace-and-state.md)；交付物优先用 [`templates/`](templates/)。
 4. **写 Stage 0 账本**：`00_meta/entry_routing.md` 记录入口、材料、假设、人类决策分支；
    `00_meta/stage_passport.md` 和 `workflow_state.json.orchestration` 记录 handoff / 断点恢复指针。
-5. **一次问清四件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、目标期刊、
-   语言、分析后端（`python-statspai` 推荐 / `stata` / `r`；规则见
-   [`references/analysis-backends.md`](references/analysis-backends.md)）。若用户要求无人值守或参数足够，
+5. **一次问清五件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、目标期刊、
+   语言、分析后端（`python-statspai` 推荐 / `stata` / `r`）、表格格式（默认三线表）；见
+   [`references/analysis-backends.md`](references/analysis-backends.md)。若用户要求无人值守或参数足够，
    自动填保守缺省并写入 `00_meta/intake.md`、`00_meta/analysis_backend.md`、`workflow_state.json.decisions`。
 6. **初始化状态**：`workflow_state.json` 从 [`assets/workflow_state.template.json`](assets/workflow_state.template.json)
    复制，填 `project` / `orchestration` / `analysis_backend`；Stage 状态用

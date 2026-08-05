@@ -17,11 +17,10 @@
 <!-- CN-CLAIM-AUDIT-BANNER -->
 ## Claim audit status
 
-> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 12 claims logged as of 2026-07-21; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
+> The claims in this document are tracked in [`_verification_log/cn-data-claims.md`](../_verification_log/cn-data-claims.md). 13 claims logged as of 2026-08-05; full audit status (`canonical` / `verified` / `to-verify`) lives in the ledger.
 
 Run `python3 scripts/check_cn_claim_audit.py` for a live audit; the `--update-banners` flag rewrites this banner from the current ledger state. Coverage below the gate threshold (10 rows) is a blocking maintenance failure.
 <!-- /CN-CLAIM-AUDIT-BANNER -->
-
 ---
 
 ## 0. 快速索引
@@ -414,6 +413,25 @@ Chen Y, Liu Z, and Zhang Y. 2023. Title of paper. Journal Name 45(3): 123-145.
 | 审稿周期 | 3-6 月 | 3-6 月 | 3-6 月 | 2-4 月 | 2-4 月 |
 | 录用到见刊 | 3-6 月 | 3-6 月 | 3-6 月 | 3-6 月 | 3-6 月 |
 | 参考文献 | GB/T 7714-2015 | GB/T 7714-2015 | GB/T 7714-2015 | GB/T 7714-2015 | GB/T 7714-2015 |
+| 表格版式 | 三线表 | 三线表 | 三线表 | 三线表 | 三线表 |
+
+### 3.7 表格版式：三线表是经管期刊的默认
+
+国内经管顶刊排印的回归表与英文顶刊同构，都是**三线表**：顶线、栏目线、底线三条横线，
+**没有竖线、没有表体内横线、没有单元格底纹**。这也是 GB/T 7713 系列对学术论文、学位论文
+表格的推荐形式，因此学位论文场景（§6）同样默认三线表。
+
+- **唯一常见例外**：多面板表可在 `Panel A` / `面板A` 这类面板标题行上加一条细线（跨列小计线
+  用 booktabs 的 `\cmidrule`）。个别刊在**描述性统计**或**变量定义表**里允许加分组线，仍不加竖线。
+- **确实要求全边框的，是另一类稿件**：部分**非经管类**期刊、行业内刊、以及少数刊的
+  Word 排版模板会用全框线表。**投稿前以目标刊当年《投稿须知》和近三期已刊论文的实际排印为准**，
+  不要凭本节推断；发现目标刊确实要全边框，就把 `workflow_state.json.table_style.format`
+  改掉并把理由记进 `decisions`。
+- **落地**：三线表结构由 `python3 scripts/make_three_line_tables.py --workspace <ws> --preset cn-journal`
+  统一写实（中文稿宋体 + Times New Roman 小五），由 `python3 scripts/check_table_style.py <ws>`
+  只读校验。契约细则见 [`analysis-backends.md`](analysis-backends.md) §4.1。
+- **表注顺序**（中文经管刊惯例）：样本与口径 → 固定效应 → 聚类层级 → 括号内是什么 →
+  `*** p<0.01, ** p<0.05, * p<0.1`。表题在表上方，用「表 1」独立编号（与「图 1」不连续编号）。
 
 ---
 
@@ -869,7 +887,8 @@ Step 3: 1 主投 + 2 备
 12. **Cover letter 写得太空泛**：必须明确说出研究贡献
 13. **推荐审稿人是熟人**：必须客观列同领域专家
 14. **图分辨率不够**：300+ dpi 是底线
-15. **表格不规范**：中文期刊表格通常**全边框**（不用三线表）
+15. **表格不规范**：经管类中文期刊（含五大顶刊）通用**三线表**——无竖线、无表体横线、无底纹（见 §3.7）；
+    少数非经管刊或期刊自带 Word 模板才要求全边框，以目标刊当年须知和近三期已刊论文为准
 16. **LaTeX 模板用错**：不同期刊的 .cls 不同
 17. **跨页表格没处理**：表格必须在同一页或显式说明跨页
 18. **图表编号不规范**：中文期刊通常**图 1、表 1** 顺序独立编号（不连续）
