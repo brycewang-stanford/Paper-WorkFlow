@@ -192,6 +192,12 @@ severity + 非占位 verbatim + locator、blocking finding 的维度分必须 �
 - **5–6**：结构齐但平铺直叙，引言不抓人或贡献埋没，表图注不全。
 - **≤4**：结构残缺（缺识别/稳健性章节）、或表图无法自解释、或前后自相矛盾。
 
+**表格版式封顶规则**：`python3 scripts/check_table_style.py <workspace>` 不过（表还是全框线 / 有竖线 /
+`.tex` 用 `\hline` / 边框只继承自 Word 表格样式）时，本维**封顶 7 分**——一份还没排成三线表的稿子
+不算「可投稿级」。除非 `workflow_state.json.table_style.format` 已显式改成非 `three-line` 且
+`decisions` 里有理由。回退到 Stage 4 跑规整器，见
+[`analysis-backends.md`](analysis-backends.md) §4.1。
+
 **AI 腔封顶规则**：稿件仍带明显 AI 腔（句长方差平坦、Moreover/此外 链、-ing 尾巴、四字套话、
 空泛形容词、无锚点的"显著提升"）时，本维**封顶 6 分**——无论结构多完整。证据取
 `07_dehumanize/aigc_audit.md`：Stage 7 的 `48-de-AIGC-skills` 五维自评加权分 **<42 视为未过**。

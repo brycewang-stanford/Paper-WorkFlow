@@ -66,8 +66,9 @@ SKIP = "SKIP"
 HEAVY_MIN_EIGHTHS = 8   # >= 1.0pt reads as a heavy (top/bottom) rule
 LIGHT_MAX_EIGHTHS = 8   # <= 1.0pt reads as a light (header/panel) rule
 
+# `w:val` values that paint something. Anything else (`nil`, `none`, absent) is
+# a suppressed edge.
 DRAWN = {"single", "double", "thick", "dashed", "dotted", "wave"}
-BLANK = {"", "nil", "none"}
 
 DOCX_GLOBS = (
     "04_results/*.docx",
@@ -202,7 +203,8 @@ def _effective(cell_spec: tuple[str, int] | None,
     return cell_spec if cell_spec is not None else table_spec
 
 
-def analyse_table(tbl: ET.Element, index: int, source: str) -> list[tuple[str, str, str]]:
+def analyse_table(tbl: ET.Element, index: int, source: str,
+                  default_header_rows: int = 1) -> list[tuple[str, str, str]]:
     """Findings for one `w:tbl`. Pure: no I/O, so the selftest can drive it."""
     label = f"{source}#table{index + 1}"
     findings: list[tuple[str, str, str]] = []
@@ -255,7 +257,9 @@ def analyse_table(tbl: ET.Element, index: int, source: str) -> list[tuple[str, s
         else:
             break
     if header_rows == 0 or header_rows > last:
-        header_rows = 1 if last >= 1 else 0
+        # No row flags itself as a header, so fall back to the project's declared
+        # `table_style.header_rows` (default 1). A single-row table has no header.
+        header_rows = min(default_header_rows, last) if last >= 1 else 0
 
     top_seen = bottom_seen = header_seen = False
     for row_index, row in enumerate(rows):
@@ -348,7 +352,8 @@ def analyse_table(tbl: ET.Element, index: int, source: str) -> list[tuple[str, s
     return unique
 
 
-def analyse_docx(path: Path, root: Path) -> list[tuple[str, str, str]]:
+def analyse_docx(path: Path, root: Path,
+                 default_header_rows: int = 1) -> list[tuple[str, str, str]]:
     rel = str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
     try:
         with zipfile.ZipFile(path) as archive:
@@ -367,7 +372,7 @@ def analyse_docx(path: Path, root: Path) -> list[tuple[str, str, str]]:
         return [(OKAY, "docx:tables", f"{rel}: no tables")]
     findings: list[tuple[str, str, str]] = []
     for index, tbl in enumerate(tables):
-        findings.extend(analyse_table(tbl, index, rel))
+        findings.extend(analyse_table(tbl, index, rel, default_header_rows))
     if not any(level == FAIL for level, _, _ in findings):
         findings.append((OKAY, "docx:tables", f"{rel}: {len(tables)} table(s) conform"))
     return findings
@@ -377,13 +382,86 @@ def analyse_docx(path: Path, root: Path) -> list[tuple[str, str, str]]:
 # LaTeX side                                                                   #
 # --------------------------------------------------------------------------- #
 _TEX_COMMENT_RE = re.compile(r"(?<!\\)%.*")
-_TEX_ENV_RE = re.compile(
-    r"\\begin\{(?P<env>tabular\*?|tabularx|tabulary|longtable|supertabular)\}"
-    r"(?:\s*\[[^\]]*\])?(?:\s*\{[^{}]*\})?\s*\{(?P<spec>[^{}]*)\}"
-    r"(?P<body>.*?)"
-    r"\\end\{(?P=env)\}",
-    re.DOTALL,
-)
+
+# Longest names first so `\begin{tabular}` never shadows `\begin{tabular*}`.
+_TEX_ENVS = ("tabular*", "tabularx", "tabulary", "longtable", "supertabular", "tabular")
+
+
+def _read_brace_group(text: str, index: int) -> tuple[str | None, int]:
+    """Balanced `{...}` starting at `index`: (contents, index-after) or (None, index)."""
+    if index >= len(text) or text[index] != "{":
+        return None, index
+    depth = 0
+    for cursor in range(index, len(text)):
+        if text[cursor] == "{":
+            depth += 1
+        elif text[cursor] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[index + 1:cursor], cursor + 1
+    return None, index
+
+
+def find_tex_tables(text: str) -> list[tuple[str, str, str, int]]:
+    """(env, column spec, body, start offset) for every tabular-like environment.
+
+    A regex cannot do this: real column specs nest braces -- Stata's `esttab`
+    emits `l*{4}{c}`, booktabs users write `@{}lcc@{}`, siunitx writes
+    `S[table-format=1.3]`. An earlier regex-only version silently skipped every
+    such table, which is most of them, so the scan is done by hand.
+    """
+    found: list[tuple[str, str, str, int]] = []
+    for env in _TEX_ENVS:
+        begin, end = "\\begin{" + env + "}", "\\end{" + env + "}"
+        search = 0
+        while True:
+            start = text.find(begin, search)
+            if start < 0:
+                break
+            search = start + len(begin)
+            cursor = search
+            # Optional position argument, e.g. \begin{longtable}[c]{lcc}
+            while cursor < len(text) and text[cursor] in " \t":
+                cursor += 1
+            if cursor < len(text) and text[cursor] == "[":
+                closing = text.find("]", cursor)
+                if closing > 0:
+                    cursor = closing + 1
+            # Consecutive brace arguments on the same line; the last is the spec
+            # (`tabular*`/`tabularx`/`tabulary` take a width argument first).
+            groups: list[str] = []
+            while True:
+                probe = cursor
+                while probe < len(text) and text[probe] in " \t":
+                    probe += 1
+                group, after = _read_brace_group(text, probe)
+                if group is None:
+                    break
+                groups.append(group)
+                cursor = after
+            if not groups:
+                continue
+            # Depth-aware end match so a nested same-env tabular cannot close us.
+            depth, probe, body_end = 1, cursor, -1
+            while probe < len(text):
+                next_begin = text.find(begin, probe)
+                next_end = text.find(end, probe)
+                if next_end < 0:
+                    break
+                if 0 <= next_begin < next_end:
+                    depth += 1
+                    probe = next_begin + len(begin)
+                    continue
+                depth -= 1
+                if depth == 0:
+                    body_end = next_end
+                    break
+                probe = next_end + len(end)
+            if body_end < 0:
+                continue
+            found.append((env, groups[-1], text[cursor:body_end], start))
+    found.sort(key=lambda item: item[3])
+    return found
 
 
 def analyse_tex(path: Path, root: Path) -> list[tuple[str, str, str]]:
@@ -395,14 +473,12 @@ def analyse_tex(path: Path, root: Path) -> list[tuple[str, str, str]]:
     text = _TEX_COMMENT_RE.sub("", text)
 
     findings: list[tuple[str, str, str]] = []
-    environments = list(_TEX_ENV_RE.finditer(text))
+    environments = find_tex_tables(text)
     if not environments:
         return [(OKAY, "tex:tables", f"{rel}: no tabular environments")]
 
-    for index, match in enumerate(environments):
+    for index, (_env, spec, body, _offset) in enumerate(environments):
         label = f"{rel}#tabular{index + 1}"
-        spec = match.group("spec")
-        body = match.group("body")
         if "|" in spec:
             findings.append((
                 FAIL, "tex:vertical-rule",
@@ -472,6 +548,12 @@ def evaluate(workspace: Path, *, require: bool = False) -> Report:
             "three-line default (set table_style.format at Stage 0 to make this explicit)",
         )
 
+    header_rows = style.get("header_rows", 1)
+    if not isinstance(header_rows, int) or header_rows < 1:
+        report.add(WARN, "scope",
+                   f"table_style.header_rows={header_rows!r} is not a positive int; using 1")
+        header_rows = 1
+
     docx_files = collect(workspace, DOCX_GLOBS)
     tex_files = collect(workspace, TEX_GLOBS)
     if not docx_files and not tex_files:
@@ -479,7 +561,7 @@ def evaluate(workspace: Path, *, require: bool = False) -> Report:
         return report
 
     for path in docx_files:
-        for level, check, detail in analyse_docx(path, workspace):
+        for level, check, detail in analyse_docx(path, workspace, header_rows):
             report.add(level, check, detail)
     for path in tex_files:
         for level, check, detail in analyse_tex(path, workspace):
@@ -565,6 +647,50 @@ treat & 0.12*** & 0.10** \\
 \end{tabular}
 """
 
+# Column specs that nest braces: `esttab`'s default, a booktabs `@{}` spec, and
+# a tabularx width argument. All three must be seen, not skipped.
+BRACED_SPEC_TEX = r"""
+\begin{tabular}{l*{4}{c}}
+\toprule
+Var & (1) & (2) & (3) & (4) \\
+\midrule
+treat & 0.12 & 0.10 & 0.09 & 0.11 \\
+\bottomrule
+\end{tabular}
+
+\begin{longtable}{@{}lcc@{}}
+\toprule
+Var & (1) & (2) \\
+\midrule
+\endhead
+x & 1 & 2 \\
+\bottomrule
+\end{longtable}
+
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+A & B & C \\
+\midrule
+1 & 2 & 3 \\
+\bottomrule
+\end{tabularx}
+"""
+
+# Same three shapes, each with a grid violation the scanner must still reach.
+BRACED_SPEC_BAD_TEX = r"""
+\begin{tabular}{l*{4}{c}}
+\hline
+Var & (1) \\
+\hline
+\end{tabular}
+
+\begin{longtable}{@{}l|c@{}}
+\toprule
+Var & (1) \\
+\bottomrule
+\end{longtable}
+"""
+
 BAD_TEX = r"""
 \begin{tabular}{|l|c|c|}
 \hline
@@ -640,12 +766,35 @@ def selftest() -> None:
         assert no_state.to_dict()["ok"], no_state.render()
         assert any(check == "scope" and level == WARN for level, check, _ in no_state.rows)
 
-    # Pure-function guards on the LaTeX matcher (comments must not count).
+    # Pure-function guards on the LaTeX scanner.
     with tempfile.TemporaryDirectory() as tmp:
-        commented = Path(tmp) / "t.tex"
+        root = Path(tmp)
+        commented = root / "t.tex"
         commented.write_text("% \\hline in a comment\n" + GOOD_TEX, encoding="utf-8")
-        assert not [f for f in analyse_tex(commented, Path(tmp)) if f[0] == FAIL], \
+        assert not [f for f in analyse_tex(commented, root) if f[0] == FAIL], \
             "a commented-out \\hline must not fail the gate"
+
+        # Brace-nesting column specs must be SEEN, not skipped -- silently
+        # skipping `l*{4}{c}` would exempt most Stata-generated tables.
+        braced = root / "braced.tex"
+        braced.write_text(BRACED_SPEC_TEX, encoding="utf-8")
+        found = find_tex_tables(BRACED_SPEC_TEX)
+        assert [env for env, *_ in found] == ["tabular", "longtable", "tabularx"], found
+        assert [spec for _, spec, *_ in found] == ["l*{4}{c}", "@{}lcc@{}", "lXX"], found
+        assert not [f for f in analyse_tex(braced, root) if f[0] == FAIL], \
+            "conforming braced-spec tables must pass"
+
+        braced_bad = root / "braced_bad.tex"
+        braced_bad.write_text(BRACED_SPEC_BAD_TEX, encoding="utf-8")
+        bad_checks = {c for level, c, _ in analyse_tex(braced_bad, root) if level == FAIL}
+        assert {"tex:hline", "tex:vertical-rule"} <= bad_checks, bad_checks
+
+        # A nested tabular must not let the inner \end close the outer one.
+        nested = "\\begin{tabular}{lc}\n\\toprule\na & \\begin{tabular}{c}\\hline x\\\\" \
+                 "\\end{tabular} \\\\\n\\bottomrule\n\\end{tabular}\n"
+        outer, inner = find_tex_tables(nested)[0], find_tex_tables(nested)[1]
+        assert "\\bottomrule" in outer[2], "outer body must run past the nested \\end"
+        assert "\\hline" in inner[2] and "\\bottomrule" not in inner[2], inner
 
     print("selftest OK: three-line table gate invariants hold")
 

@@ -10,6 +10,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 - Data/code policy URL:
 - Anonymization policy:
 - Word/page limit:
+- Table format required by the journal (three-line / journal template / full grid):
 - File format:
 - Supplement / appendix format:
 - Conflict of interest / funding disclosure:
@@ -28,6 +29,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 | Data availability statement | 09_submission/DAS.md | no |  |
 | Replication package | REPLICATION.md + code/data | no |  |
 | Author disclosures | 09_submission/disclosures.md | no |  |
+| Table style audit | 04_results/table_style_audit.md | no |  |
 
 ## 3. Final Gates
 
@@ -38,6 +40,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 - Design risk ledger still allows abstract / cover letter external-validity claims:
 - Evidence ledger supports abstract / highlights / cover letter claims:
 - Quality scorecard accepted:
+- Table style gate clean on the final Word/LaTeX package (three-line tables, booktabs `.tex`): `python3 scripts/check_table_style.py <workspace>`
 - No restricted data in public package:
 - No credentials, API keys, or personal identifiers in logs:
 
