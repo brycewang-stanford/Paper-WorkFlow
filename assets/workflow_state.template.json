@@ -1,5 +1,5 @@
 {
-  "schema_version": 10,
+  "schema_version": 11,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -32,6 +32,17 @@
     "version_report": "00_meta/analysis_backend.md",
     "capability_report": "00_meta/backend_capabilities.json",
     "backend_parity_report": "00_meta/backend_parity.json"
+  },
+  "table_style": {
+    "format": "three-line",
+    "variant": "",
+    "header_rows": 1,
+    "panel_rules": true,
+    "typography_preset": "structure-only",
+    "decimal_places": 3,
+    "status": "pending",
+    "audit_report": "04_results/table_style_audit.md",
+    "last_check": ""
   },
   "empirical_audit": {
     "status": "pending",
