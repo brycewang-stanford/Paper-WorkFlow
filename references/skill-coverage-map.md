@@ -16,7 +16,7 @@
 | `66-...-reviewers` | `skills/66-.../reviewers/` | 库内约 8 个资产（`did-reviewer`, `econ-reviewer`, `grillme`, `latex-table`, `citation-fidelity`, `codebook-pass`, `R-optimizer` + 1 套件）；**其中 5 个计入 47**（§2.4） | **专项增强**——Stage 8 模拟评审 / 引用核验 / LaTeX 表的 reviewer 集合。 |
 | `00-Full-empirical-analysis-skill_*` | `skills/00-Full-empirical-analysis-skill_*` | 3 套件（Python / Stata / R）；Stata/R 两套以注册名计入 §2.1 | **三套分析后端**——Stage 3 默认走 StatsPAI Python，但 `.do` / `reghdfe` / `esttab`（Stata）和 `fixest` / `modelsummary`（R）也通过它们落地。 |
 | `69-Paper-WorkFlow` | 本仓库 | **0 计入 47**（`defense_pptx.py` 与 references/templates/scripts/evals 均为编排器内部资产，见 §2 尾注） | **编排器自身**——不重复造子能力，只在每个阶段用 `Skill` / `Agent` 把上面的库串起来。 |
-| 其余 0–65、68 等 68 个集合 | `skills/00–65, 68/` | ~20 处引用（只在「Stage N 增强 / 替代」列出现） | **专项替换**——比如 Stage 1 选题可换 `25-HosungYou-Diverga`，Stage 7 去 AI 味可换 `44–49` 那一组。 |
+| 其余 0–65、68 等 68 个集合 | `skills/00–65, 68/` | ~20 处引用（基本只在「Stage N 增强 / 替代」列出现；例外见下） | **专项替换**——比如 Stage 1 选题可换 `25-HosungYou-Diverga`。**唯一的例外是 `48-de-AIGC-skills`**：它是 Stage 7 降 AIGC 的**第一顺位默认**（中英双语六步闭环），`44`–`47`、`49` 退为补充；因为它不属于 `67/`/`66/`，**不计入 47 个内置 skill**（与 Stage 9 的 AJS 适配器同例）。 |
 
 **为什么是 47？** 把它分成 4 类加总（与 §2.1–2.4 一一对应，编排器自身资产不计入）：
 

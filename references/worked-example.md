@@ -169,8 +169,12 @@ critic 审阅 `draft_audit.md`：引言五段齐、贡献句锋利、结果克�
 
 - **Stage 6**：直接调 `paper-pipeline`（内部 polish→self-revise→style→polish→reference-verify），对齐 JCF 房风
   （[`writing-craft.md`](writing-craft.md) §10）。产出 `06_polish/main.tex` + `ref_verify_report.xlsx`。
-- **Stage 7**：英文走 `readability`+44/45/46/47 去套话；中文版走 `fix-chinese`+`chinese-quote-converter`+48/49。
-  并行 subagent 分章节去味，写回 `07_dehumanize/main.tex`。
+- **Stage 7**：先跑 `de-aigc-skills`（`48-de-AIGC-skills`，中英双语六步闭环）——英文正文与中文版都走它，
+  第 1 步先出 `07_dehumanize/aigc_audit.md` 审计表（本例命中 EN02 -ing 尾巴 ×7、EN10 过度断言 ×3、
+  ZH01 四字套话 ×5），第 2 步把"proves that the reform caused"降级为"is associated with"（DiD 平行趋势
+  只支持这一强度，与 `evidence_ledger.md` 一致），第 4 步五维加权 44 分放行。再做机械收尾：英文
+  `readability`、中文 `fix-chinese`+`chinese-quote-converter`。并行 subagent 分章节处理，写回
+  `07_dehumanize/main.tex`。
 
 ---
 

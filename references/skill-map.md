@@ -47,6 +47,7 @@
 | `command-development` | **`Command Development`** | `67/command-development/SKILL.md` |
 | `China-CF-study` | **`China-CF-Study`** | `67/China-CF-study/SKILL.md` |
 | `Foreign-CF-study` | **`Foreign-CF-Study`** | `67/Foreign-CF-study/SKILL.md` |
+| `48-de-AIGC-skills`（母仓库 `skills/` 下，非 `67/`） | **`de-aigc-skills`** | `skills/48-de-AIGC-skills/SKILL.md` |
 
 其余直接用文件夹名作注册名的常用 skill（注册名 = 文件夹名）：`econfin-idea-finder`、`novelty-check`、
 `journal-digest`、`data-fetcher`、`data-cleaning`、`did-analysis`、`iv-estimation`、`rdd-analysis`、
@@ -109,9 +110,9 @@ playbook 指定的工作区子目录落盘即可。
 | 6 | 单步：自评修订 | `67/paper-self-revise` | — |
 | 6 | 单步：期刊风格 | `67/paper-style` | — |
 | 6 | 单步：引用核验 | `67/reference-verify` | `62-PHY041-claude-skill-citation-checker`、`66/citation-fidelity`、Zotero MCP `scite_check_retractions` |
-| 7 | 英文可读性 | **`67/readability`** | `56-hanlulong-econ-writing-skill` |
-| 7 | 英文去 AI 套话 | `44-matsuikentaro1-humanizer_academic` | `45-stephenturner-skill-deslop`、`46-hardikpandya-stop-slop`、`47-conorbronsdon-avoid-ai-writing` |
-| 7 | 中文去翻译腔/混排 | **`67/fix-chinese`** + `67/chinese-quote-converter` | `48-copaper-ai-chinese-de-aigc`、`49-voidborne-d-humanize-chinese` |
+| 7 | **降 AIGC（中英双语，第一顺位）** | **`48-de-AIGC-skills`**（注册名 `de-aigc-skills`；六步闭环 + EN01–EN22 / ZH01–ZH17 模式库 + 五维自评；不计入 47 个内置 skill） | `44-matsuikentaro1-humanizer_academic`（生医英文）、`45-stephenturner-skill-deslop`、`46-hardikpandya-stop-slop`、`47-conorbronsdon-avoid-ai-writing`、`49-voidborne-d-humanize-chinese`（仅 48 不可达或有专项需要时补） |
+| 7 | 英文语法 / 可读性收尾（48 之后） | **`67/readability`** | `56-hanlulong-econ-writing-skill`、`70-ssci-polish`（SSCI 语域，必须在降 AIGC 之后跑） |
+| 7 | 中文去翻译腔 / 中英混排收尾（48 之后） | **`67/fix-chinese`** + `67/chinese-quote-converter` | 只做机械修正，不得重写句子，否则会把 AI 腔改回来 |
 | 8 | 模拟审稿 | **`67/referee-report`** | `66/grillme`、`66/econ-reviewer`、`66/did-reviewer`、`21-claesbackman-AI-research-feedback` |
 | 8 | 按审稿意见修订 | **`67/paper-referee-revise`** | `67/paper-self-revise`（内部自评时） |
 | 8 | 计量自检 | `41-sticerd-eee-sewage-econometrics-check` | StatsPAI `audit_result`/`sensitivity_from_result`、`03_analysis/method_gate.md` 复审 |
@@ -188,8 +189,11 @@ playbook 指定的工作区子目录落盘即可。
 3. **分析后端分流**（Stage 3–4）：默认 `python-statspai`；用户要 `.do` / `reghdfe` / `esttab` / Stata
    replication 就走 `Full-empirical-analysis-skill-Stata`；用户要 `fixest` / `modelsummary` / Quarto / `renv`
    就走 `Full-empirical-analysis-skill-R`。后端只改变实现，不降低 Method Gate。
-4. **稿件语言分流**（Stage 7）：英文走 `readability` + 44/45/46/47；中文走 `fix-chinese` +
-   `chinese-quote-converter` + 48/49。
+4. **降 AIGC 分流**（Stage 7）：**第一顺位永远是 `48-de-AIGC-skills`（中英双语）**——它自己在 Step 0
+   按语言路由到 `patterns-en.md` / `patterns-zh.md`，中英混排稿（中文正文 + 英文摘要）也由它一次跑完
+   并做跨语言一致性检查，主代理不需要先分语言。48 跑完再做**机械收尾**：英文 `readability`、中文
+   `fix-chinese` + `chinese-quote-converter`（只修语法/混排，不重写句子）。44/45/46/47/49 退化为补充，
+   只在 48 不可达、或稿件是生物医学英文 / 非学术语域时才调。顺序不能反：先收尾后降 AIGC 等于白跑。
 5. **能用 MCP 验证就别凭记忆**：引用真实性、计量稳健性、宏观数据都有对应 MCP/skill 兜底。
 6. **方法闸门优先于写作推进**：Stage 3 的 `method_gate.md` 没过，或 `evidence_ledger.md` 不允许该
    claim 强度，Stage 4–7 不应继续把结果包装成主发现；先回退补证据或降级因果 claim。

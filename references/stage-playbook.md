@@ -308,22 +308,67 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ---
 
-## Stage 7 · 语言与去 AI 味
+## Stage 7 · 语言与去 AI 味（降 AIGC）
 
-**目的**：消除 AI 腔 / 翻译腔，达到人类学者写作质感（按 Stage 0 选定的语言分流）。
+**目的**：消除 AI 腔 / 翻译腔，把语言分布拉回真实研究者的写法（不是同义词替换，也不是句式倒装）。
 
 **execute**
-- **英文稿**：`Skill` 调用 `67/readability` 做语法/可读性逐项修；再按需用
-  `44-matsuikentaro1-humanizer_academic`、`45-stephenturner-skill-deslop`、`46-hardikpandya-stop-slop`、
-  `47-conorbronsdon-avoid-ai-writing` 去 AI 套话；经济学行文规范配 `56-hanlulong-econ-writing-skill`。
-- **中文稿**：`Skill` 调用 `67/fix-chinese`（去翻译腔 + 中英混排规范）+ `67/chinese-quote-converter`
-  （直引号转弯引号）；再按需用 `48-copaper-ai-chinese-de-aigc`、`49-voidborne-d-humanize-chinese`
-  做中文去 AIGC。
-- 去味是"逐句改写"性质，独立段落可并行 subagent 处理，各自写盘回 `07_dehumanize/`。
 
-**review**：critic 抽查——是否仍有"首先/其次/综上所述/值得注意的是"等套话、是否破坏了术语准确性。
+**① 主力：`48-de-AIGC-skills`（中英双语，第一顺位，中英文稿都走它）**
 
-**revise / 交付**：定稿到 `07_dehumanize/main.tex`，回灌主稿。
+`Skill(skill="de-aigc-skills")`；报 not found → `Read skills/48-de-AIGC-skills/SKILL.md` 内联执行。
+它自己在 Step 0 按语言路由，**中英混排稿（中文正文 + 英文摘要）一次跑完**并做跨语言一致性检查，
+主代理不需要先分语言。按它的**六步闭环**跑：
+
+| 步 | 动作 | 本编排器的接口 |
+|---|---|---|
+| 0 定位路由 | 判语言、分章节、认目标期刊、（可选）要作者旧稿做声音样本 | 语言/期刊取 `00_meta/workflow_state.json`；旧稿样本问用户 |
+| 1 审计扫描 | 先出 AI 痕迹表（段落 / 原文片段 / 规则号 / 严重度），**此步不动笔** | 审计表存 `07_dehumanize/aigc_audit.md` |
+| 2 主张-证据核对 | 每条因果/定量 claim 必须锚到表号列号或引用；动词 ↔ 识别强度匹配 | 对照 `00_meta/evidence_ledger.md` 的 claim strength |
+| 3 差异化改写 | 先砸句长方差 → 具体化 → 拆脚手架 → 校准断言 → 恢复研究者声音 | 分章节强度见其 `skills/48-de-AIGC-skills/references/sections.md` |
+| 4 五维自评 | 具体性 1.5× / 节奏 1.2× / 谨慎 1.3× / 隐衔接 1.0× / 研究者声音 1.0× | **加权 <35 回第 3 步，≥42 才放行**（量表见其 `skills/48-de-AIGC-skills/references/scoring.md`） |
+| 5 冷读复查 | 流畅度 / 数字与引用零漂移 / 全篇一个声音 | 输出 change log，见下面「交付」 |
+
+模式库按语言取它的 `skills/48-de-AIGC-skills/references/patterns-en.md`（EN01–EN22）
+或 `skills/48-de-AIGC-skills/references/patterns-zh.md`（ZH01–ZH17）。
+
+**② 硬性红线（必须原样写进每个 Stage 7 subagent 的 prompt）**
+- 数字、系数、标准误、p 值、样本量、公式、变量名、引用内容**一律不动**。
+- 不得编造数据、结果、引用或"有意思的发现"来增加人味；不得注入错别字/口语词骗困惑度。
+- **只改怎么说，不改说了什么**——claim 绝不许变强；唯一允许的变化是③里的证据不足降级。
+- **不要过度修正**：「在 1% 水平上显著」「稳健性检验」「Prior studies have shown that…（带引用）」
+  是正常学术用语，只在堆叠出现或无引用时才动（完整保留清单在其 `skills/48-de-AIGC-skills/references/patterns-en.md` 顶部）。
+
+**③ 与 Method Gate 的联动（这是实证论文降 AIGC 与通用 humanize 的关键差别）**
+
+第 2 步标出的「无证据锚点 claim」**不允许由改写消化掉**。默认修法是**降级动词**
+（proves → is associated with；"充分证明了" → "与…一致"），并把每一条原样带到 review 交用户裁决；
+降级结果必须与 `00_meta/evidence_ledger.md` / `03_analysis/method_gate.md` 允许的 claim 强度一致。
+**任何时候都不许靠"编一条证据"来消掉 mismatch。**
+
+**④ 机械收尾（48 跑完之后，顺序不能反）**
+- 英文：`Skill` 调 `67/readability` 修语法与可读性；经济学行文规范配 `56-hanlulong-econ-writing-skill`；
+  投 SSCI 再叠 `70-ssci-polish`。
+- 中文：`Skill` 调 `67/fix-chinese`（中英混排规范）+ `67/chinese-quote-converter`（直引号转弯引号）。
+- 收尾**只做机械修正，不得重写句子**——重写会把第 3 步刚砸开的句长方差又抹平，等于白跑。
+
+**⑤ 补充 skill（仅在 48 不可达或有专项需要时）**：`44-matsuikentaro1-humanizer_academic`（生物医学英文）、
+`45-stephenturner-skill-deslop` / `46-hardikpandya-stop-slop`（非学术语域 de-slop）、
+`47-conorbronsdon-avoid-ai-writing`（非学术文档审计格式）、`49-voidborne-d-humanize-chinese`（通用中文）。
+
+**⑥ 并行**：降 AIGC 是"逐句改写"性质，独立段落可并行 subagent 处理（模板 §S7），
+各自写盘回 `07_dehumanize/`。
+
+**review**：critic 抽查五条——(1) 套话是否清除（"首先/其次/综上所述/值得注意的是"、-ing 尾巴、
+Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引用是否零漂移**（逐项 diff 原稿）；
+(4) 五维加权总分是否 ≥42；(5) 第 2 步未决的无证据 claim 是否已上交用户，而不是被悄悄改写掉。
+
+**revise / 交付**：定稿到 `07_dehumanize/main.tex`，回灌主稿；`07_dehumanize/aigc_audit.md`（审计表）
+与 48 产出的 **change log**（改了哪些节 / 触发了哪些规则号 / 哪些地方刻意不动）写入 `logs/stage_7.md`，
+供 Draft Quality Gate 的 critic 复核。
+
+> **学术诚信**：本阶段只把「作者自己的稿 + AI 辅助起草再经人工修订的稿」拉回研究者的语言分布，
+> 不为「整篇 AI 生成、作者没读过」的稿件做检测规避。稿件内容的责任始终在作者。
 
 ---
 

@@ -246,27 +246,44 @@
 
 ---
 
-## §S7 · Stage 7 去 AI 味（并行，按段落/章节切分）
+## §S7 · Stage 7 降 AIGC（并行，按段落/章节切分）
 
-> 去味是「逐句改写」性质，独立章节可并行。英文走 `readability` + 44/45/46/47；中文走 `fix-chinese`
-> + `chinese-quote-converter` + 48/49（语言分流见 skill-map §C）。
+> 降 AIGC 是「逐句改写」性质，独立章节可并行。**第一顺位是 `48-de-AIGC-skills`（中英双语六步闭环）**，
+> 中英文稿都走它；跑完再用 `readability`（英）/ `fix-chinese` + `chinese-quote-converter`（中）做机械收尾。
+> 顺序不能反（详见 stage-playbook Stage 7、skill-map §C 第 4 条）。
 
 ```text
-你负责把初稿的某一部分去 AI 味，保持学术准确性与术语不变，只改腔调与可读性。
+你负责把初稿的某一部分降 AIGC，保持学术准确性、术语和全部数字不变，只改怎么说、不改说了什么。
 
 # 输入
 - 待改部分：{{WS}}/07_dehumanize/section_{{K}}.tex（从 main.tex 切出的第 {{K}} 节）
-- 语言：{{LANG}}（en / zh）
+- 语言：{{LANG}}（en / zh / mixed）
+- claim 强度对照（只读）：{{WS}}/00_meta/evidence_ledger.md
 
 # 执行
-- en：优先 `Skill(skill="readability")`；再按需 `Skill` 调 humanizer/de-slop（44/45/46/47）。
-- zh：优先 `Skill(skill="fix-chinese")` + `Skill(skill="chinese-quote-converter")`；再按需 48/49。
+- 第一顺位 `Skill(skill="de-aigc-skills")`；not found → `Read skills/48-de-AIGC-skills/SKILL.md`
+  并按其六步闭环执行：
+  0 定位路由（判语言/章节/期刊）→ 1 审计扫描（先出 AI 痕迹表，此步别动笔）→
+  2 主张-证据核对（每条因果/定量 claim 锚到表号列号或引用；动词 ↔ 识别强度匹配）→
+  3 差异化改写（先砸句长方差，再具体化 / 拆脚手架 / 校准断言 / 恢复研究者声音）→
+  4 五维自评（加权 <35 回第 3 步，≥42 才放行）→ 5 冷读复查（数字与引用零漂移）。
+  模式库按语言取其 skills/48-de-AIGC-skills/references/ 下的 patterns-en.md（EN01–EN22）或 patterns-zh.md（ZH01–ZH17），
+  分章节强度见其 skills/48-de-AIGC-skills/references/sections.md，评分量表见其 skills/48-de-AIGC-skills/references/scoring.md。
+- 收尾（只做机械修正，禁止重写句子，否则会把刚砸开的句长方差抹平）：
+  en → `Skill(skill="readability")`；zh → `Skill(skill="fix-chinese")` + `Skill(skill="chinese-quote-converter")`。
 - 任一 not found → `Read` 对应 SKILL.md（路径见 skill-map §0.1）按其流程执行。
-- 重点清除：「首先/其次/综上所述/值得注意的是/总而言之」等套话、翻译腔、过度对仗、空泛形容词。
-- 改完写回 {{WS}}/07_dehumanize/section_{{K}}.tex（原地覆盖）。
+- 硬性红线：数字、系数、标准误、p 值、样本量、公式、变量名、引用内容一律不动；不得编造数据/结果/
+  引用；不得注入错别字或口语词骗困惑度；论文的 claim 不许变强。
+- 不要过度修正：「在 1% 水平上显著」「稳健性检验」「Prior studies have shown（带引用）」是正常学术
+  用语，只在堆叠出现或无引用时才动。
+- 第 2 步查出的「无证据锚点」claim 不要自行消化：默认把动词降级（proves → is associated with；
+  「充分证明了」→「与…一致」），并在回传里逐条列出交主代理裁决，不许补一条证据糊过去。
+- 改完写回 {{WS}}/07_dehumanize/section_{{K}}.tex（原地覆盖）；把本节的审计表 + change log 追加到
+  {{WS}}/07_dehumanize/aigc_audit.md（section_{{K}} 小节下）。
 
-# 回传（≤6 行）
-改了哪节 / 清除了几类套话 / 是否动到术语（应为否）/ 一句话风险提示。
+# 回传（≤8 行）
+改了哪节 / 触发的规则号（EN**、ZH**）各几条 / 五维加权总分 / 是否动到术语或数字（应为否）/
+未决的无证据 claim 逐条列出 / 一句话风险提示。
 ```
 
 ---

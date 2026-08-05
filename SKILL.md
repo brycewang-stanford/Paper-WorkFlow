@@ -41,7 +41,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | **4** | 表与图 | 按同一分析后端生成出版级表图：Python/StatsPAI `regtable`/`paper_tables`/`collect`，Stata `esttab`/`outreg2`/`collect`，R `modelsummary`/`etable`/Quarto；均需 Word/Excel/LaTeX 同出 + PDF/PNG 图 | `04_results/*.{tex,docx,xlsx}` + `*.pdf/png` |
 | **5** | 写作初稿 | `paper-writer` | `05_draft/main.tex` + `ref.bib` |
 | **6** | 全流程打磨 | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify） | 打磨后的 `main.tex` |
-| **7** | 语言与去 AI 味 | `readability` / `fix-chinese` + （`44`/`47`/`48`/`49` 去 AIGC 集合） | 去味后的稿件 |
+| **7** | 语言与去 AI 味 | `de-aigc-skills`(48 中英双语六步闭环) → `readability`/`fix-chinese` 收尾 | 降味稿 + 审计表 |
 | **8** | 模拟评审与修订 | `referee-report` → `paper-referee-revise`（或 `paper-self-revise`） | 修订稿 + response letter |
 | **9** | 选刊与投稿 | `paper-submission` → 可选 AJS 目标期刊适配器 → `reference-verify`（终审） | 期刊清单 + 期刊专属预检 + cover letter |
 | **—** | 复盘与交付 | *(编排器本体)* | `FINAL_REPORT.md` + 打包交付物 |

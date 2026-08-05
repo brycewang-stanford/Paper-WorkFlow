@@ -73,7 +73,8 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── ref_verify_report.xlsx
 │   └── pipeline_state.json        # paper-pipeline 自己的状态文件（嵌套，互不干扰）
 ├── 07_dehumanize/
-│   └── main.tex                   # 去 AI 味后的稿
+│   ├── main.tex                   # 降 AIGC 后的稿
+│   └── aigc_audit.md              # 48-de-AIGC-skills 的 AI 痕迹审计表 + change log（可选但强烈建议）
 ├── 08_review/
 │   ├── referee_report.md
 │   ├── response_letter.md

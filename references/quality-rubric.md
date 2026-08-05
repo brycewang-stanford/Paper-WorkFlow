@@ -192,7 +192,12 @@ severity + 非占位 verbatim + locator、blocking finding 的维度分必须 �
 - **5–6**：结构齐但平铺直叙，引言不抓人或贡献埋没，表图注不全。
 - **≤4**：结构残缺（缺识别/稳健性章节）、或表图无法自解释、或前后自相矛盾。
 
-**回退**：→ Stage 5（重写薄弱章节）/ Stage 6（`paper-pipeline` 打磨）/ Stage 4（补表图注）。
+**AI 腔封顶规则**：稿件仍带明显 AI 腔（句长方差平坦、Moreover/此外 链、-ing 尾巴、四字套话、
+空泛形容词、无锚点的"显著提升"）时，本维**封顶 6 分**——无论结构多完整。证据取
+`07_dehumanize/aigc_audit.md`：Stage 7 的 `48-de-AIGC-skills` 五维自评加权分 **<42 视为未过**。
+
+**回退**：→ Stage 7（降 AIGC，`de-aigc-skills` 重跑第 3–4 步）/ Stage 5（重写薄弱章节）/
+Stage 6（`paper-pipeline` 打磨）/ Stage 4（补表图注）。
 
 ---
 
@@ -351,7 +356,7 @@ python3 evals/check_quality_judge.py --selftest       # 验证判定器与解析
 | ② 识别 | Stage 3（重则 Stage 1） | 补诊断 / 换识别策略 / 换工具或对照 |
 | ③ 稳健 | Stage 3 | 补稳健性矩阵 subagent / 修聚类 / StatsPAI `audit_result` 补缺 |
 | ④ 解读 | Stage 5/6 | 重写结果与结论段，克制因果语气 |
-| ⑤ 写作 | Stage 5/6（表图问题→Stage 4） | 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
+| ⑤ 写作 | Stage 7（AI 腔）/ Stage 5/6（表图问题→Stage 4） | `de-aigc-skills` 重跑降 AIGC / 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
 | ⑥ 引用 | `reference-verify` + Stage 5 | 终审核验 / 补结构化文献综述 |
 | ⑦ 复现与治理 | Stage 2/3/9 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 / DAS / 数据治理登记 |
 
