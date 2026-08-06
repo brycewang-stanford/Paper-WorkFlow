@@ -26,6 +26,39 @@ Edmans (2024) 统计 999 封拒稿里逾半是因贡献不清被**直接桌拒**
 
 ---
 
+## 0.1 语料契约（Stage 1L）——建一次，复用三次
+
+没有这条契约时，文献会在流水线里被独立地找**三遍**：Stage 1 的 `novelty-check` 找一遍打分、
+Stage 5 写 related work 再找一遍、Stage 9 `reference-verify` 对着 `ref.bib` 又查一遍。
+三份集合互不相同、都不落盘，代价是具体的：**查新分数没有可复核的依据**、
+**related work 引的文献和查新看的文献可能不是一批**、**终审没有白名单可依**——
+`ref.bib` 里冒出来一条谁都没见过的文献时，没有任何机制会觉得它可疑。
+
+Stage 1L 把这件事收敛成一份可复用的语料。契约有三条：
+
+**① 落盘位置固定**
+
+| 文件 | 内容 |
+|---|---|
+| `01_proposal/lit/corpus.md` | 语料清单。每条：bibkey、DOI、年份、期刊、一句话结论、**与本文的关系**（前作 / 竞争解释 / 方法来源 / 数据来源 / 无关） |
+| `01_proposal/lit/lit_matrix.md` | 文献矩阵（§3）：**设计 × 数据 × 结论**，白space是从这张表*看出来*的 |
+
+**② 三处复用，且必须回填**。`workflow_state.json.literature_base.reused_by` 取值
+`novelty` / `related_work` / `reference_verify`：
+
+- **查新**（Stage 1）：`novelty-check` 的分数必须基于这份语料，分数旁注明对照了哪几条。
+  语料没建成（`literature_base.status != pass`）时，查新分数**不得当作顶刊层次的证据**。
+- **related work**（Stage 5）：点名最接近的 3–5 篇**从核心集里选**，不另起炉灶。
+- **引用终审**（Stage 9）：corpus 是白名单。`ref.bib` 里既不在语料、
+  也没有在写作期新增登记的条目，**优先怀疑是编的**——这是对幻觉引用最便宜的一道筛子。
+
+`reused_by` 为空本身就是红旗：说明这份语料建了没人用，等于没建。
+
+**③ 关系字段不许省。** 只有 bibkey 和标题的清单退化成书目，起不到定位作用；
+"与本文的关系"这一列才是 §4 定位句式的原料，也是判断"撞车"的依据。
+
+---
+
 ## 1. 检索：结构化而非叙事式
 
 **两种「文献综述」别混为一谈**：
@@ -61,7 +94,7 @@ Edmans (2024) 统计 999 封拒稿里逾半是因贡献不清被**直接桌拒**
 
 ## 3. 文献矩阵——让白space看得见
 
-把候选前作排进一张矩阵（落 `01_proposal/lit_matrix.md`），列固定为：
+把候选前作排进一张矩阵（落 `01_proposal/lit/lit_matrix.md`），列固定为：
 
 | 列 | 记什么 |
 |---|---|
@@ -116,10 +149,11 @@ LLM 辅助写作时极易混入**幻觉/张冠李戴**的引用。纪律：
 
 | 接入点 | 本层做什么 | 落盘 / 判定 |
 |---|---|---|
-| **Stage 1 查新** | 结构化检索（§1/§2）+ 文献矩阵（§3），定位本文白space | `01_proposal/lit_matrix.md` |
+| **Stage 1L 语料** | 建一次可复用语料（§0.1）：多路并行检索 + 关系分层 | `01_proposal/lit/corpus.md` + `lit/lit_matrix.md` |
+| **Stage 1 查新** | `novelty-check` 基于 Stage 1L 语料打分（§0.1 ①），分数旁注明对照了哪几条 | `literature_base.reused_by += novelty` |
 | **Stage 1 贡献** | 用 §4 句式 + 四动作把贡献卡进空白，写进 proposal 贡献模块 | `01_proposal/proposal.md` |
 | **Stage 5 related-work 段** | 按文献矩阵写 funnel 式定位段，点名最接近的 3–5 篇 | `05_draft/main.tex` |
-| **Stage 5/9 引用核验** | 每条引用核 DOI + 撤稿检查（§5） | `06_polish/ref_verify_report.xlsx` |
+| **Stage 5/9 引用核验** | 每条引用核 DOI + 撤稿检查（§5）；corpus 作白名单筛幻觉引用（§0.1 ②） | `06_polish/ref_verify_report.xlsx` |
 | **Stage 8 被质疑定位** | 「文献定位不准/关键对标缺席」时回 Stage 5 补矩阵相关行 | `08_review/response_letter.md` |
 | **质量门维度①⑥** | 贡献是否卡进真实空白（①）、引用是否真实+定位是否准（⑥） | `00_meta/quality_scorecard.md` |
 

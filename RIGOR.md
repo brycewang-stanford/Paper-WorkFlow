@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 34/34 green.**
+**Rigor checkers selftest: PASSING — 35/35 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -18,6 +18,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_backend_capabilities.py`](scripts/check_backend_capabilities.py) | ✅ pass | Backend capability reports: Python/StatsPAI, Stata, R, and export stack availability must be recorded as structured status, missing dependencies, fallback backend, and probe timestamp before execution. |
 | [`scripts/check_backend_parity.py`](scripts/check_backend_parity.py) | ✅ pass | Backend parity fixtures and workspace reports: fallback or secondary Python/StatsPAI, Stata, and R result bundles must agree on sample hash, estimator family, clustering, fixed effects, coefficients, standard errors, and diagnostics before parity claims can pass. |
 | [`scripts/check_table_style.py`](scripts/check_table_style.py) | ✅ pass | Three-line table (三线表) export contract: exported .docx tables carry a heavy top rule, a light header rule and a heavy closing rule with no vertical or stray interior rules, borders are explicit rather than inherited from a Word table style, and the paired .tex uses booktabs instead of \hline / '|' column specs. |
+| [`scripts/check_manuscript_numbers.py`](scripts/check_manuscript_numbers.py) | ✅ pass | Manuscript numeric anchoring and rewrite inertness: every coefficient, standard error and sample size asserted in the manuscript must trace to 03_analysis/results or 04_results at the precision it is printed, and the Stage 6->7 de-AIGC rewrite must not change a single number in either direction. Unanchored figures are waived only by an in-text, referee-readable `% pw-number-ok:` comment. |
 | [`scripts/check_citation_integrity.py`](scripts/check_citation_integrity.py) | ✅ pass | Citation existence + temporal integrity: DOI resolution, retraction screening, citation-laundering, and look-ahead / vintage / sample-vs-claim-period leakage. |
 | [`scripts/check_verification_log.py`](scripts/check_verification_log.py) | ✅ pass | The load-bearing methods-claim verification log exists and every claim it makes is backed by a recorded check. |
 | [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) | ✅ pass | A minimal workspace initialises and every template contract holds (templates instantiate with the fields the gates later require). |

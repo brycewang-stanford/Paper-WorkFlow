@@ -115,6 +115,50 @@ mutating an old one.
 - Any fallback or unavailable probe goes into `logs/stage_<N>.md` and
   `workflow_state.json.decisions`.
 
+## schema_version 12
+
+Schema v12 keeps everything v11 shipped and closes four ordering holes: work that
+was *documented* as happening at the right time but was never *required* to.
+
+**① 两个前置阶段（`stages` 新增两行）.** `1L_literature_base` 与 `2_5_design_lock`
+带父阶段数字前缀，Stage 0–9 主干不变，但它们各自守着一件必须发生在父阶段结束**之前**
+的事：文献语料要在查新打分之前建好，主设定要在第一个估计值存在之前锁死。
+
+- `literature_base`：`corpus` / `lit_matrix` / `screened_count` / `core_count` /
+  `reused_by`（记录哪些环节复用了这份语料：`novelty` / `related_work` /
+  `reference_verify`）。见 [`literature-and-positioning.md`](literature-and-positioning.md) §0。
+- `design_lock`：`preregistration` / `locked_before_estimation` / `lock_commit` /
+  `confirmatory_count` / `deviations`。`locked_before_estimation` 不为 `true` 而
+  `03_analysis/results/main_results.json` 已存在 = 硬违规：**事后写的锁不是锁**。
+  见 [`design-transparency.md`](design-transparency.md) §0。
+
+**② `manuscript_numbers`（数字锚定）.** `unanchored_claims` / `inert_boundary_drift` /
+`waived_claims` / `checked_manuscript`。由 `scripts/check_manuscript_numbers.py` 填，
+质量门放行前必须为 `pass` 且两个计数为 0。见
+[`integrity-and-claim-audit.md`](integrity-and-claim-audit.md) §4。
+
+**③ `project.scope`（严格度档位）.** `draft` / `working-paper` / `submission`（缺省）。
+它只决定「这次交付欠哪些闸门」，**不放松**任何已声明为 `pass` 的闸门的验证：
+
+| scope | 必过闸门 | 典型用途 |
+|---|---|---|
+| `draft` | method_gate | 两天出一版内部讨论稿 |
+| `working-paper` | + design_risk、quality_gate | 工作论文 / 组会 / 预印本 |
+| `submission` | + integrity_audit、manuscript_numbers、replication_pack | 正式投稿（缺省） |
+
+档位在 Phase 0 与交互档位一起问定；交互档位管**暂停频率**，scope 管**严格度**，两者正交。
+
+**④ 回退上限（`orchestration`）.** `method_gate_rounds_cap`（缺省 2）与
+`method_gate_rounds` 计数，配合既有的 `revision_rounds_cap`。超限时
+`budget_exhausted_action`（缺省 `deliver-with-known-gaps`）生效：停止重跑，按已知短板
+交付并标红，而不是让全自动档位无界重试。
+
+**⑤ `replication_pack.environment_record` / `frozen_at_stage`.** 复现包不再是收尾
+一次性构建：Stage 3 估计跑通即冻结环境记录与 master script 骨架，收尾只做**验证性重跑**。
+见 [`computational-reproducibility.md`](computational-reproducibility.md) §0。
+
+字段语义见 [`workspace-and-state.md`](workspace-and-state.md) §2。
+
 ## schema_version 11
 
 Schema v11 keeps everything v10 shipped and adds one Stage-0 decision block,

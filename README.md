@@ -8,9 +8,9 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-34%2F34_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-35%2F35_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
-![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
+![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
@@ -70,16 +70,18 @@ flowchart TD
     subgraph A ["① 构思 · CONCEIVE"]
       direction LR
       S1["<b>Stage 1 · 选题与设计</b><br/>idea-finder → novelty-check<br/>→ significance → proposal"]
+      S1L["<b>Stage 1L · 文献基座</b><br/>建一次语料，查新/related work<br/>/引用终审三处复用"]
+      S1L --> S1
     end
 
     subgraph B ["② 实证 · EVIDENCE"]
       direction LR
-      S2["<b>Stage 2</b><br/>数据<br/>fetch + clean"] --> S3["<b>Stage 3</b><br/>识别与估计<br/>DiD/IV/RDD/SC…"] --> MG{"方法闸门<br/>design register · evidence bundle"} --> S4["<b>Stage 4</b><br/>表与图<br/>出版级 exhibits"]
+      S2["<b>Stage 2</b><br/>数据<br/>fetch + clean"] --> S25{"<b>Stage 2.5</b><br/>设计锁定<br/>见结果前锁死主设定"} --> S3["<b>Stage 3</b><br/>识别与估计<br/>DiD/IV/RDD/SC…"] --> MG{"方法闸门<br/>design register · evidence bundle"} --> S4["<b>Stage 4</b><br/>表与图<br/>出版级 exhibits"]
     end
 
     subgraph C ["③ 成文 · COMPOSE"]
       direction LR
-      S5["<b>Stage 5</b><br/>写作初稿<br/>main.tex"] --> S6["<b>Stage 6</b><br/>全流程打磨<br/>polish pipeline"] --> S7["<b>Stage 7</b><br/>去 AI 味<br/>de-slop"]
+      S5["<b>Stage 5</b><br/>写作初稿<br/>main.tex"] --> S6["<b>Stage 6</b><br/>结构层打磨<br/>段落及以上"] --> S7["<b>Stage 7</b><br/>语言层去 AI 味<br/>句子及以下 · 数字零漂移"]
     end
 
     subgraph D ["④ 出门 · SUBMIT"]
@@ -271,13 +273,25 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 /paper-workflow 初稿在 ./paper/main.tex，从打磨开始
 ```
 
-开跑前一次确认五项：**交互模式、目标期刊、稿件语言、分析后端和表格格式**。交互模式三选一：
+开跑前一次确认六项：**交互模式、严格度档位、目标期刊、稿件语言、分析后端和表格格式**。
+
+交互模式管**多久停一次问你**：
 
 | 交互模式 | 含义 |
 |---|---|
 | `全自动` | 无人值守，只在最终交付时汇报 |
 | `阶段确认`（推荐） | 每阶段末给摘要卡，等你放行再进下一阶段 |
 | `全程交互` | 每个子 skill 跑自己原生的逐项审批，投稿前终版用 |
+
+严格度档位（`project.scope`）管**「完成」的标准是什么**，与交互模式正交——同一条流水线，两天出一版内部讨论稿和冲顶刊不该欠同样多的闸门：
+
+| scope | 必过闸门 | 典型用途 |
+|---|---|---|
+| `draft` | 方法闸门 | 快速出一版内部讨论稿 |
+| `working-paper` | + 设计风险、初稿质量门 | 工作论文 / 组会 / 预印本 |
+| `submission`（缺省） | + claim 完整性、数字锚定、复现包 | 正式投稿 |
+
+scope 只决定**这次交付欠哪些闸门**，**不放松**任何已声明 `pass` 的闸门的证据验证——想少过几道闸门可以，想把没过的说成过了不行。
 
 分析后端可选 `python-statspai`（默认）、`stata` 或 `r`，决定 Stage 3–4 的脚本与导出工具，和稿件语言相互独立。
 
@@ -296,7 +310,7 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/
 │   ├── workflow_state.json          唯一权威进度文件（断点续跑依据）
-│   ├── intake.md                    Stage 0 一次性问清的五件套记录
+│   ├── intake.md                    Stage 0 一次性问清的六件套记录（含严格度档位 scope）
 │   ├── entry_routing.md             Stage 0 入口路由、材料清点与推断假设
 │   ├── stage_passport.md            阶段产物台账：做到哪、证据在哪、返修轮次
 │   ├── pipeline_status.md           紧凑 dashboard：当前状态、材料、checkpoint、下一步
@@ -434,6 +448,7 @@ Paper-WorkFlow/
 │   ├── check_cn_claim_audit.py       # 中文数据源/期刊 claim 台账（_verification_log/）审计闸门
 │   ├── check_review_scorecard.py     # Draft Quality Gate 评分卡 L1/L2 机械校验
 │   ├── check_preregistration.py      # 预注册锁与 exploratory 标注校验
+│   ├── check_manuscript_numbers.py   # 稿件数字锚定 + Stage 6→7 改写零漂移闸门
 │   ├── check_gate_integration.py     # 真实 init + 真实模板 + gate checker 集成测试
 │   ├── check_reproducibility_scaffold.py # run_all + check_outputs 复现脚手架测试
 │   ├── check_cross_references.py     # 内部链接、路径、checker wiring、Stage/table 合约

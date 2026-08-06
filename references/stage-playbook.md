@@ -1,8 +1,23 @@
 # Stage Playbook — 逐阶段操作手册
 
 > 主代理在**进入某阶段时**才读对应章节（渐进式加载，省上下文）。每一阶段都按 SKILL.md 的
-> 「阶段执行协议」跑：**横幅 → in_progress → plan → execute → review → revise → 快照 → done →
-> 阶段闸门**。本手册给出每阶段「调哪个 skill / 派哪种 subagent / 产出什么 / 失败怎么回退」。
+> 「阶段执行协议」跑：**横幅 → 入口检查 → in_progress → plan → execute → review → revise →
+> 快照 → done → 阶段闸门**。本手册给出每阶段「调哪个 skill / 派哪种 subagent / 产出什么 /
+> 失败怎么回退」。
+>
+> **入口检查（每阶段第一件事）**：`python3 scripts/check_workspace_gates.py <workspace>
+> --preconditions <N>`（`N` 可为 `1L` / `2_5` / `3` / `4` / `5` / `7` / `8` / `9`）。
+> 阶段闸门是**做完之后**才发现问题；前置条件是同一批事实在**开工之前**检查——
+> 这时回退只丢一个决定，不丢一个阶段的工作量。返回非零就别开工。
+>
+> **两个前置阶段**：`Stage 1L`（文献基座，先于查新打分）与 `Stage 2.5`（设计锁定，
+> 先于第一个估计）。它们带父阶段数字前缀，Stage 0–9 主干不变，但各自守着一件
+> **必须发生在父阶段结束之前**的事。
+>
+> **严格度档位**：`project.scope` = `draft` / `working-paper` / `submission`（缺省）决定这次交付
+> 欠哪些闸门（见 [`orchestration-and-handoff.md`](orchestration-and-handoff.md) §schema_version 12）。
+> 它与交互档位正交：交互档位管**多久停一次问人**，scope 管**完成的标准是什么**。
+> scope 只决定完成契约，**不放松**任何已声明 `pass` 的闸门的证据验证。
 >
 > 所有路径里的 `67/` = `skills/67-econfin-workflow-toolkit/`。**调用某 skill 一律按
 > [`skill-map.md`](skill-map.md) §0 的调用协议**：优先 `Skill(<注册名>)`，报 not found 就退回
@@ -33,7 +48,7 @@
 - 若用户已给方向，直接用；否则 `AskUserQuestion` 问方向 + 想要的候选标题数 N（缺省 5）。
 - 读 `67/econfin-idea-finder/SKILL.md`，按其漏斗逻辑运行。
 - 加载 [`literature-and-positioning.md`](literature-and-positioning.md)：用滚雪球 + 引用图工具把相关文献
-  找全，建 `01_proposal/lit_matrix.md` 让贡献白space可见；贡献句按 [`writing-craft.md`](writing-craft.md)
+  找全，建 `01_proposal/lit/lit_matrix.md` 让贡献白space可见；贡献句按 [`writing-craft.md`](writing-craft.md)
   §3 三槽 + 该文件 §4 定位句式锻造，命中 Edmans 红线就回炉。
 
 **execute（并行 subagent，强制调用子 skill）** — 直接套用
@@ -69,6 +84,53 @@
 
 ---
 
+## Stage 1L · 文献基座（与 Stage 1 咬合，先于查新打分）
+
+**目的**：把「找文献」从**散落三处、各找各的**改成**建一次、复用三次**。
+
+在没有这一步的流水线里，文献会被找三遍：Stage 1 的 `novelty-check` 找一遍给出查新分数、
+Stage 5 写 related work 时"文献综述薄弱"再找一遍、Stage 9 `reference-verify` 终审时又对着
+`ref.bib` 查一遍。三份文献集互不相同、都不落盘，于是**查新分数没有可复核的依据**、
+**related work 引的文献和查新看的文献可能根本不是一批**、**终审没有白名单可依**。
+
+**plan**
+- 入口检查：`python3 scripts/check_workspace_gates.py <workspace> --preconditions 1L`。
+- 加载 [`literature-and-positioning.md`](literature-and-positioning.md) §0.1（语料契约）、§1（结构化检索）与 §2（发现与引用图工具）。
+- 从 Stage 1 的方向 / 候选题目抽出检索词族：X 的构念、Y 的构念、识别策略、场景/国别。
+
+**execute（并行 subagent）**
+- 派 ≤5 路并行 subagent（模板 [`subagent-templates.md`](subagent-templates.md) §S1L），每路负责一条检索通路（不要都用同一个入口，多模态才扫得全）：
+  ① 关键词检索（OpenAlex / Google Scholar / CNKI）· ② 引文滚雪球（种子文献的前向 + 后向引用）·
+  ③ 顶刊近 5 年目录扫描 · ④ 同场景不同设计 / 同设计不同场景的对照组 · ⑤ 中文文献专线（若投中文刊）。
+- 可调 `36-taoyunudt-literature-review-skill`、`52-keemanxp-slr-prisma`、
+  `59-shiquda-openalex-skill`，或外部 `literature-review-tools` skill；引用入库配 Zotero MCP。
+- 每个 subagent **只写盘、只回 ≤8 行摘要**，条目并入 `01_proposal/lit/corpus.md`：
+  bibkey、DOI、年份、期刊、一句话结论、**与本文的关系**（前作 / 竞争解释 / 方法来源 / 数据来源 / 无关）。
+- 主代理去重、按"与本文的关系"分层，产出 `01_proposal/lit/lit_matrix.md`：
+  **设计 × 数据 × 结论**三列矩阵——贡献白space是被这张矩阵*看出来*的，不是被声称出来的。
+
+**review**：critic subagent 只问两个问题——(1) 有没有一篇"最近的、最像的"被漏掉（漏掉它，
+查新分数与贡献句都不成立）；(2) 矩阵里是否存在一行与本文设想**完全重合**（重合即撞车，
+立刻回 Stage 1 换切口，不要等到 Stage 5 写 related work 才发现）。
+
+**交付 / 状态**：`workflow_state.json.literature_base` 填 `corpus` / `lit_matrix` /
+`screened_count` / `core_count`，`status=pass`。
+
+**下游复用（这一步的全部意义所在，三处都要回填 `reused_by`）**
+| 复用点 | 怎么用 | 回填值 |
+|---|---|---|
+| Stage 1 查新 | `novelty-check` 的打分必须**基于这份语料**，分数旁注明对照了哪几条 | `novelty` |
+| Stage 5 related work | 点名最近的 3–5 篇**从核心集里选**，不另起炉灶 | `related_work` |
+| Stage 9 引用终审 | `reference-verify` 以 corpus 为白名单：`ref.bib` 里不在语料、也没有新增登记的条目**优先怀疑是编的** | `reference_verify` |
+
+三处都不复用 → 这份语料白建了，`literature_base.reused_by` 为空本身就是红旗。
+
+**失败回退**：检索工具/网络不可用 → 按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 降级，
+`literature_base.status=not_pass`，且**查新分数不得当作顶刊层次的证据**（封顶到"未充分查新"），
+在摘要卡标红。
+
+---
+
 ## Stage 2 · 数据
 
 **目的**：依 proposal 的变量与样本，拿到**分析就绪**的数据集 + codebook。
@@ -100,6 +162,15 @@
 是否足以支撑下一阶段、数据治理登记是否与 codebook/DAS 原料一致。意见写 `02_data/data_audit.md`，
 并更新 `workflow_state.json.empirical_audit`。
 
+**测量效度（必读，别跳）**：critic 还必须按
+[`measurement-and-data-quality.md`](measurement-and-data-quality.md) 过一遍**构念 → 变量**这一段：
+代理变量与目标构念的距离、测量误差是经典型还是差分型（后者会把系数推向哪个方向）、
+量表/指数的构造是否可复现、跨年口径变更、单位与通胀调整、行政数据的登记偏差。
+这是 Stage 2 唯一一处**不看数据质量而看"这个数到底测的是不是你要的东西"**的检查——
+它错了，后面所有识别工作都在精确地估计一个错的量。结论写进 `02_data/measurement_audit.md`
+（模板 [`templates/measurement_audit.md`](../templates/measurement_audit.md)），
+把"测量误差"这一行同步进 `03_analysis/design_risk_ledger.md`。
+
 **revise / 交付**：据审计修清洗脚本，重跑到干净。**清洗脚本必须留在 `02_data/`**，保证可复现。
 `sample_audit.md` 若为 `NOT PASS`，Stage 3 只能做探索或修数据，不能把 Method Gate 标 `PASS`。
 
@@ -107,10 +178,78 @@
 
 ---
 
+## Stage 2.5 · 设计锁定（数据到手之后、第一个估计之前）
+
+**目的**：在**还不知道答案的时候**把主设定钉死。
+
+这一步的位置就是它的全部价值。`templates/preregistration.md` 和
+`scripts/check_preregistration.py` 一直都在，但如果预注册是在 Stage 3 跑完、看过系数之后
+才补写的，它就只是一份「我找到了什么」的流水账：闸门可以零成本满足，
+`design_risk_ledger.md` 里的 **specification search** 一栏没有任何可比基线，
+稳健性矩阵与"试了 40 个设定挑了带星的那个"在证据上无法区分。
+
+**plan**
+- 入口检查：`python3 scripts/check_workspace_gates.py <workspace> --preconditions 2_5`
+  （要求 `01_proposal/proposal.md` 与 `02_data/sample_audit.md` 都在——**数据必须已到手**，
+  否则锁的是空想；但**主结果必须还不存在**，否则锁的是结果）。
+- 加载 [`design-transparency.md`](design-transparency.md) §2（预分析计划）、§2.1（可执行预注册锁）、
+  §3（功效与 MDE）、§6（研究者自由度披露），以及 [`inference-and-uncertainty.md`](inference-and-uncertainty.md)
+  §1（聚类层级要在锁里就定死，不能看完 p 值再改）。
+
+**execute（主代理本体——锁是人类决策点；锁之前派一个 §S2_5 审阅 subagent 挑「锁不住」的地方，
+见 [`subagent-templates.md`](subagent-templates.md) §S2_5）**
+1. 从 [`templates/preregistration.md`](../templates/preregistration.md) 实例化
+   `00_meta/preregistration.md`，填满五节：**Lock Status** / **Confirmatory Hypotheses** /
+   **Primary Specification Lock** / **Confirmatory vs Exploratory** / **Deviations from Plan**。
+2. 主设定必须写到**可执行的粒度**：主估计量、样本限制、固定效应、控制变量集、
+   聚类层级、多重检验方案、outcome 清单（含次序）、异质性维度（预先指定，事后再想的一律 exploratory）。
+3. **报 MDE**：按 design-transparency §2 给出当前样本能探测到的最小效应。空结果只有在
+   MDE 已知时才是信息；否则"不显著"什么都不说明。
+4. **锁**：`locked_before_estimation: yes`，`lock_commit` 填 commit hash
+   （git-as-preregistration）；无 git 时填时间戳 + 文件内容 hash。
+5. 校验：`python3 scripts/check_preregistration.py <workspace>`。
+6. 写状态：`workflow_state.json.design_lock` 填 `status=locked`、
+   `locked_before_estimation=true`、`lock_commit`、`primary_design`、`confirmatory_count`。
+
+**闸门**：`design_lock.status != locked` 时 **Stage 3 不得开始**，Method Gate 也不得 `PASS`
+（由 `check_workspace_gates.py` 的 `method_gate:design_lock` 机械拦截）。
+反向同样是硬违规：主结果已在盘上而锁是事后补的 → `design_lock:timing` 直接 FAIL。
+
+**锁之后怎么改**：允许偏离，**不允许不登记**。任何对主设定的改动写进
+`preregistration.md` 的 Deviations 表 + `design_lock.deviations`：改了什么、为什么、
+对 claim 强度的影响。登记过的偏离仍可进主结果；未登记的一律降级为 exploratory，
+并在 `evidence_ledger.md` 里按 exploratory 措辞封顶。
+
+**失败回退**：设计还没想清楚就锁不了 → 回 Stage 1 把识别策略定下来，不要用"先跑跑看"
+代替设计。`全自动`档位下同样不得跳过：无人值守时按 proposal 的识别策略自动生成锁，
+并在摘要卡显著标注"锁由自动生成，未经人工确认"。
+
+---
+
 ## Stage 3 · 计量识别、估计与方法闸门
 
 **目的**：按 proposal 的识别策略，先注册设计，再跑出基准 + 机制 + 异质性 + 稳健性的**真实**结果，
 最后用方法闸门确认最低证据包齐全。
+
+**入口检查（先跑，再干活）**：
+
+```bash
+python3 scripts/check_workspace_gates.py <workspace> --preconditions 3
+```
+
+要求 `design_lock.status=locked` + `00_meta/preregistration.md` + `02_data/sample_audit.md` +
+`03_analysis/design_register.md` 草稿齐备。**没锁不许估计**——这里退回去只丢一个阶段，
+等 Method Gate 才发现要丢三个。
+
+**冻结复现环境（估计跑通的当天，不是收尾）**：第一批估计能跑出来，就立刻按
+[`computational-reproducibility.md`](computational-reproducibility.md) §1（环境固定阶梯）与 §2（确定性）写
+`00_meta/repro_environment.md`（解释器/包版本与 lockfile、随机种子及其作用域、
+BLAS/线程数与并行是否影响数值、数据快照 hash、单次重跑耗时），并从
+[`templates/run_all.sh`](../templates/run_all.sh) 起一版 master script 骨架，
+`replication_pack.environment_record` 与 `frozen_at_stage=3` 一起写进状态。
+此后每阶段往骨架里追加，收尾只做**验证性重跑**。
+**收尾才开始建复现包是本流水线风险最高的一种拖延**：那时 Stage 3 的环境通常已经漂了，
+而唯一能确认它漂没漂的方法，就是当初记下来过。
 
 **plan（先定设计，再定方法）**
 - 必读 [`research-grade-methods.md`](research-grade-methods.md) + [`design-gate-cards.md`](design-gate-cards.md) +
@@ -304,18 +443,48 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ---
 
-## Stage 6 · 全流程打磨
+## Stage 6 · 结构与逻辑打磨（语言层归 Stage 7）
 
-**目的**：把初稿过一遍成熟的固定打磨流水线。
+**目的**：把初稿的**论证结构**过一遍成熟的固定打磨流水线。
+
+### Stage 6 与 Stage 7 的职责分工（先读这一节，否则会白跑一轮）
+
+这两个阶段历史上是重叠的，而且重叠得代价很高：Stage 6 的 `paper-pipeline` 内部跑
+`polish → self-revise → style → polish（二轮）`，Stage 7 接着"砸句长方差、恢复研究者声音"。
+Stage 7 自己的红线写着「**收尾只做机械修正，重写会把刚砸开的句长方差又抹平**」——
+同一条道理反过来也成立：**Stage 6 花在句子层面的功夫，绝大部分会被 Stage 7 重写覆盖**。
+先润色再改写，等于把同一段话写两遍、付两遍 token、还只有后一遍作数。
+
+所以两阶段按**改动的层级**切分，不按"精修程度"切分：
+
+| | Stage 6 · 结构层 | Stage 7 · 语言层 |
+|---|---|---|
+| 管什么 | 段落顺序、论证链完整性、每节该说什么、表图指代与正文是否对得上、有没有重复段和悬空承诺 | 句长分布、脚手架词、断言校准、研究者声音、AI 味 |
+| 动到什么粒度 | **段落及以上**（增删移合并整段） | **句子及以下**（重写句子，不动结构） |
+| 不许做 | 逐句润色措辞——**做了也会被 Stage 7 覆盖** | 调整段落顺序、增删小节——**那会破坏 Stage 6 刚理顺的论证链** |
+| 输出 | `06_polish/main.tex` | `07_dehumanize/main.tex` |
+
+判断归属的一句话：**改的是"这段该不该在这儿、说全了没有"就是 Stage 6；改的是"这句话该怎么说"就是 Stage 7。**
 
 **execute**
 - **直接 `Skill` 调用 `67/paper-pipeline`**，把 `05_draft/`（或复制到 `06_polish/`）和目标期刊
   传给它。它内部会按固定顺序自动跑：`paper-polish → paper-self-revise → paper-style →
   paper-polish（二轮）→ reference-verify`，并自带它**自己的** `pipeline_state.json`、阶段备份、
   交互档位。**不要在这里重复它的逻辑**——本编排器只负责把输入喂对、把它的产出收回主线。
+- **给 `paper-pipeline` 的 prompt 里必须写明本阶段只做结构层**：二轮 `paper-polish` 的目标是
+  论证链与节内完整性，不是逐句措辞；语言分布层的工作留给 Stage 7 一次做完。
 - 把 `paper-pipeline` 的交互档位与本编排器的档位对齐（全自动↔全自动 / 阶段确认↔stage-confirm）。
 
-**交付**：打磨后的 `06_polish/main.tex` + `ref.bib` + `ref_verify_report.xlsx` + pipeline 报告。
+**引用核验的分工（避免同一件事查三遍）**：本阶段的 `reference-verify` 是**全量基线**——
+它建立 `00_meta/citation_integrity_log.md` 的初始台账。此后：
+
+| 时点 | 范围 | 理由 |
+|---|---|---|
+| Stage 6（本阶段） | **全量** | 建基线台账 |
+| Stage 7 / Stage 8 | **只验 diff 触及的条目** | 改写不该动引用；真动了才需要复核 |
+| Stage 9 终审 | **中央 claim 的引用 + 所有新增/改动条目** | 见 Stage 9；中央 claim 不许抽样 |
+
+**交付**：结构打磨后的 `06_polish/main.tex` + `ref.bib` + `ref_verify_report.xlsx` + pipeline 报告。
 
 **失败回退**：`paper-pipeline` 内部中断 → 它自身可断点续跑，本编排器记录其状态后在闸门提示用户。
 
@@ -324,6 +493,11 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 ## Stage 7 · 语言与去 AI 味（降 AIGC）
 
 **目的**：消除 AI 腔 / 翻译腔，把语言分布拉回真实研究者的写法（不是同义词替换，也不是句式倒装）。
+
+**边界**：只动**句子及以下**。段落顺序、小节增删、论证链属于 Stage 6，本阶段不许碰——
+碰了就会破坏 Stage 6 刚理顺的结构，而且没人会再检查一遍（见 Stage 6 的分工表）。
+
+**入口检查**：`python3 scripts/check_workspace_gates.py <workspace> --preconditions 7`。
 
 **execute**
 
@@ -372,8 +546,37 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **⑥ 并行**：降 AIGC 是"逐句改写"性质，独立段落可并行 subagent 处理（模板 §S7），
 各自写盘回 `07_dehumanize/`。
 
+**⑦ 数字零漂移闸门（机械，先跑再让 critic 看）**
+
+第 3 步会逐句重写全文。人工"逐项 diff 原稿"在两百段的稿子上是不可能可靠完成的，
+所以这一条不交给眼睛：
+
+```bash
+python3 scripts/check_manuscript_numbers.py <workspace>
+```
+
+它做两件事：**①** 把 `06_polish/main.tex → 07_dehumanize/main.tex` 当作**数字惰性边界**——
+任何数字的出现或消失（两个方向都算）直接 FAIL，这正是本阶段红线的机械化；
+**②** 检查最新稿里每一个数字claim 是否能在 `03_analysis/results/` 或 `04_results/`
+里按其显示精度找到来源（`0.123` 匹配 `0.12345`）。
+
+年份、表图交叉引用、常规显著性水平与临界值按结构排除，不会误报。
+确实正确但无结果文件支撑的数字（引自他文的数据、制度常数）**在稿件内**豁免，
+让审稿人也能看见理由：
+
+```latex
+% pw-number-ok: 4.7 -- 2019 年城镇失业率，引自 Chen (2021) 表 2
+```
+
+结果写 `workflow_state.json.manuscript_numbers`（`status` / `unanchored_claims` /
+`inert_boundary_drift` / `waived_claims` / `checked_manuscript`）。
+**任一计数 >0 → 质量门不得 `pass`**（由 `check_workspace_gates.py` 的
+`quality_gate:numbers` 机械拦截）。漂移的修法只有一个方向：**把数字改回结果文件里的值**，
+绝不允许反过来改结果文件去迁就稿件。
+
 **review**：critic 抽查五条——(1) 套话是否清除（"首先/其次/综上所述/值得注意的是"、-ing 尾巴、
-Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引用是否零漂移**（逐项 diff 原稿）；
+Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引用是否零漂移**——机械闸门已在上面
+跑过，critic 只需复核闸门未覆盖的部分（引用内容是否被改写、变量名与公式是否被动过）；
 (4) 五维加权总分是否 ≥42；(5) 第 2 步未决的无证据 claim 是否已上交用户，而不是被悄悄改写掉。
 
 **revise / 交付**：定稿到 `07_dehumanize/main.tex`，回灌主稿；`07_dehumanize/aigc_audit.md`（审计表）
@@ -402,11 +605,27 @@ Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引�
 **7 维定义、达标线（每维/总分/红旗三条件）与「短板 → 回退阶段」映射**：唯一真源是
 [`quality-rubric.md`](quality-rubric.md)（SKILL.md 质量门协议引用同一处）——不在此复述，避免三处漂移。
 
+**机械前置（critic 打分之前先跑，别让人去数）**：
+
+```bash
+python3 scripts/check_manuscript_numbers.py <workspace>   # 数字锚定 + 惰性边界
+python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证据齐备
+```
+
+`manuscript_numbers.status != pass`，或 `unanchored_claims` / `inert_boundary_drift` 任一 >0 →
+**质量门直接不得 `pass`**，无需 critic 打分：稿件里有没来源的数字，是比任何一维评分都更前置的问题。
+这两条由 `check_workspace_gates.py` 的 `quality_gate:numbers` 机械拦截，不依赖 critic 的判断力。
+
 **revise / 回退**
 - `pass` → `workflow_state.json` 置 `quality_gate=pass`、`draft_milestone=done`；进入可选 Stage 8–9。
 - `not pass` → 按 rubric 的「短板 → 回退阶段」映射退回重做；回退轮次预算与「2 轮仍卡则标红交用户裁决」
   的规则同样以 rubric / SKILL.md 协议为准（绝不静默放行）。
-- 每次回退记入 `logs/quality_gate.md` 与 `workflow_state.json` 的 `decisions`。
+- 每次回退记入 `logs/quality_gate.md` 与 `workflow_state.json` 的 `decisions`，
+  并把 `quality_gate.rounds` +1。**回退是有预算的**：`orchestration.revision_rounds_cap`（缺省 2）
+  管质量门，`orchestration.method_gate_rounds_cap`（缺省 2）管 Method Gate 的
+  `NOT PASS → 回 Stage 1/2/3`。触顶后按 `budget_exhausted_action`
+  （缺省 `deliver-with-known-gaps`）处理：**停止重跑，按已知短板交付并在摘要卡标红**，
+  由用户裁决是否带病投稿。没有这条上限，`全自动`档位在一个永远过不了的闸门上会无界重试。
 
 > 质量门 ≠ Stage 6 打磨（改语言）≠ Stage 8 评审（挑学术硬伤）；它只做一件事——**按统一 rubric
 > 量化「这份初稿够不够格」并决定放行/回炉**。它是「可投稿级初稿」这一核心交付里程碑的验收闸门。
@@ -466,7 +685,17 @@ Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引�
   **1 主投 + 2 备投**的国内 CSSCI 期刊短名单；学位论文场景按 §6.2-6.3 准备相应章节、创新点声明、答辩PPT。
   选刊前**必须**登录目标期刊官网核当前投稿须知（字数、查重率、JEL、IRB 要求等可能已变）。
 - **终审引用**：再 `Skill` 调用一次 `67/reference-verify`（投稿前最后一次，确保此前所有修订没动坏
-  引用），落 `09_submission/ref_verify_final.xlsx`。
+  引用），落 `09_submission/ref_verify_final.xlsx`。范围按 Stage 6 的分工表：
+  **中央 claim 的引用 + 所有新增/改动条目**（中央 claim 不许抽样），并以
+  `01_proposal/lit/corpus.md` 为白名单——`ref.bib` 里既不在语料、也没有新增登记的条目**优先怀疑是编的**。
+- **数字终审闸门**：
+
+  ```bash
+  python3 scripts/check_manuscript_numbers.py <workspace> --strict
+  ```
+
+  `--strict` 把"有稿件却没有任何分析产物"从提示升级为硬失败——投稿包不该在这种状态下成立。
+  未过则 `replication_pack` 不得标 ready。
 - **引用/时序终审闸门**：跑 `python3 scripts/check_citation_integrity.py <workspace> --final` —— 不得残留
   `to-verify`、不得有未处置 `flagged`、撤稿筛查通过、§2 时序无未排除的 `risk`；不过则投稿包不得标 ready
   （见 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md) §4）。
@@ -513,7 +742,17 @@ IRB/DUA 与公开复现包边界）；若调用 AJS，同时核对 `adapter_repo
 节的清单），并按 [`reproducibility-pack.md`](reproducibility-pack.md) 与
 [`data-governance.md`](data-governance.md) 生成 `REPLICATION.md`、DAS（如需）、data governance register
 与 master script（模板见 `templates/REPLICATION.md`、`templates/DAS.md`、`templates/run_all.sh`）。
-能真实重跑就删派生产物后跑一次；不能重跑就把阻断原因写进
+
+**这里是"验证"，不是"构建"。** 复现包的骨架在 Stage 3 估计跑通时就已冻结
+（`00_meta/repro_environment.md` + master script 骨架，见 Stage 3「冻结复现环境」），
+每阶段往里追加。收尾要做的是**删派生产物、按 master script 真跑一次、对比产出**，
+并按 [`computational-reproducibility.md`](computational-reproducibility.md) §3（产出核验与浮点容差）核对
+数值容差、种子作用域与跨平台差异。
+若 `replication_pack.frozen_at_stage` 为 `null`（即到收尾才开始建包），
+在 `FINAL_REPORT.md` 的「Residual Risks」里显式记为**已知高风险**：Stage 3 的环境到此时
+通常已经漂移，而验证重跑只能证明"现在能跑"，不能证明"当初跑的就是这个"。
+
+不能重跑就把阻断原因写进
 `workflow_state.json.replication_pack.last_rebuild_check`，且 `status` 只能是 `not_ready`。
 
 最终打包并告知用户交付物路径、一键重跑命令、复现包状态、投稿前仍需人工确认的事项。

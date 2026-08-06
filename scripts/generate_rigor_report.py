@@ -125,6 +125,19 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_manuscript_numbers.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Manuscript numeric anchoring and rewrite inertness: every coefficient, "
+            "standard error and sample size asserted in the manuscript must trace to "
+            "03_analysis/results or 04_results at the precision it is printed, and the "
+            "Stage 6->7 de-AIGC rewrite must not change a single number in either "
+            "direction. Unanchored figures are waived only by an in-text, referee-"
+            "readable `% pw-number-ok:` comment."
+        ),
+    },
+    {
         "path": "scripts/check_citation_integrity.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

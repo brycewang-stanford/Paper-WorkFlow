@@ -8,9 +8,9 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-34%2F34_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-35%2F35_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
-![State](https://img.shields.io/badge/state-schema_v10-4F46E5?style=flat&labelColor=0D1117)
+![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
@@ -65,6 +65,8 @@ Paper-WorkFlow turns that system into:
 
 - `Stage 0-9`: setup, routing, data, identification, exhibits, drafting, polishing, de-slopping, review, and submission.
 - Two hard gates: a Method Gate after Stage 3 and a Draft Quality Gate after Stage 7.
+- Two pre-stages that must happen *inside* their parent stage: `1L` builds the literature corpus before novelty is scored, and `2.5` locks the primary specification before the first estimate exists.
+- A scope tier (`draft` / `working-paper` / `submission`) that fixes which gates a finished run owes, orthogonal to the interaction tier.
 - A resumable workspace controlled by `00_meta/workflow_state.json`.
 - A first-class analysis backend choice for Python/StatsPAI, Stata, or R.
 - A compact pipeline dashboard plus a claim-integrity audit for citation, number, and wording faithfulness.
@@ -80,16 +82,18 @@ flowchart TD
     subgraph A ["① CONCEIVE"]
       direction LR
       S1["<b>Stage 1 · Topic & Design</b><br/>idea-finder → novelty-check<br/>→ significance → proposal"]
+      S1L["<b>Stage 1L · Literature Base</b><br/>build the corpus once; reuse it for<br/>novelty, related work, citation audit"]
+      S1L --> S1
     end
 
     subgraph B ["② EVIDENCE"]
       direction LR
-      S2["<b>Stage 2</b><br/>Data<br/>fetch + clean"] --> S3["<b>Stage 3</b><br/>Identification & Estimation<br/>DiD/IV/RDD/SC…"] --> MG{"Method Gate<br/>design register · evidence bundle"} --> S4["<b>Stage 4</b><br/>Tables & Figures<br/>publication-grade exhibits"]
+      S2["<b>Stage 2</b><br/>Data<br/>fetch + clean"] --> S25{"<b>Stage 2.5</b><br/>Design Lock<br/>fix the spec before any result"} --> S3["<b>Stage 3</b><br/>Identification & Estimation<br/>DiD/IV/RDD/SC…"] --> MG{"Method Gate<br/>design register · evidence bundle"} --> S4["<b>Stage 4</b><br/>Tables & Figures<br/>publication-grade exhibits"]
     end
 
     subgraph C ["③ COMPOSE"]
       direction LR
-      S5["<b>Stage 5</b><br/>First draft<br/>main.tex"] --> S6["<b>Stage 6</b><br/>Polish pipeline"] --> S7["<b>Stage 7</b><br/>De-slop<br/>remove AI residue"]
+      S5["<b>Stage 5</b><br/>First draft<br/>main.tex"] --> S6["<b>Stage 6</b><br/>Structural polish<br/>paragraph level and above"] --> S7["<b>Stage 7</b><br/>Language de-slop<br/>sentence level · numbers inert"]
     end
 
     subgraph D ["④ SUBMIT"]
@@ -240,13 +244,25 @@ Use it from Claude Code with a research idea, proposal, dataset, results folder,
 /paper-workflow draft at ./paper/main.tex, polish and prepare submission package
 ```
 
-Before execution, the skill resolves the interaction mode, target journal, manuscript language, analysis backend, and table style once:
+Before execution, the skill resolves the interaction mode, scope tier, target journal, manuscript language, analysis backend, and table style once.
+
+The interaction mode controls **how often it stops to ask you**:
 
 | Mode | Meaning |
 |---|---|
 | `auto` | Runs without mid-stage approval and reports at final delivery |
 | `stage-confirm` | Recommended default; each stage ends with a summary card and waits for approval |
 | `interactive` | Lets each underlying skill use its native approval flow |
+
+The scope tier (`project.scope`) controls **what "finished" means**, and is orthogonal to the interaction mode. The same pipeline serves a two-day internal draft and a top-field submission, but they should not owe the same gates:
+
+| scope | Required gates | Typical use |
+|---|---|---|
+| `draft` | Method gate | A fast internal discussion draft |
+| `working-paper` | + design risk, draft quality gate | Working paper / seminar / preprint |
+| `submission` (default) | + claim integrity, manuscript numbers, replication pack | Formal submission |
+
+Scope decides **which gates a finished run owes**; it never relaxes verification of a gate the run claims to have passed. Clearing fewer gates is a choice; calling an uncleared gate cleared is not.
 
 Backend choices are `python-statspai` (default), `stata`, and `r`. Backend choice controls Stage 3-4 scripts and export tools; it is separate from manuscript language.
 
@@ -366,6 +382,7 @@ Paper-WorkFlow/
 │   ├── check_cn_claim_audit.py
 │   ├── check_review_scorecard.py
 │   ├── check_preregistration.py
+│   ├── check_manuscript_numbers.py
 │   ├── check_gate_integration.py
 │   ├── check_reproducibility_scaffold.py
 │   ├── check_cross_references.py

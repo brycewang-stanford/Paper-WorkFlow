@@ -22,6 +22,45 @@ This audit complements, not replaces:
 - `00_meta/quality_scorecard.md` for draft-level quality;
 - `REPLICATION.md` and `09_submission/DAS.md` for reproducibility and data access.
 
+## Numbers Are Audited Mechanically First
+
+This audit is a judgement task performed by a critic reading prose, and prose
+judgement does not scale to *every digit in the paper*. Before it runs, one
+purely mechanical question must already be answered:
+
+```bash
+python3 scripts/check_manuscript_numbers.py <workspace>          # Stage 7 -> 8
+python3 scripts/check_manuscript_numbers.py <workspace> --strict # Stage 9
+```
+
+It settles two things no human reviewer can reliably settle by eye:
+
+1. **Anchoring.** Every coefficient, standard error and sample size the
+   manuscript asserts must appear in `03_analysis/results/` or `04_results/` at
+   the precision it is printed (`0.123` is satisfied by `0.12345`). A figure that
+   matches nothing is not a wording problem for the critic to weigh — it is a
+   number with no known origin.
+2. **Rewrite inertness.** The Stage 6 -> Stage 7 boundary is contractually
+   language-only, so any numeric delta across it, in either direction, is a hard
+   violation of the de-AIGC red line.
+
+Results land in `workflow_state.json.manuscript_numbers`; `unanchored_claims` or
+`inert_boundary_drift` above zero blocks the Draft Quality Gate via
+`check_workspace_gates.py`'s `quality_gate:numbers` row, before any dimension is
+scored. The critic's remaining job on numbers is the part a script cannot judge:
+whether an anchored number is being *interpreted* faithfully.
+
+A number that is genuinely correct but has no analysis output behind it (a figure
+quoted from a cited paper, an institutional constant) is waived in the manuscript
+itself, where a referee can see the justification:
+
+```latex
+% pw-number-ok: 4.7 -- 2019 urban unemployment rate, quoted from Chen (2021) Table 2
+```
+
+Waivers are counted in `manuscript_numbers.waived_claims`; a draft that waives
+many of its own figures is itself a signal worth reading.
+
 ## Claim Locator Manifest
 
 Before judging prose, create or refresh the claim locator manifest in

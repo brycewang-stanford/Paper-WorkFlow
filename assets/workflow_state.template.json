@@ -1,10 +1,11 @@
 {
-  "schema_version": 11,
+  "schema_version": 12,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
     "entry_stage": null,
     "mode": "",
+    "scope": "submission",
     "target_journal": "",
     "language": ""
   },
@@ -21,7 +22,10 @@
     "last_recovery_probe": "",
     "self_review_gate": "pending",
     "ethics_gate": "pending",
-    "revision_rounds_cap": 2
+    "revision_rounds_cap": 2,
+    "method_gate_rounds_cap": 2,
+    "method_gate_rounds": 0,
+    "budget_exhausted_action": "deliver-with-known-gaps"
   },
   "analysis_backend": {
     "primary": "",
@@ -44,6 +48,25 @@
     "audit_report": "04_results/table_style_audit.md",
     "last_check": ""
   },
+  "literature_base": {
+    "status": "pending",
+    "corpus": "01_proposal/lit/corpus.md",
+    "lit_matrix": "01_proposal/lit/lit_matrix.md",
+    "screened_count": 0,
+    "core_count": 0,
+    "reused_by": [],
+    "last_build": ""
+  },
+  "design_lock": {
+    "status": "pending",
+    "preregistration": "00_meta/preregistration.md",
+    "locked_before_estimation": null,
+    "lock_commit": "",
+    "primary_design": "",
+    "confirmatory_count": 0,
+    "deviations": [],
+    "last_lock": ""
+  },
   "empirical_audit": {
     "status": "pending",
     "sample_audit": "02_data/sample_audit.md",
@@ -56,7 +79,9 @@
   "stages": {
     "0_intake_setup": "pending",
     "1_topic_design": "pending",
+    "1L_literature_base": "pending",
     "2_data": "pending",
+    "2_5_design_lock": "pending",
     "3_identification_estimation": "pending",
     "4_tables_figures": "pending",
     "5_draft": "pending",
@@ -105,6 +130,14 @@
     "selection_attrition": "pending",
     "last_review": ""
   },
+  "manuscript_numbers": {
+    "status": "pending",
+    "checked_manuscript": "",
+    "unanchored_claims": 0,
+    "waived_claims": 0,
+    "inert_boundary_drift": 0,
+    "last_check": ""
+  },
   "quality_gate": {
     "draft_milestone": "pending",
     "status": "pending",
@@ -117,6 +150,8 @@
     "status": "pending",
     "readme": "REPLICATION.md",
     "master_script": "",
+    "environment_record": "00_meta/repro_environment.md",
+    "frozen_at_stage": null,
     "data_availability_statement": "09_submission/DAS.md",
     "archive_plan": "",
     "runtime_minutes": null,

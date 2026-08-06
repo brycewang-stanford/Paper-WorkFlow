@@ -32,6 +32,8 @@ GATE_CHECKER = ROOT / "scripts" / "check_workspace_gates.py"
 FINAL_REPORT_CHECKER = ROOT / "scripts" / "check_final_report_contract.py"
 
 TEMPLATE_OUTPUTS = {
+    "templates/preregistration.md": "00_meta/preregistration.md",
+    "templates/repro_environment.md": "00_meta/repro_environment.md",
     "templates/sample_audit.md": "02_data/sample_audit.md",
     "templates/design_register.md": "03_analysis/design_register.md",
     "templates/method_gate.md": "03_analysis/method_gate.md",
@@ -99,8 +101,10 @@ def evaluate_contract(data: dict) -> dict:
     stages = data.get("stages")
     if data.get("schema_version") != 1:
         errors.append("schema_version must be 1")
-    if data.get("required_stage_count") != 10:
-        errors.append("required_stage_count must be 10")
+    # 10 mainline stages (0-9) plus the two pre-stages (1L literature base,
+    # 2.5 design lock) that gate work inside their parent stage.
+    if data.get("required_stage_count") != 12:
+        errors.append("required_stage_count must be 12")
     if not isinstance(stages, list) or not stages:
         errors.append("stages must be a non-empty list")
         stages = []
@@ -401,6 +405,37 @@ def _build_state(contract: dict) -> dict:
             "last_audit": "scenario fixture",
         }
     )
+    state["design_lock"].update(
+        {
+            "status": "locked",
+            "preregistration": "00_meta/preregistration.md",
+            "locked_before_estimation": True,
+            "lock_commit": "scenario-fixture",
+            "primary_design": "staggered_did",
+            "confirmatory_count": 2,
+            "deviations": [],
+            "last_lock": "scenario fixture",
+        }
+    )
+    state["manuscript_numbers"].update(
+        {
+            "status": "pass",
+            "checked_manuscript": "09_submission/main.tex",
+            "unanchored_claims": 0,
+            "waived_claims": 0,
+            "inert_boundary_drift": 0,
+            "last_check": "scenario fixture",
+        }
+    )
+    state["literature_base"].update(
+        {
+            "status": "pass",
+            "screened_count": 120,
+            "core_count": 14,
+            "reused_by": ["novelty", "related_work", "reference_verify"],
+            "last_build": "scenario fixture",
+        }
+    )
     state["design_risk"].update(
         {
             "status": "pass",
@@ -482,6 +517,16 @@ def build_workspace(tmp_root: Path, contract: dict) -> Path:
 
     _write(workspace / "01_proposal" / "proposal.md", "# Proposal\nA bounded scenario proposal.\n")
     _write(workspace / "01_proposal" / "candidates" / "topic_card.md", "# Topic Card\nScenario topic.\n")
+    _write(
+        workspace / "01_proposal" / "lit" / "corpus.md",
+        "# Literature Corpus\n\n| bibkey | DOI | year | relation |\n|---|---|---|---|\n"
+        "| smith2020 | 10.1/scenario | 2020 | prior work |\n",
+    )
+    _write(
+        workspace / "01_proposal" / "lit" / "lit_matrix.md",
+        "# Literature Matrix\n\n| Citation | Setting | Identification | Finding | Relation to us |\n"
+        "|---|---|---|---|---|\n| smith2020 | US | TWFE | positive | we use CS estimator |\n",
+    )
     _write(workspace / "02_data" / "codebook.md", "# Codebook\n`y`, `treat`, and `post` are defined.\n")
     _write(workspace / "02_data" / "clean" / "analysis_sample.csv", "id,year,y,treat,post\n1,2020,1.2,1,1\n")
     _write(workspace / "03_analysis" / "results" / "main_results.json", json.dumps({"att": 0.123, "se": 0.045}, indent=2) + "\n")

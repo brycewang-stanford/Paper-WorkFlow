@@ -178,7 +178,20 @@ severity + 非占位 verbatim + locator、blocking finding 的维度分必须 �
 - 机制用因果措辞却无 sequential ignorability 说明/敏感性，或「系数下降即渠道」无 Gelbach 正式分解
   （[`mechanism-and-channels.md`](mechanism-and-channels.md) §3/§4）：本维封顶 6。
 
-**回退**：→ Stage 5/6（改写结果与结论段，配 `paper-self-revise` / `readability`）。
+**数字锚定封顶规则（先于任何主观打分）**：`python3 scripts/check_manuscript_numbers.py <workspace>` 不过时——
+
+- `unanchored_claims > 0`（稿件断言的数字在 `03_analysis/results/` 与 `04_results/` 里都找不到来源）：
+  本维**封顶 4**，且属于**致命红旗**。一个没有来源的系数比任何解读失当都严重：它不是"说过头了"，
+  而是"这个数从哪来的没人知道"。修法只有一个方向——把数字改回结果文件里的值，
+  或用稿内 `% pw-number-ok: <n> -- 理由` 说明它引自何处；**绝不允许反过来改结果文件迁就稿件**。
+- `inert_boundary_drift > 0`（Stage 6→7 的语言改写动了数字）：本维**封顶 4**，并回 Stage 7 重跑，
+  因为这直接违反 de-AIGC 的第一条红线。
+
+这条规则是机械判定，不占 critic 的判断力：`check_workspace_gates.py` 的 `quality_gate:numbers`
+会在 critic 打分之前就拦住整个质量门。
+
+**回退**：→ Stage 5/6（改写结果与结论段，配 `paper-self-revise` / `readability`）；
+数字锚定不过 → 先回 Stage 4/7 修数字，再谈解读。
 
 ---
 
@@ -361,10 +374,14 @@ python3 evals/check_quality_judge.py --selftest       # 验证判定器与解析
 | ① 贡献 | Stage 1 | 重收选题漏斗 / 强化贡献句 / 换差异化切口 |
 | ② 识别 | Stage 3（重则 Stage 1） | 补诊断 / 换识别策略 / 换工具或对照 |
 | ③ 稳健 | Stage 3 | 补稳健性矩阵 subagent / 修聚类 / StatsPAI `audit_result` 补缺 |
-| ④ 解读 | Stage 5/6 | 重写结果与结论段，克制因果语气 |
+| ④ 解读 | Stage 5/6；**数字无来源 → Stage 4/7** | 重写结果与结论段，克制因果语气；`check_manuscript_numbers.py` 不过时先把数字改回结果文件里的值 |
 | ⑤ 写作 | Stage 7（AI 腔）/ Stage 5/6（表图问题→Stage 4） | `de-aigc-skills` 重跑降 AIGC / 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
 | ⑥ 引用 | `reference-verify` + Stage 5 | 终审核验 / 补结构化文献综述 |
 | ⑦ 复现与治理 | Stage 2/3/9 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 / DAS / 数据治理登记 |
 
-**回退上限**：同一维最多回退 **2 轮**。2 轮后仍不达标 → 在 `logs/quality_gate.md` 记「已知短板」，
-质量门摘要卡里**显著标红**告知用户，由用户裁决是否带病进入 Stage 8/9（绝不静默放行）。
+**回退上限**：同一维最多回退 **2 轮**（`orchestration.revision_rounds_cap`）。
+Method Gate 方向的回退（回 Stage 1/2/3）另有 `orchestration.method_gate_rounds_cap`，同样缺省 2 轮。
+任一触顶 → 按 `orchestration.budget_exhausted_action`（缺省 `deliver-with-known-gaps`）在
+`logs/quality_gate.md` 记「已知短板」，质量门摘要卡里**显著标红**告知用户，
+由用户裁决是否带病进入 Stage 8/9（绝不静默放行）。
+**上限存在的理由**：`全自动`档位下没有上限的回退，在一个永远过不了的闸门上就是无界循环。

@@ -18,6 +18,15 @@ enforced at runtime by a critic subagent reading prose. Prose judgement cannot
     integrity audit is missing, stale, or blocking.
   - a Draft Quality Gate or ready replication pack is declared while the
     citation/temporal-integrity log is missing, malformed, or not final-clean.
+  - a Method Gate is marked ``pass`` while the design lock (pre-registration)
+    was never taken, or was taken *after* the main results already existed.
+  - a Draft Quality Gate is declared while the manuscript still asserts numbers
+    no analysis output backs, or a numerically inert rewrite boundary drifted.
+
+Beyond auditing a finished stage, the same contract answers the cheaper question
+*may this stage start at all?* (``--preconditions <stage>``). Every failure the
+gate card reports is a failure discovered after the work was done; a precondition
+is the same fact checked before, which is where a rollback is affordable.
 
 This script makes those invariants testable. It reads
 ``00_meta/workflow_state.json`` from a workspace and reports a gate card. It is
@@ -28,6 +37,7 @@ Usage:
     python3 check_workspace_gates.py <workspace_dir>          # human report
     python3 check_workspace_gates.py <workspace_dir> --json   # machine readable
     python3 check_workspace_gates.py <workspace_dir> --reconcile  # + number check
+    python3 check_workspace_gates.py <ws> --preconditions 3   # may Stage 3 start?
     python3 check_workspace_gates.py --selftest               # verify this checker
 
 Exit code is non-zero iff at least one HARD inconsistency is found (a gate claims
@@ -58,7 +68,12 @@ OKAY = "OK"     # invariant satisfied
 
 
 class Report:
-    def __init__(self) -> None:
+    def __init__(self, title: str = "Paper-WorkFlow gate card",
+                 fail_summary: str = "hard inconsistency(ies) -> gates NOT verified",
+                 pass_summary: str = "no hard inconsistencies -> declared gates are backed by evidence") -> None:
+        self.title = title
+        self.fail_summary = fail_summary
+        self.pass_summary = pass_summary
         self.rows: list[tuple[str, str, str]] = []  # (level, check, detail)
 
     def add(self, level: str, check: str, detail: str) -> None:
@@ -78,14 +93,14 @@ class Report:
 
     def render(self) -> str:
         width = max((len(c) for _, c, _ in self.rows), default=4)
-        lines = ["", "Paper-WorkFlow gate card", "=" * 60]
+        lines = ["", self.title, "=" * 60]
         for lvl, chk, det in self.rows:
             lines.append(f"[{lvl:<4}] {chk:<{width}}  {det}")
         lines.append("=" * 60)
         if self.failures:
-            lines.append(f"RESULT: {len(self.failures)} hard inconsistency(ies) -> gates NOT verified")
+            lines.append(f"RESULT: {len(self.failures)} {self.fail_summary}")
         else:
-            lines.append("RESULT: no hard inconsistencies -> declared gates are backed by evidence")
+            lines.append(f"RESULT: {self.pass_summary}")
         return "\n".join(lines)
 
 
@@ -111,6 +126,100 @@ def _gate_artifact(block: dict, key: str, default: str) -> str:
     return val if isinstance(val, str) and val.strip() else default
 
 
+# --------------------------------------------------------------------------- #
+# scope tiers                                                                  #
+# --------------------------------------------------------------------------- #
+# What "finished" means depends on what is being produced. A two-day working
+# paper and a top-field submission share the same pipeline, but not the same
+# required gate set. Scope selects the set; it never relaxes verification of a
+# gate the run explicitly claims to have passed.
+SCOPE_REQUIRED_GATES = {
+    "draft": ["method_gate"],
+    "working-paper": ["method_gate", "design_risk", "quality_gate"],
+    "submission": [
+        "method_gate", "design_risk", "quality_gate",
+        "integrity_audit", "manuscript_numbers", "replication_pack",
+    ],
+}
+DEFAULT_SCOPE = "submission"
+
+
+# --------------------------------------------------------------------------- #
+# stage preconditions                                                          #
+# --------------------------------------------------------------------------- #
+# (label, kind, target) where kind is "file" (must exist in the workspace) or
+# "gate" (state block whose status must be pass/passed/locked/ready).
+STAGE_PRECONDITIONS: dict[str, list[tuple[str, str, str]]] = {
+    "1L": [
+        ("entry routing recorded", "file", "00_meta/entry_routing.md"),
+    ],
+    "2": [
+        ("proposal fixes the variables to collect", "file", "01_proposal/proposal.md"),
+    ],
+    "2_5": [
+        ("proposal", "file", "01_proposal/proposal.md"),
+        ("sample audit exists (data is in hand)", "file", "02_data/sample_audit.md"),
+    ],
+    "3": [
+        ("design lock taken before any estimate", "gate", "design_lock"),
+        ("pre-registration on disk", "file", "00_meta/preregistration.md"),
+        ("sample audit", "file", "02_data/sample_audit.md"),
+        ("design register drafted", "file", "03_analysis/design_register.md"),
+    ],
+    "4": [
+        ("method gate passed", "gate", "method_gate"),
+    ],
+    "5": [
+        ("method gate passed", "gate", "method_gate"),
+        ("evidence ledger maps claims to results", "file", "00_meta/evidence_ledger.md"),
+    ],
+    "7": [
+        ("a manuscript to rewrite", "file", "06_polish/main.tex"),
+    ],
+    "8": [
+        ("draft quality gate passed", "gate", "quality_gate"),
+    ],
+    "9": [
+        ("draft quality gate passed", "gate", "quality_gate"),
+        ("claim integrity audit passed", "gate", "integrity_audit"),
+    ],
+}
+
+_READY_STATES = {"pass", "passed", "locked", "ready", "pass_with_notes"}
+
+
+def check_preconditions(workspace: Path, state: dict, stage: str) -> Report:
+    """Answer 'may this stage start?' before the work is done, not after."""
+    rep = Report(
+        f"Paper-WorkFlow stage preconditions -- Stage {stage}",
+        fail_summary="unmet precondition(s) -> this stage must NOT start yet",
+        pass_summary="preconditions met -> the stage may start",
+    )
+    key = str(stage).strip().lower().replace(".", "_").replace("-", "_")
+    if key not in STAGE_PRECONDITIONS:
+        known = ", ".join(sorted(STAGE_PRECONDITIONS))
+        rep.add(INFO, f"stage:{stage}", f"no preconditions declared for this stage (known: {known})")
+        return rep
+
+    for label, kind, target in STAGE_PRECONDITIONS[key]:
+        if kind == "file":
+            if _exists(workspace, target):
+                rep.add(OKAY, f"pre:{target}", label)
+            else:
+                rep.add(FAIL, f"pre:{target}", f"missing — {label}")
+        else:
+            block = state.get(target)
+            status = _norm(block.get("status")) if isinstance(block, dict) else "absent"
+            if status in _READY_STATES:
+                rep.add(OKAY, f"pre:{target}", f"{label} (status={status})")
+            else:
+                rep.add(FAIL, f"pre:{target}", f"{target}.status={status} — {label}")
+
+    if not rep.failures:
+        rep.add(OKAY, f"stage:{stage}", "all preconditions met; the stage may start")
+    return rep
+
+
 def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     rep = Report()
 
@@ -125,6 +234,9 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     evidence = state.get("evidence_governance", {}) if isinstance(state.get("evidence_governance"), dict) else {}
     integrity = state.get("integrity_audit", {}) if isinstance(state.get("integrity_audit"), dict) else {}
     design_risk = state.get("design_risk", {}) if isinstance(state.get("design_risk"), dict) else {}
+    design_lock = state.get("design_lock", {}) if isinstance(state.get("design_lock"), dict) else {}
+    numbers = state.get("manuscript_numbers", {}) if isinstance(state.get("manuscript_numbers"), dict) else {}
+    project = state.get("project", {}) if isinstance(state.get("project"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
     replication = state.get("replication_pack", {}) if isinstance(state.get("replication_pack"), dict) else {}
@@ -165,6 +277,25 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
         cap = orchestration.get("revision_rounds_cap")
         if isinstance(cap, int) and cap < 1:
             rep.add(WARN, "orchestration:revision_cap", f"revision_rounds_cap={cap}")
+        # Rollback caps exist so an unattended run cannot loop forever on a gate it
+        # will never pass. Exceeding one is not a crime -- it is a signal to stop
+        # retrying and deliver with the shortfall documented.
+        mg_cap = orchestration.get("method_gate_rounds_cap")
+        mg_rounds = orchestration.get("method_gate_rounds")
+        if isinstance(mg_cap, int) and isinstance(mg_rounds, int) and mg_rounds > mg_cap:
+            rep.add(
+                WARN,
+                "orchestration:method_gate_cap",
+                f"method_gate_rounds={mg_rounds} exceeds cap {mg_cap}; stop re-running "
+                "Stage 1/2/3 and deliver with the shortfall recorded as a known gap",
+            )
+        q_rounds = quality.get("rounds")
+        if isinstance(cap, int) and isinstance(q_rounds, int) and q_rounds > cap:
+            rep.add(
+                WARN,
+                "orchestration:quality_cap",
+                f"quality_gate.rounds={q_rounds} exceeds revision_rounds_cap {cap}",
+            )
         reset_boundaries = orchestration.get("reset_boundaries")
         if reset_boundaries is not None and not isinstance(reset_boundaries, list):
             rep.add(WARN, "orchestration:reset_boundaries", "reset_boundaries is not a list")
@@ -248,6 +379,58 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     elif "design_risk" in state:
         rep.add(INFO, "design_risk", f"status={design_risk.get('status', 'absent')}")
 
+    # --- design lock (pre-registration taken before estimation) --------------
+    # A lock written after the results exist is not a lock; it is a transcript of
+    # what was found. The one fact that makes it decidable is whether the primary
+    # specification was fixed while the answer was still unknown.
+    lock_status = _norm(design_lock.get("status"))
+    if "design_lock" in state:
+        prereg = _gate_artifact(design_lock, "preregistration", "00_meta/preregistration.md")
+        results_exist = _exists(workspace, "03_analysis/results/main_results.json")
+        if lock_status in {"locked", "pass", "passed"}:
+            if not _exists(workspace, prereg):
+                rep.add(FAIL, "design_lock", f"status={design_lock.get('status')} but missing {prereg}")
+            elif design_lock.get("locked_before_estimation") is not True:
+                rep.add(
+                    FAIL,
+                    "design_lock:timing",
+                    "status=locked but locked_before_estimation is not true "
+                    "(a lock taken after the results is not a lock)",
+                )
+            else:
+                rep.add(OKAY, "design_lock", f"locked before estimation: {prereg}")
+            if isinstance(design_lock.get("confirmatory_count"), int) and design_lock["confirmatory_count"] < 1:
+                rep.add(WARN, "design_lock:hypotheses", "locked with zero confirmatory hypotheses registered")
+        elif results_exist:
+            rep.add(
+                FAIL,
+                "design_lock:timing",
+                f"main results exist but design_lock.status={design_lock.get('status', 'absent')} "
+                "(Stage 2.5 must lock the specification before Stage 3 estimates anything)",
+            )
+        else:
+            rep.add(INFO, "design_lock", f"status={design_lock.get('status', 'absent')}")
+
+    # --- manuscript numeric anchoring ---------------------------------------
+    num_status = _norm(numbers.get("status"))
+    if "manuscript_numbers" in state:
+        unanchored = numbers.get("unanchored_claims")
+        drift = numbers.get("inert_boundary_drift")
+        problems = []
+        if isinstance(unanchored, int) and unanchored > 0:
+            problems.append(f"unanchored_claims={unanchored}")
+        if isinstance(drift, int) and drift > 0:
+            problems.append(f"inert_boundary_drift={drift}")
+        if num_status in {"pass", "passed"}:
+            if problems:
+                rep.add(FAIL, "manuscript_numbers", "status=pass but " + "; ".join(problems))
+            elif not str(numbers.get("checked_manuscript") or "").strip():
+                rep.add(WARN, "manuscript_numbers", "status=pass but checked_manuscript is empty")
+            else:
+                rep.add(OKAY, "manuscript_numbers", f"pass, checked {numbers.get('checked_manuscript')}")
+        else:
+            rep.add(INFO, "manuscript_numbers", f"status={numbers.get('status', 'absent')}")
+
     # --- method gate ---------------------------------------------------------
     if _passed(method.get("status")):
         required = {
@@ -280,6 +463,14 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 "method_gate:design_risk",
                 f"status=pass but design_risk.status={design_risk.get('status', 'absent')} "
                 "(design-risk ledger must pass before Method Gate can pass)",
+            )
+        if "design_lock" in state and lock_status not in {"locked", "pass", "passed"}:
+            rep.add(
+                FAIL,
+                "method_gate:design_lock",
+                f"status=pass but design_lock.status={design_lock.get('status', 'absent')} "
+                "(the specification must have been locked before estimation; without it "
+                "the robustness matrix cannot be distinguished from specification search)",
             )
 
         # inference layer companion (soft, this skill introduces it as method-gate kin)
@@ -318,6 +509,23 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 f"status=pass but {citation_log} is not pre-final clean "
                 "(citation existence and temporal integrity must be checked before Draft Quality Gate can pass)",
             )
+        if "manuscript_numbers" in state:
+            unanchored = numbers.get("unanchored_claims")
+            drift = numbers.get("inert_boundary_drift")
+            if num_status not in {"pass", "passed"}:
+                rep.add(
+                    FAIL,
+                    "quality_gate:numbers",
+                    f"status=pass but manuscript_numbers.status={numbers.get('status', 'absent')} "
+                    "(run scripts/check_manuscript_numbers.py: every figure in the draft must "
+                    "trace to analysis output before the draft can be called submittable)",
+                )
+            elif (isinstance(unanchored, int) and unanchored > 0) or (isinstance(drift, int) and drift > 0):
+                rep.add(
+                    FAIL,
+                    "quality_gate:numbers",
+                    f"status=pass but unanchored_claims={unanchored}, inert_boundary_drift={drift}",
+                )
     else:
         rep.add(INFO, "quality_gate", f"status={quality.get('status', 'absent')}")
 
@@ -348,6 +556,29 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(OKAY, "replication_pack", f"ready, master script present: {master}")
     else:
         rep.add(INFO, "replication_pack", f"status={replication.get('status', 'absent')}")
+
+    # --- scope coverage ------------------------------------------------------
+    # Which gates a finished run owes depends on what it set out to produce. This
+    # row never loosens a claimed gate (those are verified above regardless); it
+    # states the completion contract so "done" means the same thing twice.
+    scope = _norm(project.get("scope")) or DEFAULT_SCOPE
+    scope = scope.replace("_", "-")
+    if scope not in SCOPE_REQUIRED_GATES:
+        rep.add(WARN, "scope", f"unknown project.scope={project.get('scope')!r}; "
+                               f"expected one of {', '.join(sorted(SCOPE_REQUIRED_GATES))}")
+    else:
+        required = SCOPE_REQUIRED_GATES[scope]
+        outstanding = []
+        for name in required:
+            block = state.get(name)
+            status = _norm(block.get("status")) if isinstance(block, dict) else "absent"
+            if status not in _READY_STATES:
+                outstanding.append(f"{name}={status}")
+        if outstanding:
+            rep.add(INFO, "scope", f"scope={scope}: {len(required) - len(outstanding)}/{len(required)} "
+                                   f"required gate(s) satisfied; outstanding: {', '.join(outstanding)}")
+        else:
+            rep.add(OKAY, "scope", f"scope={scope}: all {len(required)} required gate(s) satisfied")
 
     # --- optional numbers reconciliation (heuristic, advisory) ---------------
     if reconcile:
@@ -421,7 +652,7 @@ def _reconcile_numbers(workspace: Path, rep: Report) -> None:
         )
 
 
-def run(workspace: Path, reconcile: bool) -> Report:
+def run(workspace: Path, reconcile: bool, preconditions: str | None = None) -> Report:
     state_path = workspace / "00_meta" / "workflow_state.json"
     rep = Report()
     if not state_path.exists():
@@ -432,6 +663,8 @@ def run(workspace: Path, reconcile: bool) -> Report:
     except json.JSONDecodeError as exc:
         rep.add(FAIL, "workspace", f"workflow_state.json is not valid JSON: {exc}")
         return rep
+    if preconditions is not None:
+        return check_preconditions(workspace, state, preconditions)
     return check_state(workspace, state, reconcile)
 
 
@@ -630,6 +863,113 @@ def _selftest() -> int:
         for expected in ("integrity_audit:blocking", "integrity_audit:unsupported"):
             assert expected in hit_d, f"bad_d should flag {expected}; got {hit_d}"
 
+        # --- bad workspace E: results estimated without a design lock --------
+        bad_e = root / "bad_e"
+        touch(bad_e, "03_analysis/results/main_results.json")
+        write_state(bad_e, {
+            "project": {}, "stages": {},
+            "design_lock": {"status": "pending", "preregistration": "00_meta/preregistration.md"},
+        })
+        hit_e = {chk for lvl, chk, _ in run(bad_e, reconcile=False).rows if lvl == FAIL}
+        assert "design_lock:timing" in hit_e, f"bad_e should flag design_lock:timing; got {hit_e}"
+
+        # a lock claimed but back-dated after estimation is still a violation
+        touch(bad_e, "00_meta/preregistration.md")
+        write_state(bad_e, {
+            "project": {}, "stages": {},
+            "design_lock": {
+                "status": "locked",
+                "preregistration": "00_meta/preregistration.md",
+                "locked_before_estimation": False,
+            },
+        })
+        hit_e2 = {chk for lvl, chk, _ in run(bad_e, reconcile=False).rows if lvl == FAIL}
+        assert "design_lock:timing" in hit_e2, f"back-dated lock must fail; got {hit_e2}"
+
+        # --- bad workspace F: method gate passed without a design lock -------
+        bad_f = root / "bad_f"
+        for rel in ("02_data/sample_audit.md", "03_analysis/design_register.md",
+                    "03_analysis/method_gate.md", "03_analysis/results/main_results.json"):
+            touch(bad_f, rel)
+        write_state(bad_f, {
+            "project": {}, "stages": {},
+            "empirical_audit": {"status": "pass", "sample_audit": "02_data/sample_audit.md"},
+            "design_risk": {"status": "pass", "risk_ledger": "03_analysis/design_risk_ledger.md"},
+            "design_lock": {"status": "pending"},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+        })
+        hit_f = {chk for lvl, chk, _ in run(bad_f, reconcile=False).rows if lvl == FAIL}
+        assert "method_gate:design_lock" in hit_f, f"bad_f should flag method_gate:design_lock; got {hit_f}"
+
+        # --- bad workspace G: quality gate passed over unanchored numbers ----
+        bad_g = root / "bad_g"
+        touch(bad_g, "00_meta/quality_scorecard.md")
+        write_citation_log(bad_g)
+        write_state(bad_g, {
+            "project": {}, "stages": {},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+            "manuscript_numbers": {
+                "status": "pass",
+                "checked_manuscript": "07_dehumanize/main.tex",
+                "unanchored_claims": 3,
+                "inert_boundary_drift": 1,
+            },
+            "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
+        })
+        hit_g = {chk for lvl, chk, _ in run(bad_g, reconcile=False).rows if lvl == FAIL}
+        for expected in ("manuscript_numbers", "quality_gate:numbers"):
+            assert expected in hit_g, f"bad_g should flag {expected}; got {hit_g}"
+
+        # a quality gate declared before the number check ran at all
+        write_state(bad_g, {
+            "project": {}, "stages": {},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+            "manuscript_numbers": {"status": "pending"},
+            "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
+        })
+        hit_g2 = {chk for lvl, chk, _ in run(bad_g, reconcile=False).rows if lvl == FAIL}
+        assert "quality_gate:numbers" in hit_g2, f"unchecked numbers must block the gate; got {hit_g2}"
+
+        # --- stage preconditions ---------------------------------------------
+        pre = root / "pre"
+        touch(pre, "01_proposal/proposal.md")
+        touch(pre, "02_data/sample_audit.md")
+        write_state(pre, {"project": {}, "stages": {}, "design_lock": {"status": "pending"}})
+        # Stage 2.5 may start (proposal + data in hand)...
+        assert not run(pre, reconcile=False, preconditions="2_5").failures, \
+            "Stage 2.5 preconditions should be met"
+        # ...but Stage 3 may not: nothing is locked and no design register exists.
+        pre3 = {chk for lvl, chk, _ in run(pre, reconcile=False, preconditions="3").rows if lvl == FAIL}
+        assert "pre:design_lock" in pre3 and "pre:00_meta/preregistration.md" in pre3, \
+            f"Stage 3 must be blocked before the lock; got {pre3}"
+        # once locked and registered, Stage 3 opens
+        touch(pre, "00_meta/preregistration.md")
+        touch(pre, "03_analysis/design_register.md")
+        write_state(pre, {"project": {}, "stages": {},
+                          "design_lock": {"status": "locked", "locked_before_estimation": True}})
+        assert not run(pre, reconcile=False, preconditions="3").failures, \
+            "Stage 3 preconditions should be met once the lock is taken"
+        # an unknown stage is informational, never a failure
+        assert not run(pre, reconcile=False, preconditions="42").failures
+
+        # --- scope tiers ------------------------------------------------------
+        scoped = root / "scoped"
+        touch(scoped, "03_analysis/method_gate.md")
+        write_citation_log(scoped)
+        write_state(scoped, {
+            "project": {"scope": "draft"}, "stages": {},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+        })
+        rows = {chk: det for lvl, chk, det in run(scoped, reconcile=False).rows}
+        assert "scope" in rows and "scope=draft" in rows["scope"], rows.get("scope")
+        assert "all 1 required gate" in rows["scope"], f"draft scope needs only the method gate: {rows['scope']}"
+        write_state(scoped, {
+            "project": {"scope": "submission"}, "stages": {},
+            "method_gate": {"status": "pass", "missing_artifacts": []},
+        })
+        rows = {chk: det for lvl, chk, det in run(scoped, reconcile=False).rows}
+        assert "outstanding" in rows["scope"], f"submission scope must list outstanding gates: {rows['scope']}"
+
         # --- empty / missing state -------------------------------------------
         rep = run(root / "does_not_exist", reconcile=False)
         assert rep.failures, "missing workspace should fail"
@@ -643,6 +983,8 @@ def main() -> int:
     parser.add_argument("workspace", nargs="?", help="path to the paper_workspace/<run> directory")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
     parser.add_argument("--reconcile", action="store_true", help="also heuristically check result numbers vs exhibits")
+    parser.add_argument("--preconditions", metavar="STAGE",
+                        help="check whether STAGE (e.g. 3, 2_5, 1L) may start, instead of auditing gates")
     parser.add_argument("--selftest", action="store_true", help="verify this checker on synthetic workspaces")
     args = parser.parse_args()
 
@@ -651,7 +993,8 @@ def main() -> int:
     if not args.workspace:
         parser.error("workspace path is required (or pass --selftest)")
 
-    rep = run(Path(args.workspace).expanduser().resolve(), reconcile=args.reconcile)
+    rep = run(Path(args.workspace).expanduser().resolve(),
+              reconcile=args.reconcile, preconditions=args.preconditions)
     if args.json:
         print(json.dumps(rep.to_dict(), ensure_ascii=False, indent=2))
     else:

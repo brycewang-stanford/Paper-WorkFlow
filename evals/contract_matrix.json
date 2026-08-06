@@ -41,7 +41,11 @@
     "evals/backend_parity_cases.json",
     "evals/stage_scenario_contract.json",
     "evals/stage_adversarial_cases.json",
-    "worklogs/2026-06-25-month-long-quality-goal.md"
+    "worklogs/2026-06-25-month-long-quality-goal.md",
+    "scripts/check_manuscript_numbers.py",
+    "scripts/check_preregistration.py",
+    "templates/preregistration.md",
+    "templates/repro_environment.md"
   ],
   "contracts": [
     {
@@ -260,6 +264,94 @@
         "references/writing-craft.md",
         "references/chinese-journals.md",
         "RIGOR.md"
+      ]
+    },
+    {
+      "id": "manuscript_numeric_anchoring",
+      "theme": "runtime_validators_evals",
+      "invariant": "Every coefficient, standard error and sample size the manuscript asserts traces to 03_analysis/results or 04_results at the precision it is printed, the Stage 6 -> Stage 7 de-AIGC rewrite changes no number in either direction, and any figure without analysis output behind it carries an in-manuscript `% pw-number-ok:` waiver naming its source; unanchored claims or inert-boundary drift block the Draft Quality Gate.",
+      "owner_files": [
+        "scripts/check_manuscript_numbers.py",
+        "scripts/check_workspace_gates.py",
+        "assets/workflow_state.template.json",
+        "references/stage-playbook.md",
+        "references/integrity-and-claim-audit.md"
+      ],
+      "validators": [
+        "scripts/check_manuscript_numbers.py",
+        "scripts/check_workspace_gates.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/integrity-and-claim-audit.md",
+        "references/quality-rubric.md",
+        "references/workspace-and-state.md",
+        "RIGOR.md"
+      ]
+    },
+    {
+      "id": "design_lock_before_estimation",
+      "theme": "workflow_contract_state",
+      "invariant": "Stage 2.5 locks the primary specification after the data is in hand but before any main result exists: 00_meta/preregistration.md is filled and committed, design_lock.locked_before_estimation is true, Stage 3 cannot start and the Method Gate cannot pass without it, and post-lock changes are admissible only when registered in the deviations log.",
+      "owner_files": [
+        "scripts/check_preregistration.py",
+        "scripts/check_workspace_gates.py",
+        "templates/preregistration.md",
+        "assets/workflow_state.template.json",
+        "references/stage-playbook.md"
+      ],
+      "validators": [
+        "scripts/check_preregistration.py",
+        "scripts/check_workspace_gates.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/design-transparency.md",
+        "references/orchestration-and-handoff.md",
+        "references/workspace-and-state.md",
+        "references/design-risk-ledger.md"
+      ]
+    },
+    {
+      "id": "literature_base_reuse",
+      "theme": "workflow_contract_state",
+      "invariant": "Stage 1L builds one literature corpus under 01_proposal/lit/ that novelty scoring, the related-work section and the final citation audit all reuse, each recording itself in literature_base.reused_by; a novelty score computed without the corpus cannot be cited as top-journal-level evidence.",
+      "owner_files": [
+        "assets/workflow_state.template.json",
+        "assets/init_workspace.sh",
+        "references/stage-playbook.md",
+        "references/literature-and-positioning.md"
+      ],
+      "validators": [
+        "scripts/check_state_template_paths.py",
+        "scripts/check_workspace_gates.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/literature-and-positioning.md",
+        "references/workspace-and-state.md",
+        "references/subagent-templates.md"
+      ]
+    },
+    {
+      "id": "stage_preconditions_and_scope",
+      "theme": "workflow_contract_state",
+      "invariant": "Each stage checks its entry requirements before doing the work (check_workspace_gates.py --preconditions), rollback is bounded by revision_rounds_cap and method_gate_rounds_cap with an explicit budget_exhausted_action, and project.scope (draft / working-paper / submission) fixes which gates a finished run owes without ever relaxing verification of a gate it claims to have passed.",
+      "owner_files": [
+        "scripts/check_workspace_gates.py",
+        "assets/workflow_state.template.json",
+        "references/stage-playbook.md",
+        "references/orchestration-and-handoff.md"
+      ],
+      "validators": [
+        "scripts/check_workspace_gates.py",
+        "scripts/check_cross_references.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/orchestration-and-handoff.md",
+        "references/workspace-and-state.md",
+        "references/quality-rubric.md"
       ]
     }
   ]

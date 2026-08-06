@@ -35,7 +35,15 @@
 `Econfin-Proposal`+`novelty-check` → `Significance-Search` → `journal-digest`（重定向）。Stage 1 同时加载
 [`literature-and-positioning.md`](literature-and-positioning.md) 做结构化检索 + 文献矩阵。
 
-**文献矩阵**（`01_proposal/lit_matrix.md`，节选）让白space可见：
+### Stage 1L · 文献基座（先于查新打分）
+
+5 路并行 subagent 各走一条检索通路（关键词 / 引文滚雪球 / 顶刊目录 / 对照设计 / 中文专线），
+去重后 `01_proposal/lit/corpus.md` 收 118 条、核心集 12 条。**查新分数就是对着这 12 条打的**——
+`novelty-check` 给 9.2 分时注明「相对 JCF 2023 / HSSC 2024 / FRL 2024 三条前作」，分数因此可复核。
+`literature_base.reused_by` 最终记满三项：`novelty`（本阶段）、`related_work`（Stage 5）、
+`reference_verify`（Stage 9 用 corpus 当白名单，筛出 1 条 `ref.bib` 里查无实据的条目）。
+
+**文献矩阵**（`01_proposal/lit/lit_matrix.md`，节选）让白space可见：
 
 | Citation | Setting | Identification | Outcome | Relation to us |
 |---|---|---|---|---|
@@ -90,7 +98,49 @@ M = 信贷融资约束（机制）
 （`green_patent_app`）而非授权数，规避「授权滞后回填到申请年」的另一处 look-ahead。
 
 **sample_audit**：合并键（stkcd×year）唯一；raw→clean→estimation sample 的 N、treated/control 数、
-2012 treatment timing、近似平衡面板、winsorize 1%、省级聚类数均已落表。✅ → 放行 Stage 3。
+2012 treatment timing、近似平衡面板、winsorize 1%、省级聚类数均已落表。✅ → 放行 Stage 2.5。
+
+**测量效度**（[`measurement-and-data-quality.md`](measurement-and-data-quality.md)）：绿色专利用 IPC 绿色清单
+识别，属**代理变量**——清单口径 2017 年扩容过一次，跨年不可比。处理：全样本统一用 2017 版清单回溯重编，
+差异写进 `02_data/measurement_audit.md`，并把「测量误差（分类误差，可能低估处理效应）」这一行登记进
+design risk ledger。
+
+---
+
+## 2.5. Stage 2.5 · 设计锁定 → `00_meta/preregistration.md`
+
+数据到手、**一个估计都还没跑**的时点锁主设定。这是全流程唯一一个「什么都还看不到」的位置，
+也正因如此它才有约束力。
+
+```
+locked: 2026-03-14 09:20 Asia/Shanghai
+lock_commit: 7c1f9ab
+locked_before_estimation: yes
+primary_design: staggered DiD (2012 GCG rollout)
+
+Confirmatory Hypotheses (2 条)
+| H1 | 绿色信贷指引提高实质性绿色专利 | green_patent_sub | ATT | CS(2021) group-time; cluster=province | + |
+| H2 | 对策略性绿色专利无显著影响       | green_patent_util| ATT | 同上                                   | 0 |
+
+Primary Specification Lock
+- main estimator: Callaway-Sant'Anna group-time ATT（not TWFE：交错处理）
+- 控制集: 规模、杠杆、ROA、产权性质（**锁定；事后不再增删**）
+- standard errors / clustering: cluster = province（30 个 → 同时报 wild bootstrap）
+- multiple-testing plan: 2 个 outcome 做 Romano-Wolf
+- 异质性维度（预先指定）: 产权性质、地区环境规制强度。**其余异质性一律 exploratory**
+- MDE: 当前样本对 H1 的 MDE = 0.061（α=.05, power=.8）
+```
+
+派一个 §S2_5 审阅 subagent 挑「锁不住」的地方，它退回一条：控制集写着「必要时加入行业趋势」——
+这是个未登记的研究者自由度，改成锁定「行业×年份固定效应」后再锁。
+
+**锁之后发生了什么**：Stage 3 跑出来平行趋势对 `green_patent_util` 不成立，改用 stacked DiD。
+这是**偏离**，登记进 Deviations 表（原因、时点、对 claim 强度的影响）。因为登记了，H2 仍算确认性结果；
+若不登记，它只能降级为 exploratory。同一阶段还发现「地区数字化水平」的异质性很漂亮——
+**它不在锁内，所以只能写成 exploratory**，不能进摘要当主发现。
+
+**这一步买到了什么**：Stage 8 审稿人问「你们是不是试了很多设定」时，答案是一份带 commit hash、
+时间戳早于所有结果的锁 + 一张偏离表，而不是一句「我们没有」。
 
 ---
 
@@ -165,16 +215,25 @@ critic 审阅 `draft_audit.md`：引言五段齐、贡献句锋利、结果克�
 
 ---
 
-## 6–7. Stage 6 打磨 + Stage 7 去 AI 味
+## 6–7. Stage 6 结构层打磨 + Stage 7 语言层去 AI 味
 
-- **Stage 6**：直接调 `paper-pipeline`（内部 polish→self-revise→style→polish→reference-verify），对齐 JCF 房风
-  （[`writing-craft.md`](writing-craft.md) §10）。产出 `06_polish/main.tex` + `ref_verify_report.xlsx`。
+- **Stage 6（结构层，段落及以上）**：调 `paper-pipeline`（内部 polish→self-revise→style→polish→reference-verify），
+  对齐 JCF 房风（[`writing-craft.md`](writing-craft.md) §10）。**prompt 里写明本阶段只做结构层**：
+  论证链、节内完整性、表图指代——逐句措辞留给 Stage 7 一次做完，否则这轮润色会被 Stage 7 重写覆盖。
+  本阶段的 `reference-verify` 是**全量基线**，建立 `citation_integrity_log.md` 初始台账；
+  Stage 7/8 此后只验 diff 触及的条目。产出 `06_polish/main.tex` + `ref_verify_report.xlsx`。
 - **Stage 7**：先跑 `de-aigc-skills`（`48-de-AIGC-skills`，中英双语六步闭环）——英文正文与中文版都走它，
   第 1 步先出 `07_dehumanize/aigc_audit.md` 审计表（本例命中 EN02 -ing 尾巴 ×7、EN10 过度断言 ×3、
   ZH01 四字套话 ×5），第 2 步把"proves that the reform caused"降级为"is associated with"（DiD 平行趋势
   只支持这一强度，与 `evidence_ledger.md` 一致），第 4 步五维加权 44 分放行。再做机械收尾：英文
   `readability`、中文 `fix-chinese`+`chinese-quote-converter`。并行 subagent 分章节处理，写回
-  `07_dehumanize/main.tex`。
+  `07_dehumanize/main.tex`。**只动句子及以下**——段落顺序和小节归 Stage 6。
+- **Stage 7 出口的数字零漂移闸门**：`python3 scripts/check_manuscript_numbers.py <workspace>`。
+  本例第一次跑就抓到一处：并行改写第 4 节的 subagent 把样本量 `24,518` 写成了 `24,158`
+  （`drift:inert` + `anchors` 双双 FAIL）。人工逐项 diff 两百段稿子不可能可靠发现这一处，
+  机械闸门 3 秒定位。改回 `24,518` 后复跑通过，
+  `manuscript_numbers` 记 `unanchored_claims=0 / inert_boundary_drift=0 / waived_claims=1`
+  （那 1 条是引自《中国工业统计年鉴》的行业均值，用稿内 `% pw-number-ok:` 注明来源）。
 
 ---
 
@@ -271,8 +330,13 @@ critic 复核：每条 Essential 都有实质回应、改稿未引入交叉引�
 3. **失败回退是常态**：预趋势轻微违背 → HonestDiD + 缩 claim，而不是硬写成功；控制变量 look-ahead →
    滞后到 t−1 并重跑 `check_citation_integrity.py`，而不是装作没看见。
 4. **每个数字都指到真实 artifact**：`main_results.json`、`robustness/*.json`——本示例的 `<illustrative>` 占位在
-   真实运行时全部由真实估计填充。
-5. **四道标准 + 两个新层全程在场**：写作（贡献/量级）、复现（provenance/DAS/master script）、评审投稿
+   真实运行时全部由真实估计填充。**并且这件事是机械验的**：Stage 7 出口的
+   `check_manuscript_numbers.py` 抓到了一处改写引入的样本量笔误（24,518→24,158），
+   而人工逐项 diff 不可能可靠发现它。
+5. **两个前置阶段各自买到了具体的东西**：Stage 1L 让查新分数可复核、让 Stage 9 的引用终审有白名单；
+   Stage 2.5 让「你们是不是试了很多设定」这个问题有一份带 commit hash 的答案，而不是一句辩解。
+   注意它们的位置不可挪动——晚一步，两者都退化成事后叙述。
+6. **四道标准 + 两个新层全程在场**：写作（贡献/量级）、复现（provenance/DAS/master script）、评审投稿
    （Essential 分级/response/cover letter）、识别威胁（坏控制/并发政策/预趋势）、设计透明度（PAP/MDE/
    HonestDiD/设定曲线）、文献定位（矩阵/白space）。
 

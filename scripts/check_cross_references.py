@@ -338,6 +338,46 @@ def check_tree(root: Path) -> Report:
         else:
             rep.add(OKAY, "orphaned_references", f"all {len(all_refs)} reference docs reachable from a root")
 
+        # --- invariant 8: reachable is not the same as *loadable* -------------
+        # Invariant 5 accepts any path through the doc graph, including one that
+        # only exists via the README. But the runtime discipline is "the main
+        # agent loads the reference for the stage it is entering", and the only
+        # docs it consults to decide that are SKILL.md and the stage playbook.
+        # A reference reachable solely from the README is therefore live
+        # documentation and dead guidance: a human browsing GitHub finds it, the
+        # agent running the pipeline never does. That is exactly how
+        # measurement-and-data-quality.md and computational-reproducibility.md
+        # went unused despite being linked. One hop from an operational root is
+        # the honest test.
+        op_roots = [p for p in (root / "SKILL.md", ref_dir / "stage-playbook.md") if p.exists()]
+        if op_roots:
+            one_hop: set[Path] = set()
+            for f in op_roots:
+                text = f.read_text(encoding="utf-8")
+                targets = [m.group(1) for m in _MD_LINK_RE.finditer(text)]
+                targets += [m.group(0) for m in _DOC_MENTION_RE.finditer(text)]
+                for tgt in targets:
+                    tgt = tgt.strip().split()[0] if tgt.strip() else ""
+                    tgt = tgt.split("#", 1)[0].strip("<>").strip()
+                    if not tgt or tgt.startswith(("http://", "https://", "mailto:")):
+                        continue
+                    # Sibling links inside references/ are written bare
+                    # ([x](other-ref.md)); root-relative mentions
+                    # (references/other-ref.md) also appear. Accept both.
+                    for cand in ((f.parent / tgt).resolve(), (root / tgt).resolve()):
+                        if cand in all_refs:
+                            one_hop.add(cand)
+                            break
+            unloadable = sorted(str(p.relative_to(root_abs)) for p in (all_refs - one_hop))
+            if unloadable:
+                rep.add(FAIL, "unloadable_references",
+                        f"{len(unloadable)} reference doc(s) are linked somewhere but NOT one hop from "
+                        f"SKILL.md or references/stage-playbook.md, so the running agent never loads "
+                        f"them: {', '.join(unloadable)}")
+            else:
+                rep.add(OKAY, "unloadable_references",
+                        f"all {len(all_refs)} reference docs are one hop from an operational root")
+
     # --- invariant 6 & 7: SKILL.md stage table + checker blocks vs the template
     template_json = root / "assets" / "workflow_state.template.json"
     tdata: dict = {}
@@ -430,11 +470,22 @@ def _selftest() -> int:
         write("references/real.md", "real\n")
         write("references/orphan.md", "nobody links me\n")  # invariant 5 fires
 
+        # A reference the README links but no operational root does: invariant 5
+        # is satisfied (it is reachable) while invariant 8 is not (the running
+        # agent never loads it). This is the real-world case that motivated the
+        # check, so the selftest reproduces it exactly.
+        write("README.md", "See `references/readme-only.md` for background.\n")
+        write("references/readme-only.md", "reachable from README, never from an operational root\n")
+
         rep = check_tree(root)
         hits = {chk for lvl, chk, _ in rep.rows if lvl == FAIL}
         for expected in ("inline_commands", "repo_path_mentions", "workspace_paths", "harness_wiring",
-                         "orphaned_references", "stage_contract", "block_agreement"):
+                         "orphaned_references", "stage_contract", "block_agreement",
+                         "unloadable_references"):
             assert expected in hits, f"selftest: expected {expected} to FAIL; got {hits}"
+        blob_pre = rep.render()
+        assert "readme-only.md" in blob_pre.split("unloadable_references", 1)[1][:400], \
+            "selftest: README-only reference should be named by the unloadable check"
         blob = rep.render()
         # the workspace-runtime command/path must NOT have been flagged
         assert "estimate.py" not in blob, "selftest: workspace-runtime command wrongly flagged"
@@ -450,11 +501,25 @@ def _selftest() -> int:
               'A = "00_meta/stage_passport.md"\nB = "03_analysis/results/main.json"\ng = state["method_gate"]\n')
         write("validate_skill.py",
               "subprocess.run(['check_workspace_gates.py', 'check_orphan.py', 'missing_checker.py'])\n")
-        # full 0-9 stage table + a link to the previously-orphan reference
+        # full 0-9 stage table + links to both previously-unreachable references
+        # (fixing invariant 8 means naming them from an operational root, not
+        # merely from the README)
         write("SKILL.md", base_skill + "".join(f"| **{i}** | s{i} |\n" for i in range(10))
-              + "Also see `references/orphan.md`.\n")
+              + "Also see `references/orphan.md` and `references/readme-only.md`.\n")
         rep2 = check_tree(root)
         assert not rep2.failures, f"selftest: repaired tree should pass, got {rep2.failures}"
+
+        # a reference one hop from the stage playbook (not SKILL.md) also counts:
+        # the playbook is the doc the agent reads on entering a stage.
+        write("references/playbook-only.md", "loaded when its stage begins\n")
+        # sibling link, written bare -- the convention every reference in this
+        # repo actually uses when pointing at another reference
+        write("references/stage-playbook.md", "Stage 2 loads [playbook](playbook-only.md).\n")
+        write("SKILL.md", base_skill + "".join(f"| **{i}** | s{i} |\n" for i in range(10))
+              + "Also see `references/orphan.md`, `references/readme-only.md` "
+                "and `references/stage-playbook.md`.\n")
+        rep3 = check_tree(root)
+        assert not rep3.failures, f"selftest: playbook-reachable reference should pass, got {rep3.failures}"
 
     print("selftest OK: cross-reference contract invariants hold")
     return 0

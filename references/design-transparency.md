@@ -83,6 +83,20 @@ PAP 的全部价值在于**时间戳**：方案锁定在看结果之前。但散
 **可执行的锁**把这条不变量做成 `exit 1`，而不是靠自觉。这正是相对 Orchestra「git 即预注册（纯散文自评）」
 的差异化——我们让它**可被脚本判定**。
 
+**锁在流水线里的位置：Stage 2.5，数据到手之后、第一个估计之前。**
+这不是一个可以顺手挪动的实现细节，而是这把锁能不能成立的全部前提：
+
+- **不能更早**（Stage 1/2 之前）：数据还没到手，锁的是空想——变量能不能构造、样本有多大、
+  聚类层级是什么都还不知道，写出来的主设定第一次跑就得改，锁形同虚设。
+- **不能更晚**（Stage 3 之后）：主结果已在盘上，锁退化成「我找到了什么」的流水账。
+  闸门可以零成本满足，`design_risk_ledger.md` 的 **specification search** 一栏没有可比基线，
+  「预先指定的稳健性矩阵」与「试了 40 个设定挑了带星的那个」在证据上无法区分。
+
+所以流水线把它单列为 **Stage 2.5**（见 [`stage-playbook.md`](stage-playbook.md)），
+由 `workflow_state.json.design_lock` 记录，并由两条机械闸门守住：
+`check_workspace_gates.py --preconditions 3` 让**没锁就不许开始估计**，
+`method_gate:design_lock` 让**没锁就不许 Method Gate 通过**。
+
 1. **实例化** `templates/preregistration.md` → 工作区 `00_meta/preregistration.md`（与其它治理锁同住 00_meta）。
    填 Lock Status（`locked` 时间戳、`lock_commit`、`locked_before_estimation: yes`、analyst、primary_design）、
    至少一条 **Confirmatory Hypotheses**（含 Y/estimand/主设定/预测符号）、Primary Specification Lock（含聚类、

@@ -3,7 +3,13 @@
 > [`reproducibility-pack.md`](reproducibility-pack.md) 的**技术姊妹篇**。前者管「复现包**完整不完整**」
 > （provenance、README 15 节、DAS、archive）；本文件管「把派生产物删掉、重跑，**数字能不能真的对上**」——
 > 环境能否重建、随机性与并行能否确定、产出能否自动比对到容差内。和 [`measurement-and-data-quality.md`](measurement-and-data-quality.md)
-> （数据本身质量）一起，构成可复现性的三个技术面。在 Stage 2 起就配置、收尾时验收、质量门维度⑦据此打分。
+> （数据本身质量）一起，构成可复现性的三个技术面。在 Stage 2 起就配置、**Stage 3 估计跑通即冻结**、
+> 收尾只做验证性重跑、质量门维度⑦据此打分。
+>
+> **为什么冻结点在 Stage 3 而不是收尾**：收尾才开始建复现包，是本流水线里风险最高的一种拖延。
+> 到那时 Stage 3 的解释器版本、包版本、线程数、数据快照大概率已经漂了，而**唯一能确认它漂没漂的
+> 办法，就是当初记下来过**。收尾时的一次成功重跑只能证明「现在这套环境能跑出这些数」，
+> 不能证明「当初报告的数就是这套环境跑出来的」。见 §0.1。
 
 ---
 
@@ -16,6 +22,32 @@
 3. **产出能不能机器核验**——要有 expected-output manifest + checksum + 浮点容差，而非肉眼比对。
 
 落地实现仍调用既有清洗/估计/出表能力；本文件规定「复现跑要配置成什么样、验收要核到什么程度」。
+
+---
+
+## 0.1 冻结点：Stage 3，不是收尾
+
+复现包分两件事，很容易混为一谈：
+
+| | 何时 | 做什么 |
+|---|---|---|
+| **冻结**（Stage 3） | 第一批估计能跑出结果的当天 | 记录当时的环境与随机性配置，起 master script 骨架 |
+| **验证**（收尾） | 所有阶段 done 之后 | 删派生产物、按骨架真跑一遍、比对到容差内 |
+
+冻结要记的最小集（详见 §1、§2）：
+
+1. 解释器 / 统计软件版本 + lockfile（`pip freeze` / `renv.lock` / Stata ado 版本）；
+2. 每个随机点的 seed **及其作用域**（全局还是函数级；bootstrap、cross-fitting、matching 各自算一个）；
+3. BLAS / 线程数与并行配置，以及并行是否影响数值；
+4. 数据快照的 checksum（`02_data/raw/MANIFEST.sha256`）；
+5. 单次完整重跑的耗时（收尾时用来判断验证重跑是否可行）。
+
+写进 `00_meta/repro_environment.md`（模板 [`../templates/repro_environment.md`](../templates/repro_environment.md)），
+状态填 `replication_pack.environment_record` 与 `frozen_at_stage = 3`。
+此后每阶段往 master script 骨架里追加自己的产出步骤——**追加是廉价的，回忆是不可能的。**
+
+`frozen_at_stage` 为 `null` 而收尾才开始建包时，`FINAL_REPORT.md` 的
+「Residual Risks」必须显式记为已知高风险，不得当作正常路径。
 
 ---
 
@@ -98,8 +130,9 @@ master script（`run_all.sh` / `master.do`）除
 |---|---|---|
 | **Stage 2 取数** | 起 env 记录、设确定性 env、原始数据 checksum | `00_meta/env_capture.txt`、`02_data/raw/MANIFEST.sha256` |
 | **Stage 3 估计** | 全部随机点登记 seed；复现跑固定线程（单线程或固定数） | `inference_report.md` / `logs/` |
+| **Stage 3 冻结（★）** | 第一批估计跑通即写 `00_meta/repro_environment.md` + 起 master script 骨架 | `replication_pack.{environment_record, frozen_at_stage=3}` |
 | **Stage 4 表图** | 导出表图底层数值到 `expected/` 并生成 manifest + checksum | `04_results/expected/`、`MANIFEST.sha256` |
-| **收尾** | 跑通 master script、`check_outputs.py` 通过、记录环境固定级别 | `workflow_state.json.replication_pack.{status, env_level}` |
+| **收尾** | **验证**而非构建：删派生产物、按 Stage 3 冻结的 master script 真跑一次、`check_outputs.py` 通过 | `workflow_state.json.replication_pack.{status, env_level, last_rebuild_check}` |
 | **质量门⑦** | 按真实核验打分：manifest 通过否、env 固定级别、确定性是否配置 | `00_meta/quality_scorecard.md` |
 
 ---

@@ -28,7 +28,7 @@ if [[ -e "$workspace" ]]; then
   exit 1
 fi
 
-mkdir -p "$workspace"/{00_meta/handoff,01_proposal/candidates,02_data/raw,03_analysis/results,03_analysis/robustness,04_results,05_draft,06_polish,07_dehumanize,08_review,09_submission,logs,backups}
+mkdir -p "$workspace"/{00_meta/handoff,01_proposal/candidates,01_proposal/lit,02_data/raw,03_analysis/results,03_analysis/robustness,04_results,05_draft,06_polish,07_dehumanize,08_review,09_submission,logs,backups}
 cp "$template" "$workspace/00_meta/workflow_state.json"
 cp "$backend_template" "$workspace/00_meta/analysis_backend.md"
 cp "$backend_capabilities_template" "$workspace/00_meta/backend_capabilities.json"

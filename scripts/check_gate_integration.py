@@ -88,7 +88,7 @@ def _write_final_citation_log(workspace: Path) -> None:
 def _passing_state() -> dict:
     """A state where every gate is legitimately PASS / ready, backed by files we write."""
     return {
-        "schema_version": 11,
+        "schema_version": 12,
         "project": {"short_name": "integ_project", "mode": "auto"},
         "stages": {f"{i}_x": "done" for i in range(10)},
         "artifacts": {},

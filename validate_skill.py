@@ -18,7 +18,13 @@ ROOT = Path(__file__).resolve().parent
 EXPECTED_STAGE_KEYS = [
     "0_intake_setup",
     "1_topic_design",
+    # Pre-stages: they carry a leading stage digit so the Stage 0-9 spine is
+    # unchanged, but they gate work that must happen *before* their parent stage
+    # ends -- the literature corpus before novelty is scored, the design lock
+    # before the first estimate exists.
+    "1L_literature_base",
     "2_data",
+    "2_5_design_lock",
     "3_identification_estimation",
     "4_tables_figures",
     "5_draft",
@@ -31,6 +37,7 @@ EXPECTED_WORKSPACE_DIRS = [
     "00_meta",
     "00_meta/handoff",
     "01_proposal/candidates",
+    "01_proposal/lit",
     "02_data/raw",
     "03_analysis/results",
     "03_analysis/robustness",
@@ -144,7 +151,7 @@ REQUIRED_REFERENCES = {
         "Stage Passport",
         "Fresh Evidence",
         "Handoff Card",
-        "schema_version 11",
+        "schema_version 12",
     ],
     "references/integrity-and-claim-audit.md": [
         "Integrity & Claim Audit",
@@ -187,8 +194,8 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 11:
-        fail("workflow_state.template.json schema_version must be 11")
+    if data.get("schema_version") != 12:
+        fail("workflow_state.template.json schema_version must be 12")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
@@ -404,6 +411,7 @@ def check_assets() -> None:
         "scripts/check_verification_log.py",
         "scripts/check_citation_integrity.py",
         "scripts/check_preregistration.py",
+        "scripts/check_manuscript_numbers.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
         "templates/backend_capabilities.json",
@@ -582,6 +590,7 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     ("scripts/check_review_scorecard.py", [["--selftest"]]),
     ("scripts/check_cross_references.py", [["--selftest"], []]),
     ("scripts/check_table_style.py", [["--selftest"]]),
+    ("scripts/check_manuscript_numbers.py", [["--selftest"]]),
     ("evals/score_skill.py", [["--selftest"]]),
     ("evals/check_complexity_budget.py", [["--selftest"], []]),
     ("evals/check_replication_accuracy.py", [["--selftest"]]),

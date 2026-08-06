@@ -10,7 +10,7 @@
         "type": "delete_path",
         "path": "03_analysis/results/main_results.json"
       },
-      "expected_error": "missing or empty stage 3 artifact: 03_analysis/results/main_results.json"
+      "expected_error": "missing or empty stage 5 artifact: 03_analysis/results/main_results.json"
     },
     {
       "id": "stale_latest_handoff",
@@ -26,7 +26,7 @@
       "description": "A long-running Stage 0-9 run must retain reset-boundary coverage for every stage.",
       "mutation": {
         "type": "remove_reset_boundary",
-        "stage": 6
+        "stage": 8
       },
       "expected_error": "reset_boundaries must cover every stage 0-9"
     },
@@ -35,10 +35,10 @@
       "description": "A stage log cannot omit a key artifact that the stage contract requires.",
       "mutation": {
         "type": "strip_log_artifact",
-        "stage": 2,
+        "stage": 3,
         "artifact": "02_data/sample_audit.md"
       },
-      "expected_error": "stage 2 log does not mention artifact: 02_data/sample_audit.md"
+      "expected_error": "stage 3 log does not mention artifact: 02_data/sample_audit.md"
     },
     {
       "id": "table_results_unreconciled",

@@ -39,9 +39,14 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── evidence_ledger.md         # ★estimand→claim→data→estimate→exhibit→script 总账
 │   ├── claim_integrity_audit.md   # ★claim/citation/number 忠实度审计
 │   ├── citation_integrity_log.md  # ★引用存在性 + 时序完整性（claim-audit 的互补半）
-│   └── intake.md                  # 入口判定、交互档位、目标期刊、语言
+│   ├── preregistration.md         # ★Stage 2.5 设计锁：主设定在见到结果之前锁死
+│   ├── repro_environment.md       # ★Stage 3 冻结的环境记录（不是收尾才补）
+│   └── intake.md                  # 入口判定、交互档位、严格度档位、目标期刊、语言
 ├── 01_proposal/
 │   ├── candidates/                # idea-finder 保留的 ≥9 分候选（每个一份 md；输出已重定向到此）
+│   ├── lit/                       # ★Stage 1L 文献基座：查新 / related work / 引用终审共用同一份语料
+│   │   ├── corpus.md              # ★语料清单：bibkey、DOI、年份、与本文的关系
+│   │   └── lit_matrix.md          # ★文献矩阵：设计 × 数据 × 结论，让贡献白space可见
 │   ├── journal_digest.md          # journal-digest 目标期刊口味扫描（输出已重定向到此）
 │   ├── critique.md                # critic subagent 的选题审阅
 │   └── proposal.md                # ★定稿计划书：后续所有阶段的"合同"
@@ -107,11 +112,12 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `11`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`） |
+| `schema_version` | 模板版本号（当前 `12`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`，v12 新增 `literature_base` / `design_lock` / `manuscript_numbers` / `project.scope` / 回退上限 / 复现包冻结） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
-| `project.mode` | `auto` / `stage-confirm` / `interactive`（交互档位） |
+| `project.mode` | `auto` / `stage-confirm` / `interactive`（交互档位：管**暂停频率**） |
+| `project.scope` | `draft` / `working-paper` / `submission`（缺省，严格度档位：管**这次交付欠哪些闸门**）。与 `mode` 正交；只决定完成契约，不放松任何已声明 `pass` 的闸门验证 |
 | `project.target_journal` | 目标期刊（未定则填 `"TBD-by-stage1"`） |
 | `project.language` | `en` / `zh` / `bilingual`（决定 Stage 7 分流） |
 | `orchestration.status` | `pending` / `active` / `paused` / `complete`——编排层状态，不替代研究闸门 |
@@ -127,6 +133,9 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `orchestration.self_review_gate` | `pending` / `pass` / `not_pass`——当前阶段 fresh self-review 状态 |
 | `orchestration.ethics_gate` | `pending` / `pass` / `not_pass`——当前阶段科研诚信/治理检查状态 |
 | `orchestration.revision_rounds_cap` | 确认点整体返修轮次上限，默认 `2`；换会话不重置 |
+| `orchestration.method_gate_rounds_cap` | Method Gate `NOT PASS` → 回 Stage 1/2/3 的重跑上限，默认 `2`。**没有这一条，全自动档位在一个永远过不了的闸门上是无界循环** |
+| `orchestration.method_gate_rounds` | 已用方法闸门回退轮次计数；每次回退 +1，换会话不重置 |
+| `orchestration.budget_exhausted_action` | 触顶后的动作，缺省 `deliver-with-known-gaps`：停止重跑，按已知短板交付并在摘要卡标红，而不是继续烧 |
 | `analysis_backend.primary` | Stage 3–4 的主分析后端：`python-statspai` / `stata` / `r` |
 | `analysis_backend.secondary_validation` | 交叉验证后端；无则 `none` |
 | `analysis_backend.script_extension` | 主估计脚本扩展名：`.py` / `.do` / `.R` / `.qmd` |
@@ -144,6 +153,17 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `table_style.status` | `pending` / `pass` / `not_pass`——`scripts/check_table_style.py` 最近一次结论 |
 | `table_style.audit_report` | 表格格式审计落盘路径（默认 `04_results/table_style_audit.md`） |
 | `table_style.last_check` | 最近一次跑闸门的北京时间 |
+| `literature_base.status` | `pending` / `pass` / `not_pass`——Stage 1L 文献语料是否建成。查新分数、related work 与引用终审复用**同一份**语料 |
+| `literature_base.corpus` | 语料清单路径（`01_proposal/lit/corpus.md`）：每条含 bibkey、DOI、年份、与本文的关系 |
+| `literature_base.lit_matrix` | 文献矩阵路径（`01_proposal/lit/lit_matrix.md`）：设计 × 数据 × 结论，用来让贡献白space可见 |
+| `literature_base.screened_count` / `.core_count` | 筛过的条目数 / 进入核心集的条目数 |
+| `literature_base.reused_by` | 复用记录，取值 `novelty` / `related_work` / `reference_verify`；三处都不复用说明语料白建了 |
+| `design_lock.status` | `pending` / `locked` / `not_pass`——Stage 2.5 主设定是否已锁 |
+| `design_lock.preregistration` | 预注册文件（`00_meta/preregistration.md`，由 `templates/preregistration.md` 实例化） |
+| `design_lock.locked_before_estimation` | `true` / `false`。**这是全表最要紧的一个布尔值**：为 `false` 而主结果已存在 = 硬违规，事后写的锁只是「找到了什么」的流水账，不构成对 specification search 的约束 |
+| `design_lock.lock_commit` | 锁定时的 commit（git-as-preregistration）；无 git 时填时间戳 + 内容 hash |
+| `design_lock.confirmatory_count` | 已登记的验证性假设条数；为 0 时锁形同虚设 |
+| `design_lock.deviations` | 锁定后的偏离记录（做了什么、为什么、对 claim 强度的影响）；未登记的偏离一律降级为 exploratory |
 | `empirical_audit.status` | `pending` / `pass` / `not_pass`——样本、变量构造、missingness/balance/overlap 审计状态 |
 | `empirical_audit.sample_audit` | 样本审计报告路径（默认 `02_data/sample_audit.md`） |
 | `empirical_audit.estimand_alignment` | `pending` / `pass` / `not_pass`——估计样本是否仍对应目标 estimand |
@@ -190,6 +210,11 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `quality_gate.rounds` | 已执行的质量门轮次（含回退；上限 2） |
 | `quality_gate.last_total_score` | 最近一轮总分（满分 70） |
 | `quality_gate.last_dimension_scores` | 最近一轮 7 维分数映射（如 `{"identification": 7, ...}`） |
+| `manuscript_numbers.status` | `pending` / `pass` / `not_pass`——`scripts/check_manuscript_numbers.py` 的判定 |
+| `manuscript_numbers.checked_manuscript` | 实际被检查的稿件路径（链条中最新的一份） |
+| `manuscript_numbers.unanchored_claims` | 稿件断言但结果文件里找不到的数字条数；>0 时质量门不得 `pass` |
+| `manuscript_numbers.inert_boundary_drift` | 跨「只改语言不改数字」边界（Stage 6→7）的数字变动条数；>0 即 Stage 7 破了自己的红线 |
+| `manuscript_numbers.waived_claims` | 由稿内 `% pw-number-ok:` 注释豁免的条数（引自他文的数字、制度常数） |
 | `quality_gate.scorecard` | 评分卡文件相对路径（`00_meta/quality_scorecard.md`） |
 | `replication_pack.status` | `pending` / `ready` / `not_ready`——收尾复现包是否达到可移交标准 |
 | `replication_pack.readme` | 复现包 README 路径（默认 `REPLICATION.md`） |
@@ -197,6 +222,8 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `replication_pack.data_availability_statement` | DAS 路径（默认 `09_submission/DAS.md`） |
 | `replication_pack.archive_plan` | 存档位置/计划：AEA Data and Code Repository、trusted repository、OSF/Zenodo/Dataverse 等 |
 | `replication_pack.runtime_minutes` | 最近一次端到端重跑耗时；未知则 `null`，不得虚填 |
+| `replication_pack.environment_record` | 环境记录（`00_meta/repro_environment.md`），**Stage 3 估计跑通即写**，不是收尾才补 |
+| `replication_pack.frozen_at_stage` | 冻结发生在哪个阶段（正常为 `3`）。为 `null` 而收尾才开始建包 = 已知高风险：Stage 3 的环境到那时通常已经漂了 |
 | `replication_pack.last_rebuild_check` | 最近一次“删派生产物后重跑”或等价检查的时间/摘要 |
 | `artifacts` | **名称→工作区相对路径** 的映射（= 交付物清单，对应布局里的 ★ 文件） |
 | `decisions` | 数组，记录影响后续阶段的人类/自动决策：选刊、识别策略变更、失败回退分支 |
