@@ -10,7 +10,10 @@ Paper-WorkFlow 5 页介绍 PPT 生成脚本
 - 16:9 宽屏
 """
 
+import argparse
 import os
+from pathlib import Path
+
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
@@ -43,9 +46,17 @@ prs.slide_height = Inches(7.5)
 SLIDE_W = prs.slide_width
 SLIDE_H = prs.slide_height
 
-CASE_DIR = "/Users/brycewang/Documents/GitHub/Auto-Empirical-Research-Skills/skills/69-Paper-WorkFlow/社媒文件/7.5-测试案例"
-PAPER_DIR = f"{CASE_DIR}/paper_workspace/04_results"
-OUTPUT = "/Users/brycewang/Documents/GitHub/Auto-Empirical-Research-Skills/skills/69-Paper-WorkFlow/社媒文件/7.5-测试案例/Paper-WorkFlow-案例介绍.pptx"
+# Paths are resolved from this file, not from one machine's home directory.
+# SKILL.md flags exactly this anti-pattern in the child skills it orchestrates
+# ("硬编码了仓库外输出路径，调用时必须改写"); it must not commit it itself. The
+# previous absolute paths pointed into the *parent* repository, so on this
+# machine the script silently wrote outside this repo, and on any other machine
+# it wrote to a directory that does not exist.
+REPO_ROOT = Path(__file__).resolve().parent
+CASE_DIR = REPO_ROOT / "社媒文件" / "7.5-测试案例"
+PAPER_DIR = CASE_DIR / "paper_workspace" / "04_results"
+DEFAULT_OUTPUT = CASE_DIR / "Paper-WorkFlow-案例介绍.pptx"
+OUTPUT = DEFAULT_OUTPUT
 
 
 # ============================================================
@@ -684,6 +695,14 @@ def slide_5_call_to_action():
 # 主入口
 # ============================================================
 def main():
+    global OUTPUT
+    parser = argparse.ArgumentParser(description="生成 Paper-WorkFlow 5 页介绍 PPT")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT),
+                        help=f"输出 .pptx 路径（缺省：{DEFAULT_OUTPUT.relative_to(REPO_ROOT)}）")
+    args = parser.parse_args()
+    OUTPUT = str(Path(args.output).expanduser())
+    Path(OUTPUT).parent.mkdir(parents=True, exist_ok=True)
+
     print("🎨 开始生成 Paper-WorkFlow 介绍 PPT (5 页, 含开源项目矩阵)...")
     slide_1_open_source()
     print("  ✓ Slide 1: 开源项目矩阵 (Cover)")
@@ -696,7 +715,7 @@ def main():
     slide_5_call_to_action()
     print("  ✓ Slide 5: 触发语 + 资源")
 
-    prs.save(OUTPUT)
+    prs.save(str(OUTPUT))
     print(f"\n✅ PPT 已保存: {OUTPUT}")
     print(f"   总页数: {len(prs.slides)}")
 

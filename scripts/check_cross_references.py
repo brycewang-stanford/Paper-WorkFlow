@@ -417,7 +417,54 @@ def check_tree(root: Path) -> Report:
             else:
                 rep.add(OKAY, "block_agreement", f"all {len(blocks)} gate-checker state blocks exist in the template")
 
+    # invariant 8: no executable in this package writes to one machine's home
+    # directory. SKILL.md explicitly flags this anti-pattern in the *child* skills
+    # it orchestrates ("硬编码了仓库外输出路径，调用时必须改写"); a package that
+    # polices it in others must not commit it. The failure is quiet and nasty: on
+    # the author's machine the path exists and the file lands outside the repo;
+    # everywhere else the run dies or writes nowhere useful.
+    abs_problems = _absolute_path_problems(root)
+    if abs_problems:
+        rep.add(FAIL, "absolute_paths", f"{len(abs_problems)} hard-coded machine-specific path(s):\n    "
+                + "\n    ".join(abs_problems))
+    else:
+        rep.add(OKAY, "absolute_paths", "no executable hard-codes a machine-specific path")
+
     return rep
+
+
+# Home-directory roots that only exist on one person's machine. `/tmp` and
+# `/var` are runtime scratch, not build outputs, so they are not flagged.
+_MACHINE_PATH_RE = re.compile(
+    r"""["'`](?:/Users/[^"'`
+]+|/home/[^"'`
+]+|[A-Za-z]:\\[^"'`
+]+)["'`]"""
+)
+_SCANNED_SUFFIXES = (".py", ".sh")
+# Docs may *quote* such a path when describing the anti-pattern; code may not use one.
+_ALLOW_MARKER = "pw-abs-path-ok"
+
+
+def _absolute_path_problems(root: Path) -> list[str]:
+    problems: list[str] = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file() or path.suffix not in _SCANNED_SUFFIXES:
+            continue
+        rel = path.relative_to(root)
+        if any(part in {".git", "__pycache__", "paper_workspace", "node_modules"} for part in rel.parts):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for i, line in enumerate(text.splitlines(), 1):
+            if _ALLOW_MARKER in line:
+                continue
+            m = _MACHINE_PATH_RE.search(line)
+            if m:
+                problems.append(f"{rel}:{i}: {m.group(0)}")
+    return problems
 
 
 # --------------------------------------------------------------------------- #
@@ -520,6 +567,30 @@ def _selftest() -> int:
                 "and `references/stage-playbook.md`.\n")
         rep3 = check_tree(root)
         assert not rep3.failures, f"selftest: playbook-reachable reference should pass, got {rep3.failures}"
+
+        # --- invariant 8: machine-specific output paths in executables --------
+        write("build_something.py", 'OUT = "/Users/someone/Documents/out.pptx"\n')  # pw-abs-path-ok: synthetic fixture for this very invariant
+        rep4 = check_tree(root)
+        assert any(chk == "absolute_paths" for lvl, chk, _ in rep4.rows if lvl == FAIL), rep4.failures
+        # a Windows path in a shell script is the same defect
+        write("build_something.py", "# fixed\n")
+        write("scripts/deploy.sh", 'cp x "C:\\\\Users\\\\me\\\\out.txt"\n')  # pw-abs-path-ok: synthetic fixture for this very invariant
+        rep5 = check_tree(root)
+        assert any(chk == "absolute_paths" for lvl, chk, _ in rep5.rows if lvl == FAIL), rep5.failures
+        # an explicit, reviewable waiver is honoured
+        write("scripts/deploy.sh", 'cp x "/Users/me/out.txt"  # pw-abs-path-ok: documented example\n')
+        rep6 = check_tree(root)
+        assert not any(chk == "absolute_paths" for lvl, chk, _ in rep6.rows if lvl == FAIL), rep6.failures
+        # /tmp is runtime scratch, not a machine-specific build output
+        write("scripts/deploy.sh", 'cp x "/tmp/out.txt"\n')
+        rep7 = check_tree(root)
+        assert not rep7.failures, f"/tmp must not be flagged: {rep7.failures}"
+        # markdown may quote such a path when describing the anti-pattern
+        write("references/anti-patterns.md", 'Never write `"/Users/you/out.pptx"` into a script.\n')  # pw-abs-path-ok: synthetic fixture for this very invariant
+        write("references/stage-playbook.md",
+              "Stage 2 loads [playbook](playbook-only.md) and [anti](anti-patterns.md).\n")
+        rep8 = check_tree(root)
+        assert not rep8.failures, f"prose quoting the anti-pattern must not fail: {rep8.failures}"
 
     print("selftest OK: cross-reference contract invariants hold")
     return 0
