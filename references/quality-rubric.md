@@ -278,14 +278,25 @@ Stage 6（`paper-pipeline` 打磨）/ Stage 4（补表图注）。
 - 网络/政策/引用核验工具不可用且未按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 记录：本维最高 7；
   若影响主结论却未披露，本维最高 4。
 
+**AI 使用声明加严**（治理的另一半：本流水线自己用了 AI，就得说）
+- `00_meta/ai_use_disclosure.md` 不存在，而 Stage 5/6/7 已 `done`：本维最高 6，且投稿包不得标 ready。
+- `stages.7_language_dehumanize = done` 但台账没有 Stage 7 行（B4）：本维最高 4——**去 AI 味的那一步
+  把自己的声明也去掉了**，这是本 rubric 里最不该出现的一种「治理缺口」。
+- 台账里 `code` / `analysis` / `data` / `literature` 类目标为 `unverified`（B3）：本维最高 5；
+  若该行支撑主表结果，本维 ≤4。
+- Stage 9 且 `check_ai_disclosure.py --final` 未过（政策族未定、声明仍是占位符、担责人写的是 agent id）：
+  `replication_pack.status` 只能是 `not_ready`，本维封顶 6。
+- 规则全文与 B1–B8 见 [`ai-use-disclosure.md`](ai-use-disclosure.md)。
+
 **状态文件联动**
+- `workflow_state.json.ai_disclosure.status = not_pass`：本维封顶 6。
 - `workflow_state.json.replication_pack.status` 缺失或为 `pending`：本维封顶 7。
 - `replication_pack.status = not_ready`：本维封顶 6；若阻断原因涉及无法重建主表图，本维 ≤4。
 - 没有 `replication_pack.master_script` 或 `last_rebuild_check` 为空：本维封顶 7。
 - `workflow_state.json.evidence_governance.status = not_pass` 或
   `evidence_governance.open_discrepancies` 仍有 blocking 项：本维封顶 6。
 
-**回退**：→ Stage 2（补 codebook / 清洗脚本）/ Stage 3（补估计脚本）/ 收尾（补一键重跑命令）。
+**回退**：→ Stage 2（补 codebook / 清洗脚本）/ Stage 3（补估计脚本）/ Stage 7（补 AI 使用台账行）/ 收尾（补一键重跑命令 / 渲染 AI 使用声明）。
 
 ---
 
@@ -377,7 +388,7 @@ python3 evals/check_quality_judge.py --selftest       # 验证判定器与解析
 | ④ 解读 | Stage 5/6；**数字无来源 → Stage 4/7** | 重写结果与结论段，克制因果语气；`check_manuscript_numbers.py` 不过时先把数字改回结果文件里的值 |
 | ⑤ 写作 | Stage 7（AI 腔）/ Stage 5/6（表图问题→Stage 4） | `de-aigc-skills` 重跑降 AIGC / 重写薄弱章节 / `paper-pipeline` 打磨 / 补表图注 |
 | ⑥ 引用 | `reference-verify` + Stage 5 | 终审核验 / 补结构化文献综述 |
-| ⑦ 复现与治理 | Stage 2/3/9 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 / DAS / 数据治理登记 |
+| ⑦ 复现与治理 | Stage 2/3/7/9 + 收尾 | 补 codebook / 脚本 / 一键重跑命令 / DAS / 数据治理登记 / AI 使用台账与声明 |
 
 **回退上限**：同一维最多回退 **2 轮**（`orchestration.revision_rounds_cap`）。
 Method Gate 方向的回退（回 Stage 1/2/3）另有 `orchestration.method_gate_rounds_cap`，同样缺省 2 轮。

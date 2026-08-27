@@ -81,6 +81,21 @@ carries one row per AI-assisted artifact, not one row per prompt. Columns:
 | `Accountable` | a named human, not a role, not an agent id |
 | `Disclose` | `yes` / `no`; `no` requires the row to be trivial by rule 2 above |
 
+### 双语词表（中文台账是一等输入）
+
+节标题、类别、核验方式与「是否声明」都接受中英两套写法，checker 会归一化：
+
+| 位置 | 英文 | 中文 |
+|---|---|---|
+| 节标题 | `Venue Policy` / `AI-Use Ledger` / `Rendered Statement` | `期刊政策` / `AI 使用台账` / `声明正文` |
+| 表头前两列 | `Stage` / `Category` | `阶段` / `类别` |
+| 类别 | `literature` `code` `analysis` `text` `translation` `figure` `data` | `文献` `代码` `分析` `文本` `翻译` `图` `数据` |
+| 核验 | `rerun` `recomputed` `source-checked` `read-and-edited` `spot-checked` `unverified` | `重跑` `重算` `核对原文` `人工通读并修改` `抽查` `未核验` |
+| 布尔 | `yes` / `no` | `是` / `否` |
+
+**列数必须是 7。** 少于 7 列的行不会被静默跳过，而是直接报错——一行 checker 读不懂的记录，
+正是最适合藏 Stage 7 或未核验代码的地方。
+
 ### Verification vocabulary
 
 `Human verification` is not free-text mood. It must name a check that leaves a

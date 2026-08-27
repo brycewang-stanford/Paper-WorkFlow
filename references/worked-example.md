@@ -235,6 +235,14 @@ critic 审阅 `draft_audit.md`：引言五段齐、贡献句锋利、结果克�
   `manuscript_numbers` 记 `unanchored_claims=0 / inert_boundary_drift=0 / waived_claims=1`
   （那 1 条是引自《中国工业统计年鉴》的行业均值，用稿内 `% pw-number-ok:` 注明来源）。
 
+- **Stage 7 出口的 AI 使用声明**：本阶段刚刚把整篇稿子的语言重写了一遍，所以它必须在离开之前把
+  自己写进台账——`00_meta/ai_use_disclosure.md` 追加
+  `| 7 | text | Claude Opus 4.6 (2026-02) | 重写第 1–6 节以提升可读性 | read-and-edited | 王磊 | yes |`，
+  中文版摘要另起一行 `translation`。跑 `python3 scripts/check_ai_disclosure.py <workspace>`：
+  本例第一次跑 **B4 FAIL**——并行 subagent 只写了降味稿、没碰台账，而 `stages.7_language_dehumanize`
+  已置 `done`。补行后通过。**这条闸门存在的全部理由就是这一幕**：Stage 7 的职责是让 AI 痕迹消失，
+  如果没人拦着，它会连声明一起消掉。
+
 ---
 
 ## 🏁 初稿质量门（Draft Quality Gate）—— 演示一次 NOT PASS → 回炉 → PASS
@@ -291,7 +299,13 @@ critic 复核：每条 Essential 都有实质回应、改稿未引入交叉引�
 - **选刊决策序** → 1 主（*J. of Corporate Finance*，识别口味匹配）+ 2 备（*China Economic Review*、《经济研究》中文版）→ `journal_shortlist.md`。
 - **Cover letter**（每刊定制 + desk-reject 自检）：一句话问题 + 一句话结果（带量级）+ fit（点名 JCF 近年绿色金融文）+ 合规声明。
 - **DAS**（[`reproducibility-pack.md`](reproducibility-pack.md) §5）：CSMAR 受限如实写、CNRDS 公开留拉取脚本 → `09_submission/DAS.md`。
-- 投稿包 checklist：匿名稿、COI、highlights、终审引用 `ref_verify_final.xlsx` 全绿。
+- **AI 使用声明终审**：JCF 属 Elsevier 政策族 → `policy_family: elsevier`、
+  `statement_placement: 参考文献前的独立小节`。渲染出的 *Declaration of generative AI in scientific
+  writing* 覆盖台账里全部 5 个 `Disclose: yes` 类别（literature / code / figure / text / translation），
+  写明「作者已审阅并对本文内容负全责」，并**落进 `09_submission/main.tex` 正文**——只留在 `00_meta/`
+  等于没写，审稿人看不到工作区。跑 `python3 scripts/check_ai_disclosure.py <workspace> --final` 通过，
+  `ai_disclosure.status=pass`，投稿包才允许 `replication_pack.status=ready`。
+- 投稿包 checklist：匿名稿、COI、**生成式 AI 使用声明**、highlights、终审引用 `ref_verify_final.xlsx` 全绿。
 
 ---
 

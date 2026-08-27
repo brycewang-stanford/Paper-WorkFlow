@@ -59,6 +59,34 @@ MANUSCRIPT_CANDIDATES = (
 
 PLACEHOLDER_RE = re.compile(r"<[^>\n]{0,120}>|\bTODO\b|\bTBD\b|（待填）|待填")
 
+# This repo's users write in Chinese as often as English, and a gate that only
+# recognises the English template blocks correct work -- which teaches people to
+# switch the gate off. Every vocabulary below therefore accepts both.
+SECTION_ALIASES: dict[str, tuple[str, ...]] = {
+    "policy": ("Venue Policy", "期刊政策", "投稿政策", "政策"),
+    "ledger": ("AI-Use Ledger", "AI 使用台账", "AI使用台账", "使用台账", "台账"),
+    "statement": ("Rendered Statement", "声明正文", "声明全文", "渲染声明", "使用声明"),
+}
+CATEGORY_ALIASES: dict[str, str] = {
+    "文献": "literature", "检索": "literature",
+    "代码": "code", "脚本": "code",
+    "分析": "analysis", "估计": "analysis",
+    "文本": "text", "写作": "text", "正文": "text",
+    "翻译": "translation",
+    "图": "figure", "图表": "figure", "插图": "figure",
+    "数据": "data",
+}
+VERIFICATION_ALIASES: dict[str, str] = {
+    "重跑": "rerun", "已重跑": "rerun",
+    "重算": "recomputed", "已重算": "recomputed",
+    "核对原文": "source-checked", "已核原文": "source-checked", "查证原文": "source-checked",
+    "人工通读并修改": "read-and-edited", "通读修改": "read-and-edited", "人工修订": "read-and-edited",
+    "抽查": "spot-checked",
+    "未核验": "unverified", "无人核验": "unverified",
+}
+_YES_TOKENS = {"yes", "y", "true", "是", "需声明", "要"}
+_NO_TOKENS = {"no", "n", "false", "否", "不需声明", "不"}
+
 KNOWN_POLICY_FAMILIES = {
     "elsevier", "springer-nature", "wiley-sage-tf", "aea-econ", "cn-journal", "other",
 }
@@ -153,9 +181,12 @@ def split_sections(text: str) -> dict[str, str]:
 
 
 def find_section(sections: dict[str, str], needle: str) -> str | None:
-    for head, body in sections.items():
-        if needle.lower() in head.lower():
-            return body
+    """Find a section by any of its accepted names (English or Chinese)."""
+    candidates = SECTION_ALIASES.get(needle, (needle,))
+    for cand in candidates:
+        for head, body in sections.items():
+            if cand.lower() in head.lower():
+                return body
     return None
 
 
@@ -182,30 +213,48 @@ def _table_rows(body: str) -> list[list[str]]:
     return rows
 
 
-LEDGER_HEADER = ("stage", "category", "tool", "used for", "human verification",
-                 "accountable", "disclose")
+_LEDGER_HEADER_FIRST = {"stage", "阶段"}
+_LEDGER_HEADER_SECOND = {"category", "类别", "类目"}
+LEDGER_COLUMNS = 7
 
 
-def parse_ledger(body: str) -> list[dict[str, str]]:
-    """Return the ledger rows as dicts, skipping the header row."""
-    rows = _table_rows(body)
+def _is_ledger_header(cells: list[str]) -> bool:
+    if len(cells) < 2:
+        return False
+    return (cells[0].strip().lower() in _LEDGER_HEADER_FIRST
+            and cells[1].strip().lower() in _LEDGER_HEADER_SECOND)
+
+
+def canonical_category(value: str) -> str:
+    v = (value or "").strip().lower()
+    return CATEGORY_ALIASES.get(v, v)
+
+
+def parse_ledger(body: str) -> tuple[list[dict[str, str]], list[str]]:
+    """Return (rows, malformed) -- a row with the wrong column count is reported.
+
+    Silently dropping a short row would let a malformed Stage-7 entry satisfy B4
+    by disappearing, so shape problems are surfaced rather than skipped.
+    """
     out: list[dict[str, str]] = []
-    for cells in rows:
-        low = [c.lower() for c in cells]
-        if len(low) >= 3 and low[0] == "stage" and low[1] == "category":
-            continue  # header
-        if len(cells) < 7:
+    malformed: list[str] = []
+    for cells in _table_rows(body):
+        if _is_ledger_header(cells):
+            continue
+        if len(cells) < LEDGER_COLUMNS:
+            if any(c.strip() for c in cells):
+                malformed.append(" | ".join(cells))
             continue
         out.append({
             "stage": cells[0],
-            "category": cells[1].lower(),
+            "category": canonical_category(cells[1]),
             "tool": cells[2],
             "used_for": cells[3],
             "verification": cells[4],
             "accountable": cells[5],
-            "disclose": cells[6].lower(),
+            "disclose": cells[6].strip().lower(),
         })
-    return out
+    return out, malformed
 
 
 def _verification_token(value: str) -> str:
@@ -214,6 +263,9 @@ def _verification_token(value: str) -> str:
                 "unverified", "rerun"):
         if v.startswith(tok):
             return tok
+    for cn, canonical in VERIFICATION_ALIASES.items():
+        if v.startswith(cn):
+            return canonical
     return v
 
 
@@ -234,10 +286,10 @@ def validate(
     sections = split_sections(text)
 
     # --- venue policy ------------------------------------------------------ #
-    policy_body = find_section(sections, "Venue Policy")
+    policy_body = find_section(sections, "policy")
     policy: dict[str, str] = {}
     if policy_body is None:
-        out.append((FAIL, "B6 missing required section: ## 1. Venue Policy"))
+        out.append((FAIL, "B6 missing required section: ## 1. Venue Policy / 期刊政策"))
     else:
         policy = parse_fields(policy_body)
         family = (policy.get("policy_family") or "").strip().lower()
@@ -251,7 +303,7 @@ def validate(
             out.append((FAIL, "B6 statement_placement is unfilled — the venue needs to know where "
                               "the declaration goes"))
         ai_author = (policy.get("ai_as_author") or "").strip().lower()
-        if ai_author not in {"no", "n", "false", "否"}:
+        if ai_author not in _NO_TOKENS:
             out.append((FAIL, f"B1 ai_as_author must be 'no' (found: {ai_author or '(empty)'}); "
                               "an AI system can never be an author"))
 
@@ -261,13 +313,17 @@ def validate(
             out.append((FAIL, f"B1 manuscript author line names an AI system: {', '.join(hits)}"))
 
     # --- ledger ------------------------------------------------------------ #
-    ledger_body = find_section(sections, "AI-Use Ledger")
+    ledger_body = find_section(sections, "ledger")
     rows: list[dict[str, str]] = []
     if ledger_body is None:
-        out.append((FAIL, "B6 missing required section: ## 2. AI-Use Ledger"))
+        out.append((FAIL, "B6 missing required section: ## 2. AI-Use Ledger / AI 使用台账"))
     else:
-        rows = parse_ledger(ledger_body)
+        rows, malformed = parse_ledger(ledger_body)
         rows = [r for r in rows if not all(_is_placeholder(v) for v in r.values())]
+        for bad in malformed:
+            out.append((FAIL, f"B6 ledger row has fewer than {LEDGER_COLUMNS} columns and cannot "
+                              f"be audited: {bad!r} — a row the checker cannot read is a row that "
+                              "could hide a Stage-7 or unverified-code entry"))
 
     real_rows = [r for r in rows if not _is_placeholder(r["used_for"])]
     if not real_rows:
@@ -317,7 +373,7 @@ def validate(
                                   "from (results file, cleaned data), so a referee can tell "
                                   "derivation from creation"))
 
-        if row["disclose"].startswith("y"):
+        if row["disclose"] in _YES_TOKENS or row["disclose"].startswith("y"):
             disclosed_categories.add(row["category"])
             if final:
                 who = row["accountable"]
@@ -343,9 +399,9 @@ def validate(
                           "work — AI-suggested references must resolve to real sources"))
 
     # --- statement ---------------------------------------------------------- #
-    stmt_body = find_section(sections, "Rendered Statement")
+    stmt_body = find_section(sections, "statement")
     if stmt_body is None:
-        out.append((FAIL, "B6 missing required section: ## 4. Rendered Statement"))
+        out.append((FAIL, "B6 missing required section: ## 4. Rendered Statement / 声明正文"))
     else:
         stmt = "\n".join(l.lstrip("> ").strip() for l in stmt_body.splitlines()).strip()
         if _is_placeholder(stmt) or len(stmt) < 40:
@@ -524,6 +580,43 @@ GOOD = """# AI-Use Disclosure & Authorship Integrity
 """
 
 
+# The same document as GOOD, authored the way this repo's users actually write.
+# A gate that only understands the English template blocks correct work, and a
+# blocked-but-correct run teaches people to switch the gate off.
+GOOD_CN = """# 生成式 AI 使用声明
+
+## 1. 期刊政策
+- policy_family: cn-journal
+- policy_source:
+- target_venue: 《经济研究》
+- statement_placement: 致谢
+- ai_as_author: 否
+- authors_take_responsibility: 是
+
+## 2. AI 使用台账
+| 阶段 | 类别 | 工具 / 模型 | 用途 | 人工核验 | 担责人 | 是否声明 |
+|---|---|---|---|---|---|---|
+| 1L | 文献 | Claude Opus 4.6 (2026-02) | 从 412 篇候选中筛出语料 | 核对原文 | 王磊 | 是 |
+| 3 | 代码 | Claude Opus 4.6 (2026-02) | 编写 Callaway-Sant'Anna 估计脚本 | 重跑 | 王磊 | 是 |
+| 5 | 文本 | Claude Opus 4.6 (2026-02) | 起草第 1–6 节 | 人工通读并修改 | 王磊 | 是 |
+| 7 | 文本 | Claude Opus 4.6 (2026-02) | 重写第 1–6 节以提升可读性 | 人工通读并修改 | 王磊 | 是 |
+
+## 3. 禁止用途筛查
+| # | 检查 | 结论 |
+|---|---|---|
+| B1 | 未将 AI 列为作者 | pass |
+
+## 4. 声明正文
+> 本文写作过程中使用了 Claude Opus 4.6 (2026-02) 检索并筛选文献、生成估计代码、起草与润色正文。
+> 全部估计代码由作者重新运行，全部引用均已核对原文。作者已审阅并编辑全部内容，
+> 对本文的全部内容承担责任。
+
+## 5. 未声明项
+| 阶段 | 内容 | 为何属于非实质性 |
+|---|---|---|
+"""
+
+
 def _selftest() -> int:
     def fails(text, **kw):
         return [m for lvl, m in validate(text, **kw) if lvl == FAIL]
@@ -635,7 +728,27 @@ def _selftest() -> int:
         assert _unresolved_citations(ws) == 1, _unresolved_citations(ws)
         assert any("B7" in m for lvl, m in run(ws) if lvl == FAIL), run(ws)
 
-    # 13. the *shipped* citation-integrity template must not read as unresolved.
+    # 13. a Chinese-authored ledger is a first-class input, not a parse failure.
+    assert not fails(GOOD_CN, final=True, stage7_done=True), fails(GOOD_CN, final=True, stage7_done=True)
+    #     ...and the rules still bite through the Chinese vocabulary
+    cn_no7 = "\n".join(l for l in GOOD_CN.splitlines() if not l.startswith("| 7 |"))
+    assert any("B4" in m for m in fails(cn_no7, stage7_done=True)), fails(cn_no7, stage7_done=True)
+    cn_author = GOOD_CN.replace("- ai_as_author: 否", "- ai_as_author: 是")
+    assert any("B1" in m for m in fails(cn_author)), fails(cn_author)
+    cn_unver = GOOD_CN.replace("| 编写 Callaway-Sant'Anna 估计脚本 | 重跑 |",
+                               "| 编写 Callaway-Sant'Anna 估计脚本 | 未核验 |")
+    assert any("B3" in m for m in fails(cn_unver)), fails(cn_unver)
+
+    # 14. a row the parser cannot read must be loud, never silently dropped --
+    #     otherwise a malformed Stage-7 row satisfies B4 by disappearing.
+    short = GOOD.replace(
+        "| 7 | text | Claude Opus 4.6 (2026-02) | rewrote Sections 1-6 for readability | read-and-edited | Wang Lei | yes |",
+        "| 7 | text | Claude Opus 4.6 (2026-02) | rewrote Sections 1-6 |")
+    f = fails(short, stage7_done=True)
+    assert any("fewer than" in m for m in f), f
+    assert any("B4" in m for m in f), f
+
+    # 15. the *shipped* citation-integrity template must not read as unresolved.
     #     A freshly instantiated log is all placeholders and legends; if this gate
     #     counted those it would block every clean run at Stage 1L.
     cit_tpl = Path(__file__).resolve().parent.parent / "templates" / "citation_integrity_log.md"
@@ -648,14 +761,15 @@ def _selftest() -> int:
             n = _unresolved_citations(ws)
             assert n == 0, f"fresh citation log reads as {n} unresolved citation(s)"
 
-    # 14. the shipped template must be parseable by this checker (structure contract)
+    # 16. the shipped template must be parseable by this checker (structure contract)
     tpl = Path(__file__).resolve().parent.parent / "templates" / "ai_use_disclosure.md"
     if tpl.exists():
         body = tpl.read_text(encoding="utf-8")
         secs = split_sections(body)
-        for needle in ("Venue Policy", "AI-Use Ledger", "Rendered Statement"):
+        for needle in ("policy", "ledger", "statement"):
             assert find_section(secs, needle) is not None, f"template lost section {needle}"
-        ledger = parse_ledger(find_section(secs, "AI-Use Ledger") or "")
+        ledger, malformed = parse_ledger(find_section(secs, "ledger") or "")
+        assert not malformed, f"template ledger has malformed rows: {malformed}"
         assert len(ledger) >= 4, f"template ledger rows: {len(ledger)}"
         assert {r["category"] for r in ledger} <= VALID_CATEGORIES, ledger
         assert any(r["stage"].strip() == "7" for r in ledger), "template must model the Stage 7 row"
