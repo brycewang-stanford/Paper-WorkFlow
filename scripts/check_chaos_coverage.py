@@ -42,6 +42,7 @@ CHAOS_DIR = ROOT / "evals" / "chaos"
 SKILL_MD = ROOT / "SKILL.md"
 SKILL_MAP = ROOT / "references" / "skill-map.md"
 ORCH_HANDOFF = ROOT / "references" / "orchestration-and-handoff.md"
+RUNTIME_FALLBACKS = ROOT / "references" / "runtime-fallbacks.md"
 
 # Each entry: (failure_mode_id, scenario_filename, regex anchors that
 # the prose must mention for the failure mode to be considered
@@ -72,7 +73,52 @@ FAILURE_MODES = [
             (ORCH_HANDOFF, r"context|上下文"),
         ],
     },
+    {
+        # A gate that cannot be satisfied plus an unattended run is an unbounded
+        # retry loop. The caps exist; this pairs them with a recovery contract.
+        "id": "gate_deadlock",
+        "scenario": "chaos_gate_deadlock.md",
+        "anchors": [
+            (SKILL_MD, r"绝不让回退无界|budget_exhausted_action"),
+            (ORCH_HANDOFF, r"method_gate_rounds_cap|回退上限"),
+        ],
+    },
+    {
+        # The Stage 0 backend choice is made before anything runs; the machine
+        # gets a vote at Stage 3. Silent substitution is the failure, not the crash.
+        "id": "backend_unavailable",
+        "scenario": "chaos_backend_unavailable.md",
+        "anchors": [
+            (SKILL_MD, r"运行时退化必须披露|runtime-fallbacks"),
+            (RUNTIME_FALLBACKS, r"fallback|退化"),
+        ],
+    },
+    {
+        # workflow_state.json is a description of the workspace, not the
+        # workspace. Resumed sessions must re-establish facts, not trust them.
+        "id": "state_artifact_drift",
+        "scenario": "chaos_state_artifact_drift.md",
+        "anchors": [
+            (SKILL_MD, r"fresh evidence|断点交接必须可恢复"),
+            (ORCH_HANDOFF, r"Fresh Evidence|fresh_evidence"),
+        ],
+    },
 ]
+
+# A scenario file has to actually be a scenario. The docstring above has always
+# promised trigger / recovery / maintenance check; without this, a file
+# containing "# placeholder" satisfied the coverage count, which made the
+# strict gate a file-existence test wearing a rigor costume.
+REQUIRED_SCENARIO_SECTIONS = [
+    r"^##\s+What this scenario exercises",
+    r"^##\s+The trigger",
+    r"^##\s+Expected recovery path",
+    r"^##\s+How a maintainer verifies this scenario",
+    r"^##\s+Status",
+]
+MIN_SCENARIO_BYTES = 1200
+# The recovery contract is only useful if it says what counts as *failing* it.
+FAILURE_CRITERIA_RE = r"recovery is considered failed|considered failed if"
 
 
 def _read(path: Path) -> str:
@@ -87,13 +133,31 @@ def _scenario_present(filename: str) -> bool:
     return (CHAOS_DIR / filename).is_file()
 
 
+def scenario_defects(filename: str) -> list[str]:
+    """Structural problems with a scenario file; empty means it is a real scenario."""
+    path = CHAOS_DIR / filename
+    if not path.is_file():
+        return ["file missing"]
+    text = _read(path)
+    defects = []
+    if len(text.encode("utf-8")) < MIN_SCENARIO_BYTES:
+        defects.append(f"only {len(text.encode('utf-8'))} bytes (min {MIN_SCENARIO_BYTES}) — placeholder?")
+    for pattern in REQUIRED_SCENARIO_SECTIONS:
+        if not re.search(pattern, text, re.MULTILINE):
+            defects.append(f"missing section: {pattern.strip('^$').replace(chr(92) + 's+', ' ')}")
+    if not re.search(FAILURE_CRITERIA_RE, text, re.IGNORECASE):
+        defects.append("no explicit 'recovery is considered failed if' criteria")
+    return defects
+
+
 def build_coverage() -> dict:
     rows = []
     documented = 0
     scenarios = 0
     for entry in FAILURE_MODES:
         doc_ok = all(_anchor_present(p, pat) for p, pat in entry["anchors"])
-        scen_ok = _scenario_present(entry["scenario"])
+        defects = scenario_defects(entry["scenario"])
+        scen_ok = not defects
         if doc_ok:
             documented += 1
         if scen_ok:
@@ -104,6 +168,7 @@ def build_coverage() -> dict:
                 "scenario": entry["scenario"],
                 "documented_in_prose": doc_ok,
                 "scenario_present": scen_ok,
+                "defects": defects,
                 "covered": doc_ok and scen_ok,
             }
         )
@@ -133,6 +198,8 @@ def render_text(cov: dict) -> str:
         scen = "OK " if r["scenario_present"] else "?? "
         cov_mark = "OK" if r["covered"] else "??"
         lines.append(f"  [{doc}] [{scen}] [{cov_mark}] {r['id']:<22} {r['scenario']}")
+        for defect in r.get("defects", []):
+            lines.append(f"        - {defect}")
     lines.append("")
     if cov["covered"] == cov["total_failure_modes"]:
         lines.append("OK -- every documented failure mode has a chaos scenario.")
@@ -147,45 +214,87 @@ def render_text(cov: dict) -> str:
 def _selftest() -> int:
     with tempfile.TemporaryDirectory(prefix="chaos-cov-selftest-") as tmp:
         root = Path(tmp)
-        # Build a fake orchestrator tree
-        (root / "SKILL.md").write_text("上下文保护 subagent ≤10 行 handoff", encoding="utf-8")
+        # Build a fake orchestrator tree carrying every anchor the real prose does
+        (root / "SKILL.md").write_text(
+            "上下文保护 subagent ≤10 行 handoff fresh evidence "
+            "绝不让回退无界 budget_exhausted_action 运行时退化必须披露 runtime-fallbacks",
+            encoding="utf-8")
         (root / "references").mkdir()
         (root / "references" / "skill-map.md").write_text("not found Read inline", encoding="utf-8")
         (root / "references" / "orchestration-and-handoff.md").write_text(
-            "handoff fresh evidence context", encoding="utf-8"
-        )
+            "handoff Fresh Evidence fresh_evidence context method_gate_rounds_cap 回退上限",
+            encoding="utf-8")
+        (root / "references" / "runtime-fallbacks.md").write_text("fallback 退化", encoding="utf-8")
         (root / "evals" / "chaos").mkdir(parents=True)
+
+        def _real_scenario(name: str) -> str:
+            filler = ("A scenario file has to carry enough of the recovery contract that a "
+                      "maintainer can act on it without re-deriving the design intent. ") * 6
+            return (
+                f"# Chaos scenario: {name}\n\n"
+                "## What this scenario exercises\n\n" + filler +
+                "\n\n## The trigger\n\n" + filler +
+                "\n\n## Expected recovery path\n\n" + filler +
+                "\nThe recovery is considered failed if the orchestrator proceeds anyway.\n"
+                "\n## How a maintainer verifies this scenario\n\n" + filler +
+                "\n\n## Status\n\nBased on inference, refine on first real failure.\n"
+            )
+
         for entry in FAILURE_MODES:
             (root / "evals" / "chaos" / entry["scenario"]).write_text(
-                "# placeholder\n", encoding="utf-8"
-            )
+                _real_scenario(entry["id"]), encoding="utf-8")
 
         # Monkey-patch the module's constants
         old_chaos = CHAOS_DIR
         old_skill = SKILL_MD
         old_skillmap = SKILL_MAP
         old_orch = ORCH_HANDOFF
+        old_fallbacks = RUNTIME_FALLBACKS
         try:
             globals()["CHAOS_DIR"] = root / "evals" / "chaos"
             globals()["SKILL_MD"] = root / "SKILL.md"
             globals()["SKILL_MAP"] = root / "references" / "skill-map.md"
             globals()["ORCH_HANDOFF"] = root / "references" / "orchestration-and-handoff.md"
+            globals()["RUNTIME_FALLBACKS"] = root / "references" / "runtime-fallbacks.md"
             full = build_coverage()
             assert full["covered"] == full["total_failure_modes"], (
                 f"fake tree with all scenarios must fully cover: {full}"
             )
 
             # Drop one scenario -> gap must be reported
-            (root / "evals" / "chaos" / FAILURE_MODES[0]["scenario"]).unlink()
+            dropped = root / "evals" / "chaos" / FAILURE_MODES[0]["scenario"]
+            saved = dropped.read_text(encoding="utf-8")
+            dropped.unlink()
             gap = build_coverage()
             assert gap["covered"] == full["total_failure_modes"] - 1, "missing scenario must drop coverage"
             missing = [r for r in gap["rows"] if not r["covered"]]
             assert len(missing) == 1 and missing[0]["id"] == FAILURE_MODES[0]["id"]
+
+            # A file that exists but says nothing is NOT coverage. This is the
+            # invariant the old existence-only check could not express.
+            dropped.write_text("# placeholder\n", encoding="utf-8")
+            stub = build_coverage()
+            assert stub["covered"] == full["total_failure_modes"] - 1, "a placeholder must not count as covered"
+            row = next(r for r in stub["rows"] if r["id"] == FAILURE_MODES[0]["id"])
+            assert any("placeholder" in d for d in row["defects"]), row["defects"]
+            assert any("The trigger" in d for d in row["defects"]), row["defects"]
+
+            # Long prose with no failure criteria is also not a recovery contract.
+            dropped.write_text(saved.replace(
+                "The recovery is considered failed if the orchestrator proceeds anyway.", ""),
+                encoding="utf-8")
+            no_criteria = build_coverage()
+            row = next(r for r in no_criteria["rows"] if r["id"] == FAILURE_MODES[0]["id"])
+            assert any("considered failed" in d for d in row["defects"]), row["defects"]
+
+            dropped.write_text(saved, encoding="utf-8")
+            assert build_coverage()["covered"] == full["total_failure_modes"]
         finally:
             globals()["CHAOS_DIR"] = old_chaos
             globals()["SKILL_MD"] = old_skill
             globals()["SKILL_MAP"] = old_skillmap
             globals()["ORCH_HANDOFF"] = old_orch
+            globals()["RUNTIME_FALLBACKS"] = old_fallbacks
 
     print("selftest OK: chaos-coverage invariants hold")
     return 0

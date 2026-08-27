@@ -229,6 +229,9 @@ when you add a new scenario file.
 | `Skill` tool reports "skill not found" | `evals/chaos/chaos_skill_not_found.md` | Read the child skill's `SKILL.md` inline; do not retry the `Skill` tool. |
 | Subagent crashes or hangs before writing its summary | `evals/chaos/chaos_subagent_failure.md` | Check output files; retry at most once; write a handoff card on second failure. |
 | Context budget exhausted mid-Stage-3 | `evals/chaos/chaos_context_overflow.md` | Discard heavy context; resume from the last `done` stage in `workflow_state.json`; re-dispatch subagents with the ≤10-line contract. |
+| A gate that cannot be satisfied, in `全自动` mode | `evals/chaos/chaos_gate_deadlock.md` | Stop at `method_gate_rounds_cap` / `revision_rounds_cap`; apply `budget_exhausted_action`; downgrade `claim_strength` and ship the gap in red — never flip the gate to `pass`. |
+| The Stage 0 analysis backend is not installed at Stage 3 | `evals/chaos/chaos_backend_unavailable.md` | Probe into `backend_capabilities.json`, switch `analysis_backend.primary` explicitly, record it in `decisions`, claim no parity you did not measure, and lower the gates the degradation touches. |
+| `workflow_state.json` says `done` but the evidence is not on disk | `evals/chaos/chaos_state_artifact_drift.md` | Re-establish facts before acting: run `pw check`, demote the unbacked gates to `pending` (not `not_pass`), re-derive from `run_all.sh` — never write a placeholder at the path the state file names. |
 
 > **Based on inference, refine on first real failure.** The recovery
 > paths above are derived from the orchestrator's documented intent
