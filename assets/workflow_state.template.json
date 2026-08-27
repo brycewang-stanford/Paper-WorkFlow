@@ -1,5 +1,5 @@
 {
-  "schema_version": 12,
+  "schema_version": 13,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -137,6 +137,17 @@
     "waived_claims": 0,
     "inert_boundary_drift": 0,
     "last_check": ""
+  },
+  "ai_disclosure": {
+    "status": "pending",
+    "disclosure_file": "00_meta/ai_use_disclosure.md",
+    "policy_family": "",
+    "statement_placement": "",
+    "ledger_rows": 0,
+    "disclosed_rows": 0,
+    "unverified_rows": 0,
+    "blocking_findings": [],
+    "last_audit": ""
   },
   "quality_gate": {
     "draft_milestone": "pending",

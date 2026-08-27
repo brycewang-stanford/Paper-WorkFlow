@@ -416,7 +416,86 @@
 
 ---
 
-## 13. 跨设计行为护栏（Behavioral Guardrails — 反模式黑名单）
+## 13. RCT / 田野实验 / Lab-in-the-Field（Randomised Designs）
+
+**适用**：研究者自己分配处理的设计——田野实验、干预评估、审计/通信实验、政策试点随机化、实验室实验。
+**为什么单列**：观察性设计的全部难题是「处理为什么发生」；随机化把这一条免掉，于是**全部风险转移到执行**——
+不平衡、流失、不依从、结局切换、群组随机化的推断。随机化不是免检章，它只是把审计对象从识别换成了实施。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| 随机化协议 | `03_analysis/design_register.md` | 随机化单元与层级、分层/区组变量、种子或抽签方式、由谁执行、何时执行 |
+| Baseline balance table | `03_analysis/results/balance.*` | 处理前协变量是否平衡；是否报联合正交检验而非只看逐个 p 值 |
+| 事前功效 / MDE | `00_meta/preregistration.md` | 目标样本量下能探测到的最小效应；**必须是事前**，不是拿实测效应算的事后 power |
+| CONSORT 式流程 N | `02_data/sample_audit.md` | 招募 → 合格 → 随机化 → 接受处理 → 进入分析，每一环的 N 与流失原因 |
+| 流失与差异性流失 | `03_analysis/robustness/attrition.*` | 总流失率、处理组与对照组流失率之差、是否给 Lee/Manski bounds |
+| ITT 与依从性 | `03_analysis/results/itt_late.*` | ITT 是主结果；报 TOT/LATE 时是否给 first stage 与依从率 |
+| 预注册主结局 + 多重检验 | `00_meta/preregistration.md` · `03_analysis/robustness/mht.*` | 主结局唯一且预先指定；多结局/多子组是否族内校正（Romano-Wolf / BH） |
+| 随机化推断 / 正确 SE | `03_analysis/robustness/ri_test.*` | 群组随机化是否按**随机化层级**聚类；少簇是否用 RI 或 wild bootstrap |
+| 溢出 / SUTVA | `03_analysis/robustness/spillover.*` | 处理是否外溢到对照；饱和设计或距离/网络暴露检验 |
+
+**Hard fail**
+
+- 没有 baseline balance table；或不平衡后靠「加控制变量」补救而不披露原始不平衡。
+- 用**事后 power**（拿实测效应反算）代替事前 MDE——事后 power 是效应量的单调变换，不含新信息。
+- 差异性流失显著而没有 bounds 或加权修正。
+- 主结局不是预注册的那个（outcome switching），或预注册文件在结果之后才写。
+- 群组随机化却按个体聚类、或干脆不聚类（G2/G9 同时命中）。
+- 用 per-protocol / 完成者样本当主分析而 ITT 缺席。
+- 多个结局逐个报显著、没有任何族内校正。
+
+**允许 claim**
+
+- `causal`：通过卡片的 ITT，限于实际随机化的人群、剂量与时窗。
+- `qualified_causal`：依从性低而只报 LATE；或流失可控但非零、bounds 仍含主结论。
+- `descriptive`：不平衡未修复、差异性流失未处理、或主分析已偏离预注册。
+- `exploratory`：子组效应、事后异质性、非预注册结局。
+
+**降级触发**：差异性流失 > 5 个百分点且无 bounds → 至少 `qualified_causal`；主结局切换未登记 → 强制 `exploratory`；
+群组随机化未按层级聚类 → 稳健性维度封顶并要求重算。
+
+---
+
+## 14. 调查实验 / Conjoint / Vignette / List Experiment
+
+**适用**：在问卷内部随机化的设计——survey experiment、factorial vignette、conjoint（选择联合分析）、
+list/endorsement experiment、priming。管理学、政治学、市场营销与社会学近年主力设计之一。
+**为什么单列**：随机化在问卷内部**通常是干净的**，所以内部效度不是主要战场；真正的风险全在
+**样本来源、事后筛人、以及从「说」外推到「做」**。这三件事没有一件被上面任何一张卡覆盖。
+
+| Required artifact | Path pattern | 必须回答 |
+|---|---|---|
+| 处理与随机化设计 | `03_analysis/design_register.md` | 随机化了什么（文本/属性/顺序）、几臂、区组、载具（问卷平台）与实现方式 |
+| 样本来源卡 | `02_data/dataset_card.md` | 平台（Prolific / MTurk / Credamo / CGSS 等）、配额、筛选条件、完成率、**代表性边界写清** |
+| 注意力/操纵检查 | `03_analysis/results/checks.*` | 检查题是什么、通过率、**排除规则是否预注册**；操纵是否真的动了目标构念 |
+| 预注册估计量 + 多重检验 | `00_meta/preregistration.md` · `03_analysis/robustness/mht.*` | 主估计量（ATE / AMCE / marginal means）唯一；属性 × 水平数量下的族内校正 |
+| Conjoint 专项 | `03_analysis/results/amce.*` | profile 随机化分布、参照类别、属性约束、carryover / profile-order 检验（Hainmueller et al.） |
+| 权重与设计效应 | `03_analysis/results/weighted.*` | 是否用抽样/事后分层权重；加权与未加权结果是否都报 |
+| List / endorsement 专项 | `03_analysis/robustness/list_design.*` | design-effect 检验、天花板/地板效应、控制项个数与非负性 |
+| 外部效度与假想偏差 | `03_analysis/design_risk_ledger.md` | 测的是意向还是行为；有无行为结局或激励相容设计；外推边界 |
+
+**Hard fail**
+
+- **事后**排除受访者：基于结局、或基于未预注册的注意力检查——这是调查实验最常见的 p-hacking 通道。
+- conjoint 报 AMCE 却不交代 profile 随机化分布与参照类别（AMCE 只在给定分布下有定义）。
+- 便利样本（学生 / 众包池）写成对总体的推断，没有代表性边界。
+- list experiment 不做 design-effect 检验（负估计量会被当成「零效应」）。
+- 声称对**真实行为**的效应，但结局只是自陈意向、且未降级。
+- 多臂 / 多属性逐个报显著而无族内校正。
+
+**允许 claim**
+
+- `causal`：对**所测结局**（多为陈述性偏好 / 意向）在**所抽样本**内的因果效应。
+- `qualified_causal`：有行为化结局或激励相容设计，但样本非概率抽样。
+- `descriptive`：事后筛人未预注册、或加权与未加权结论不一致。
+- `exploratory`：子组、交互、未预注册的属性组合。
+
+**降级触发**：只有意向结局却写行为语言 → 强制 `qualified_causal` 并改措辞；事后排除规则未预注册 → 至少 `descriptive`；
+conjoint 未报 carryover 检验 → 稳健性维度封顶。
+
+---
+
+## 15. 跨设计行为护栏（Behavioral Guardrails — 反模式黑名单）
 
 > 上面每张卡管「这个设计需要哪些证据」；本节管「**不管哪个设计，都不许犯的操作错误**」。
 > 思路来自 Econometrics-Agent（*Can AI Master Econometrics?* arXiv 2506.00856）的关键发现：
@@ -448,14 +527,14 @@
 
 ---
 
-## 14. Method Gate 填写规则
+## 16. Method Gate 填写规则
 
 `03_analysis/method_gate.md` 必须把本文件对应设计卡复制或摘要成一张表：
 
 ```markdown
 ## Design Gate Card
 
-Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / Time Series-VAR
+Design card used: DiD / IV / RDD / SC-SDID / Panel FE / DML-HTE / DAG-refuter / Prediction-assisted / Time Series-VAR / RCT / Survey Experiment
 
 | Gate item | Required artifact | Path | Present? | Pass? | Claim consequence |
 |---|---|---|---:|---:|---|

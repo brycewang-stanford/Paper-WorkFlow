@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "references/design-gate-cards.md",
   "template": "templates/method_gate.md",
-  "minimum_design_count": 12,
+  "minimum_design_count": 14,
   "minimum_guardrail_count": 10,
   "required_template_markers": [
     "Design Gate Card",
@@ -249,6 +249,51 @@
         "多门槛检验",
         "线性 vs 门槛对比",
         "门槛值稳健性"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "rct_field_experiment",
+      "heading": "RCT / 田野实验 / Lab-in-the-Field（Randomised Designs）",
+      "method_gate_label": "RCT",
+      "minimum_required_artifacts": 9,
+      "required_items": [
+        "随机化协议",
+        "Baseline balance table",
+        "事前功效 / MDE",
+        "CONSORT 式流程 N",
+        "流失与差异性流失",
+        "ITT 与依从性",
+        "预注册主结局 + 多重检验",
+        "随机化推断 / 正确 SE",
+        "溢出 / SUTVA"
+      ],
+      "claim_levels": [
+        "causal",
+        "qualified_causal",
+        "descriptive",
+        "exploratory"
+      ]
+    },
+    {
+      "id": "survey_experiment_conjoint",
+      "heading": "调查实验 / Conjoint / Vignette / List Experiment",
+      "method_gate_label": "Survey Experiment",
+      "minimum_required_artifacts": 8,
+      "required_items": [
+        "处理与随机化设计",
+        "样本来源卡",
+        "注意力/操纵检查",
+        "预注册估计量 + 多重检验",
+        "Conjoint 专项",
+        "权重与设计效应",
+        "List / endorsement 专项",
+        "外部效度与假想偏差"
       ],
       "claim_levels": [
         "causal",

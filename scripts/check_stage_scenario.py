@@ -41,6 +41,7 @@ TEMPLATE_OUTPUTS = {
     "templates/inference_report.md": "03_analysis/inference_report.md",
     "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
     "templates/claim_integrity_audit.md": "00_meta/claim_integrity_audit.md",
+    "templates/ai_use_disclosure.md": "00_meta/ai_use_disclosure.md",
     "templates/quality_scorecard.md": "00_meta/quality_scorecard.md",
     "templates/REPLICATION.md": "REPLICATION.md",
     "templates/DAS.md": "09_submission/DAS.md",
@@ -401,6 +402,19 @@ def _build_state(contract: dict) -> dict:
             "checked_claims": 9,
             "unsupported_claims": 0,
             "unverified_citations": 0,
+            "blocking_findings": [],
+            "last_audit": "scenario fixture",
+        }
+    )
+    state["ai_disclosure"].update(
+        {
+            "status": "pass",
+            "disclosure_file": "00_meta/ai_use_disclosure.md",
+            "policy_family": "elsevier",
+            "statement_placement": "titled section before the reference list",
+            "ledger_rows": 5,
+            "disclosed_rows": 5,
+            "unverified_rows": 0,
             "blocking_findings": [],
             "last_audit": "scenario fixture",
         }

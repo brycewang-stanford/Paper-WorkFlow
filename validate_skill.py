@@ -151,7 +151,7 @@ REQUIRED_REFERENCES = {
         "Stage Passport",
         "Fresh Evidence",
         "Handoff Card",
-        "schema_version 12",
+        "schema_version 13",
     ],
     "references/integrity-and-claim-audit.md": [
         "Integrity & Claim Audit",
@@ -194,8 +194,8 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 12:
-        fail("workflow_state.template.json schema_version must be 12")
+    if data.get("schema_version") != 13:
+        fail("workflow_state.template.json schema_version must be 13")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
@@ -412,6 +412,8 @@ def check_assets() -> None:
         "scripts/check_citation_integrity.py",
         "scripts/check_preregistration.py",
         "scripts/check_manuscript_numbers.py",
+        "scripts/check_ai_disclosure.py",
+        "scripts/pw.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
         "templates/backend_capabilities.json",
@@ -591,6 +593,10 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     ("scripts/check_cross_references.py", [["--selftest"], []]),
     ("scripts/check_table_style.py", [["--selftest"]]),
     ("scripts/check_manuscript_numbers.py", [["--selftest"]]),
+    ("scripts/check_ai_disclosure.py", [["--selftest"]]),
+    # Stage -> gate map. Its selftest is the only thing standing between a new
+    # run-time checker and being registered but never actually run.
+    ("scripts/pw.py", [["--selftest"]]),
     ("evals/score_skill.py", [["--selftest"]]),
     ("evals/check_complexity_budget.py", [["--selftest"], []]),
     ("evals/check_replication_accuracy.py", [["--selftest"]]),

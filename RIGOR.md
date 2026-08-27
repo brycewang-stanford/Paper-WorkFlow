@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 35/35 green.**
+**Rigor checkers selftest: PASSING — 37/37 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -19,6 +19,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_backend_parity.py`](scripts/check_backend_parity.py) | ✅ pass | Backend parity fixtures and workspace reports: fallback or secondary Python/StatsPAI, Stata, and R result bundles must agree on sample hash, estimator family, clustering, fixed effects, coefficients, standard errors, and diagnostics before parity claims can pass. |
 | [`scripts/check_table_style.py`](scripts/check_table_style.py) | ✅ pass | Three-line table (三线表) export contract: exported .docx tables carry a heavy top rule, a light header rule and a heavy closing rule with no vertical or stray interior rules, borders are explicit rather than inherited from a Word table style, and the paired .tex uses booktabs instead of \hline / '|' column specs. |
 | [`scripts/check_manuscript_numbers.py`](scripts/check_manuscript_numbers.py) | ✅ pass | Manuscript numeric anchoring and rewrite inertness: every coefficient, standard error and sample size asserted in the manuscript must trace to 03_analysis/results or 04_results at the precision it is printed, and the Stage 6->7 de-AIGC rewrite must not change a single number in either direction. Unanchored figures are waived only by an in-text, referee-readable `% pw-number-ok:` comment. |
+| [`scripts/check_ai_disclosure.py`](scripts/check_ai_disclosure.py) | ✅ pass | AI-use disclosure and authorship integrity: an AI system can never be an author, AI-generated data or result images are fabrication, AI-written code and AI-screened literature cannot be shipped unverified, the rendered venue statement must cover every disclosed category, and the de-AIGC stage that removes the AI accent must not also remove the AI disclosure. |
 | [`scripts/check_citation_integrity.py`](scripts/check_citation_integrity.py) | ✅ pass | Citation existence + temporal integrity: DOI resolution, retraction screening, citation-laundering, and look-ahead / vintage / sample-vs-claim-period leakage. |
 | [`scripts/check_verification_log.py`](scripts/check_verification_log.py) | ✅ pass | The load-bearing methods-claim verification log exists and every claim it makes is backed by a recorded check. |
 | [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) | ✅ pass | A minimal workspace initialises and every template contract holds (templates instantiate with the fields the gates later require). |
@@ -44,6 +45,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_bilingual_docs.py`](scripts/check_bilingual_docs.py) | ✅ pass | Bilingual README parity: the Chinese and English user surfaces expose the same reference docs, script inventory, validation commands, and load-bearing workflow artifacts. |
 | [`scripts/check_numeric_claims.py`](scripts/check_numeric_claims.py) | ✅ pass | Numeric-claims cross-doc parity: load-bearing counts (10 stages / 47 skills / 2 hard gates / 3 backends / the live rigor-badge gate count) appear consistently across README.md, README.en.md, SKILL.md, and RIGOR.md; a drift fails CI. |
 | [`scripts/check_contract_matrix.py`](scripts/check_contract_matrix.py) | ✅ pass | Contract matrix: each quality theme has named owner files, validators, and docs, and high-leverage repo artifacts are covered by at least one maintained invariant. |
+| [`scripts/pw.py`](scripts/pw.py) | ✅ pass | Stage -> gate map: every workspace-scoped run-time checker registered here is reachable from at least one pipeline stage (or is explicitly declared non-stage-scoped with a reason), the map's stage keys match the state template's Stage 0-9 spine and the checker's own precondition table, and Stage 9 never runs a weaker variant of a gate than an earlier stage did. |
 | [`scripts/check_rigor_registry.py`](scripts/check_rigor_registry.py) | ✅ pass | RIGOR registry completeness: every checker discovered under scripts/ or evals/ must be registered in this report, and registry drift is a blocking maintenance failure. |
 | [`scripts/check_monthly_worklog.py`](scripts/check_monthly_worklog.py) | ✅ pass | Long-horizon maintenance evidence: the month-long worklog records the goal window, baseline PASS evidence, week plan, packet-level validation, and anti-cheat guards that prevent premature closure. |
 | [`scripts/check_skillopt_packet.py`](scripts/check_skillopt_packet.py) | ✅ pass | SkillOpt improvement packets: >=3 train + >=2 held-out rollouts, a bounded edit budget, and accept requires a score gain + regression pass. |
@@ -60,4 +62,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-08-06 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-08-27 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.

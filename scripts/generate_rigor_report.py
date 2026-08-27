@@ -138,6 +138,19 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_ai_disclosure.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "AI-use disclosure and authorship integrity: an AI system can never be "
+            "an author, AI-generated data or result images are fabrication, "
+            "AI-written code and AI-screened literature cannot be shipped "
+            "unverified, the rendered venue statement must cover every disclosed "
+            "category, and the de-AIGC stage that removes the AI accent must not "
+            "also remove the AI disclosure."
+        ),
+    },
+    {
         "path": "scripts/check_citation_integrity.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,
@@ -334,6 +347,19 @@ REGISTRY: list[dict] = [
             "Contract matrix: each quality theme has named owner files, validators, "
             "and docs, and high-leverage repo artifacts are covered by at least one "
             "maintained invariant."
+        ),
+    },
+    {
+        "path": "scripts/pw.py",
+        "argv": ["--selftest"],
+        "layer": MAINT,
+        "enforces": (
+            "Stage -> gate map: every workspace-scoped run-time checker registered "
+            "here is reachable from at least one pipeline stage (or is explicitly "
+            "declared non-stage-scoped with a reason), the map's stage keys match "
+            "the state template's Stage 0-9 spine and the checker's own "
+            "precondition table, and Stage 9 never runs a weaker variant of a gate "
+            "than an earlier stage did."
         ),
     },
     {

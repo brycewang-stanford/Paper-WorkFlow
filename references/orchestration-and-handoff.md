@@ -115,6 +115,36 @@ mutating an old one.
 - Any fallback or unavailable probe goes into `logs/stage_<N>.md` and
   `workflow_state.json.decisions`.
 
+## schema_version 13
+
+Schema v13 keeps everything v12 shipped and adds one block,
+`workflow_state.json.ai_disclosure`: the AI-use ledger this pipeline owes the
+venue it is submitting to.
+
+This is the one gate whose absence the pipeline itself creates. Stage 5 drafts
+with an LLM, Stage 6 polishes with an LLM, and Stage 7 exists to remove the
+*stylistic fingerprint* of the LLM — so the run that most needs a disclosure is
+also the run best equipped to look like it never needed one. Fields:
+
+- `disclosure_file` → `00_meta/ai_use_disclosure.md` (from
+  [`templates/ai_use_disclosure.md`](../templates/ai_use_disclosure.md));
+- `policy_family` / `statement_placement` — which venue policy applies and where
+  the declaration goes (`elsevier` / `springer-nature` / `wiley-sage-tf` /
+  `aea-econ` / `cn-journal` / `other`);
+- `ledger_rows` / `disclosed_rows` / `unverified_rows` — the ledger's shape;
+- `blocking_findings` — B1–B8 from
+  [`ai-use-disclosure.md`](ai-use-disclosure.md) §3.
+
+Ordering, enforced by `scripts/check_ai_disclosure.py` and
+`scripts/check_workspace_gates.py`:
+
+- `stages.7_language_dehumanize = done` ⇒ the ledger file must exist, and must
+  carry a Stage-7 row. **去 AI 味不得顺手抹掉 AI 声明。**
+- `replication_pack.status = ready` and `orchestration.ethics_gate = pass` both
+  require `ai_disclosure.status = pass`; `ethics_gate` is the human-facing
+  summary and may never be greener than the mechanical gate beneath it.
+- `project.scope = submission` counts `ai_disclosure` among its required gates.
+
 ## schema_version 12
 
 Schema v12 keeps everything v11 shipped and closes four ordering holes: work that
@@ -144,7 +174,7 @@ was *documented* as happening at the right time but was never *required* to.
 |---|---|---|
 | `draft` | method_gate | 两天出一版内部讨论稿 |
 | `working-paper` | + design_risk、quality_gate | 工作论文 / 组会 / 预印本 |
-| `submission` | + integrity_audit、manuscript_numbers、replication_pack | 正式投稿（缺省） |
+| `submission` | + integrity_audit、manuscript_numbers、ai_disclosure、replication_pack | 正式投稿（缺省） |
 
 档位在 Phase 0 与交互档位一起问定；交互档位管**暂停频率**，scope 管**严格度**，两者正交。
 

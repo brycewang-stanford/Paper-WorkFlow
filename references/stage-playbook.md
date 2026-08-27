@@ -15,7 +15,7 @@
 > **必须发生在父阶段结束之前**的事。
 >
 > **严格度档位**：`project.scope` = `draft` / `working-paper` / `submission`（缺省）决定这次交付
-> 欠哪些闸门（见 [`orchestration-and-handoff.md`](orchestration-and-handoff.md) §schema_version 12）。
+> 欠哪些闸门（见 [`orchestration-and-handoff.md`](orchestration-and-handoff.md) §schema_version 13）。
 > 它与交互档位正交：交互档位管**多久停一次问人**，scope 管**完成的标准是什么**。
 > scope 只决定完成契约，**不放松**任何已声明 `pass` 的闸门的证据验证。
 >

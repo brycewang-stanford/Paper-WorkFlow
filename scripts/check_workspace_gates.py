@@ -49,8 +49,10 @@ not an inconsistent one.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -138,7 +140,7 @@ SCOPE_REQUIRED_GATES = {
     "working-paper": ["method_gate", "design_risk", "quality_gate"],
     "submission": [
         "method_gate", "design_risk", "quality_gate",
-        "integrity_audit", "manuscript_numbers", "replication_pack",
+        "integrity_audit", "manuscript_numbers", "ai_disclosure", "replication_pack",
     ],
 }
 DEFAULT_SCOPE = "submission"
@@ -182,6 +184,7 @@ STAGE_PRECONDITIONS: dict[str, list[tuple[str, str, str]]] = {
     "9": [
         ("draft quality gate passed", "gate", "quality_gate"),
         ("claim integrity audit passed", "gate", "integrity_audit"),
+        ("AI-use disclosure ledger on disk", "file", "00_meta/ai_use_disclosure.md"),
     ],
 }
 
@@ -236,6 +239,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     design_risk = state.get("design_risk", {}) if isinstance(state.get("design_risk"), dict) else {}
     design_lock = state.get("design_lock", {}) if isinstance(state.get("design_lock"), dict) else {}
     numbers = state.get("manuscript_numbers", {}) if isinstance(state.get("manuscript_numbers"), dict) else {}
+    ai_disc = state.get("ai_disclosure", {}) if isinstance(state.get("ai_disclosure"), dict) else {}
     project = state.get("project", {}) if isinstance(state.get("project"), dict) else {}
     method = state.get("method_gate", {}) if isinstance(state.get("method_gate"), dict) else {}
     quality = state.get("quality_gate", {}) if isinstance(state.get("quality_gate"), dict) else {}
@@ -347,6 +351,51 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             rep.add(WARN, "integrity_audit:coverage", "status pass/pass_with_notes but checked_claims=0")
     elif "integrity_audit" in state:
         rep.add(INFO, "integrity_audit", f"status={integrity.get('status', 'absent')}")
+
+    # --- AI-use disclosure ---------------------------------------------------
+    # The pipeline drafts, polishes and de-AIGCs with an LLM. Every venue policy
+    # in references/ai-use-disclosure.md requires that to be declared, and the one
+    # stage that could quietly erase the evidence is the same stage that removes
+    # the stylistic fingerprint. So: Stage 7 done => a disclosure ledger exists,
+    # and a declared pass has to be backed by the file it claims.
+    ai_status = _norm(ai_disc.get("status"))
+    ai_ready_for_delivery = ai_status in {"pass", "passed"}
+    ai_file = _gate_artifact(ai_disc, "disclosure_file", "00_meta/ai_use_disclosure.md")
+    if ai_status in {"pass", "passed", "pass_with_notes"}:
+        if not _exists(workspace, ai_file):
+            rep.add(FAIL, "ai_disclosure", f"status={ai_disc.get('status')} but missing {ai_file}")
+        else:
+            rep.add(OKAY, "ai_disclosure", f"{ai_disc.get('status')}, ledger present: {ai_file}")
+        blocking = ai_disc.get("blocking_findings")
+        if isinstance(blocking, list) and blocking:
+            rep.add(FAIL, "ai_disclosure:blocking",
+                    f"status={ai_disc.get('status')} but {len(blocking)} blocking finding(s) recorded")
+        rows = ai_disc.get("ledger_rows")
+        if isinstance(rows, int) and rows == 0:
+            rep.add(FAIL, "ai_disclosure:empty",
+                    "status=pass but ledger_rows=0 — an AI pipeline that recorded no AI use "
+                    "has not disclosed, it has just not written anything down")
+        if not str(ai_disc.get("policy_family") or "").strip():
+            rep.add(WARN, "ai_disclosure:policy", "status=pass but policy_family is unset")
+    elif "ai_disclosure" in state:
+        rep.add(INFO, "ai_disclosure", f"status={ai_disc.get('status', 'absent')}")
+
+    # The de-AIGC stage may not outrun its own disclosure.
+    if _norm(stages.get("7_language_dehumanize")) == "done":
+        if not _exists(workspace, ai_file):
+            rep.add(FAIL, "ai_disclosure:stage7",
+                    f"Stage 7 (de-AIGC) is done but {ai_file} does not exist — the stage that "
+                    "removes the AI accent must not also remove the AI disclosure")
+        elif ai_status in {"", "pending", "absent"}:
+            rep.add(WARN, "ai_disclosure:stage7",
+                    "Stage 7 is done but ai_disclosure.status is still pending — run "
+                    "scripts/check_ai_disclosure.py and write the verdict back")
+
+    # ethics_gate is the human-facing summary of this and the governance checks;
+    # it cannot be greener than the mechanical gate underneath it.
+    if _passed(orchestration.get("ethics_gate")) and "ai_disclosure" in state and not ai_ready_for_delivery:
+        rep.add(FAIL, "orchestration:ethics_gate",
+                f"ethics_gate=pass but ai_disclosure.status={ai_disc.get('status', 'absent')}")
 
     # --- citation existence + temporal integrity ----------------------------
     citation_log = check_citation_integrity.LOG_RELPATH
@@ -545,6 +594,8 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
             problems.append("last_rebuild_check empty")
         if "integrity_audit" in state and not integrity_ready_for_delivery:
             problems.append(f"integrity_audit.status={integrity.get('status', 'absent')} (must be pass for delivery)")
+        if "ai_disclosure" in state and not ai_ready_for_delivery:
+            problems.append(f"ai_disclosure.status={ai_disc.get('status', 'absent')} (must be pass for delivery)")
         citation_final_errors = check_citation_integrity.validate_workspace(workspace, final=True)
         if citation_final_errors:
             problems.append(
@@ -715,6 +766,7 @@ def _selftest() -> int:
             "00_meta/quality_scorecard.md",
             "00_meta/evidence_ledger.md",
             "00_meta/claim_integrity_audit.md",
+            "00_meta/ai_use_disclosure.md",
             "03_analysis/design_risk_ledger.md",
             "REPLICATION.md",
             "run_all.sh",
@@ -761,6 +813,15 @@ def _selftest() -> int:
                 "missing_artifacts": [],
             },
             "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
+            "ai_disclosure": {
+                "status": "pass",
+                "disclosure_file": "00_meta/ai_use_disclosure.md",
+                "policy_family": "elsevier",
+                "ledger_rows": 5,
+                "disclosed_rows": 5,
+                "unverified_rows": 0,
+                "blocking_findings": [],
+            },
             "replication_pack": {
                 "status": "ready", "readme": "REPLICATION.md",
                 "master_script": "run_all.sh", "last_rebuild_check": "rebuilt 2026-06-21",
@@ -768,6 +829,53 @@ def _selftest() -> int:
         })
         rep = run(good, reconcile=False)
         assert not rep.failures, f"good workspace should pass, got: {rep.failures}"
+
+        # --- AI-use disclosure: the stage that hides the accent cannot hide the
+        # --- disclosure, and no downstream gate may outrun it -----------------
+        good_state = json.loads((good / "00_meta" / "workflow_state.json").read_text())
+
+        def _ai_case(name: str, mutate) -> set[str]:
+            ws = root / name
+            shutil.copytree(good, ws)
+            st = copy.deepcopy(good_state)
+            mutate(ws, st)
+            write_state(ws, st)
+            return {chk for lvl, chk, _ in run(ws, reconcile=False).rows if lvl == FAIL}
+
+        def _drop_ledger(ws, st):
+            (ws / "00_meta" / "ai_use_disclosure.md").unlink()
+            st["stages"]["7_language_dehumanize"] = "done"
+            st["ai_disclosure"]["status"] = "pending"
+        hit = _ai_case("ai_stage7_no_ledger", _drop_ledger)
+        assert "ai_disclosure:stage7" in hit, hit
+
+        def _pass_without_file(ws, st):
+            (ws / "00_meta" / "ai_use_disclosure.md").unlink()
+        assert "ai_disclosure" in _ai_case("ai_pass_no_file", _pass_without_file)
+
+        def _pass_with_blocking(ws, st):
+            st["ai_disclosure"]["blocking_findings"] = ["B4 stage 7 undisclosed"]
+        assert "ai_disclosure:blocking" in _ai_case("ai_blocking", _pass_with_blocking)
+
+        def _pass_empty_ledger(ws, st):
+            st["ai_disclosure"]["ledger_rows"] = 0
+        assert "ai_disclosure:empty" in _ai_case("ai_empty", _pass_empty_ledger)
+
+        def _delivery_without_disclosure(ws, st):
+            st["ai_disclosure"]["status"] = "not_pass"
+        hit = _ai_case("ai_delivery", _delivery_without_disclosure)
+        assert "replication_pack" in hit, hit
+
+        def _ethics_ahead(ws, st):
+            st["ai_disclosure"]["status"] = "not_pass"
+            st["orchestration"]["ethics_gate"] = "pass"
+        assert "orchestration:ethics_gate" in _ai_case("ai_ethics", _ethics_ahead)
+
+        # a run that never declared the block at all is not penalised
+        def _absent(ws, st):
+            st.pop("ai_disclosure")
+            st["replication_pack"]["status"] = "ready"
+        assert not _ai_case("ai_absent", _absent), "absent ai_disclosure must stay backward-compatible"
 
         # --- bad workspace A: method gate claims pass without evidence -------
         bad_a = root / "bad_a"

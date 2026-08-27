@@ -29,6 +29,7 @@ TEMPLATE_OUTPUTS = {
     "templates/method_gate.md": "03_analysis/method_gate.md",
     "templates/evidence_ledger.md": "00_meta/evidence_ledger.md",
     "templates/claim_integrity_audit.md": "00_meta/claim_integrity_audit.md",
+    "templates/ai_use_disclosure.md": "00_meta/ai_use_disclosure.md",
     "templates/quality_scorecard.md": "00_meta/quality_scorecard.md",
     "templates/REPLICATION.md": "REPLICATION.md",
     "templates/FINAL_REPORT.md": "FINAL_REPORT.md",
@@ -53,6 +54,7 @@ ARTIFACTS = {
     "method_gate": "03_analysis/method_gate.md",
     "evidence_ledger": "00_meta/evidence_ledger.md",
     "claim_integrity_audit": "00_meta/claim_integrity_audit.md",
+    "ai_use_disclosure": "00_meta/ai_use_disclosure.md",
     "quality_scorecard": "00_meta/quality_scorecard.md",
     "replication_readme": "REPLICATION.md",
     "final_report": "FINAL_REPORT.md",
@@ -192,6 +194,19 @@ def build_workspace(tmp_root: Path) -> Path:
             "last_audit": "smoke fixture only; no real claims audited",
         }
     )
+    state["ai_disclosure"].update(
+        {
+            "status": "pending",
+            "disclosure_file": "00_meta/ai_use_disclosure.md",
+            "policy_family": "",
+            "statement_placement": "",
+            "ledger_rows": 0,
+            "disclosed_rows": 0,
+            "unverified_rows": 0,
+            "blocking_findings": [],
+            "last_audit": "smoke fixture only; no AI use recorded",
+        }
+    )
     state["design_risk"].update(
         {
             "status": "pending",
@@ -228,8 +243,8 @@ def build_workspace(tmp_root: Path) -> Path:
 
 def check_workspace(workspace: Path) -> None:
     state = load_json(workspace / "00_meta" / "workflow_state.json")
-    if state.get("schema_version") != 12:
-        fail("smoke state schema_version must remain 12")
+    if state.get("schema_version") != 13:
+        fail("smoke state schema_version must remain 13")
     if state["project"]["mode"] != "auto":
         fail("smoke state project fields were not populated")
     if state["analysis_backend"]["primary"] != "python-statspai":
@@ -252,6 +267,8 @@ def check_workspace(workspace: Path) -> None:
         fail("smoke state integrity audit was not populated")
     if state["design_risk"]["risk_ledger"] != "03_analysis/design_risk_ledger.md":
         fail("smoke state design risk was not populated")
+    if state["ai_disclosure"]["disclosure_file"] != "00_meta/ai_use_disclosure.md":
+        fail("smoke state AI-use disclosure was not populated")
     for name, rel in ARTIFACTS.items():
         path = workspace / rel
         if not path.exists():
@@ -293,6 +310,10 @@ def check_workspace(workspace: Path) -> None:
     for marker in ["Claim Integrity Audit", "Audit Scope", "Claim Locator Manifest", "Verdict Taxonomy"]:
         if marker not in claim_integrity:
             fail(f"claim integrity audit template missing marker: {marker}")
+    ai_disclosure = (workspace / "00_meta" / "ai_use_disclosure.md").read_text(encoding="utf-8")
+    for marker in ["Venue Policy", "AI-Use Ledger", "Prohibited-Use Screen", "Rendered Statement"]:
+        if marker not in ai_disclosure:
+            fail(f"AI-use disclosure template missing marker: {marker}")
     passport = (workspace / "00_meta" / "stage_passport.md").read_text(encoding="utf-8")
     for marker in ["Stage Passport", "Fresh Evidence", "Revision Budget"]:
         if marker not in passport:

@@ -3,7 +3,7 @@
   "design_gate_contract": "evals/design_gate_contract.json",
   "checker": "scripts/check_method_gate_card.py",
   "require_all_design_cards": true,
-  "minimum_case_count": 12,
+  "minimum_case_count": 14,
   "cases": [
     {
       "id": "did_staggered_without_modern_estimator",
@@ -136,6 +136,28 @@
       "bad_claim_consequence": "descriptive",
       "hard_flag": "Inference level, weights, or clustering",
       "expected_error": "门槛值显著性检验"
+    },
+    {
+      "id": "rct_no_baseline_balance_table",
+      "design_card_id": "rct_field_experiment",
+      "method_gate_label": "RCT",
+      "gate_item": "Baseline balance table",
+      "bad_present": "no",
+      "bad_pass": "no",
+      "bad_claim_consequence": "descriptive",
+      "hard_flag": "Missingness, balance, or overlap",
+      "expected_error": "Baseline balance table"
+    },
+    {
+      "id": "survey_experiment_post_hoc_exclusions",
+      "design_card_id": "survey_experiment_conjoint",
+      "method_gate_label": "Survey Experiment",
+      "gate_item": "注意力/操纵检查",
+      "bad_present": "yes",
+      "bad_pass": "no",
+      "bad_claim_consequence": "descriptive",
+      "hard_flag": "Specification search / researcher degrees of freedom",
+      "expected_error": "注意力/操纵检查"
     }
   ]
 }

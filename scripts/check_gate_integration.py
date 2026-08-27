@@ -88,7 +88,7 @@ def _write_final_citation_log(workspace: Path) -> None:
 def _passing_state() -> dict:
     """A state where every gate is legitimately PASS / ready, backed by files we write."""
     return {
-        "schema_version": 12,
+        "schema_version": 13,
         "project": {"short_name": "integ_project", "mode": "auto"},
         "stages": {f"{i}_x": "done" for i in range(10)},
         "artifacts": {},
@@ -133,6 +133,11 @@ def _passing_state() -> dict:
         "method_gate": {"status": "pass", "design_register": "03_analysis/design_register.md",
                         "method_gate_report": "03_analysis/method_gate.md", "missing_artifacts": [],
                         "primary_design": "staggered_did", "primary_estimator": "Callaway-Santanna"},
+        "ai_disclosure": {"status": "pass", "disclosure_file": "00_meta/ai_use_disclosure.md",
+                          "policy_family": "elsevier",
+                          "statement_placement": "titled section before the reference list",
+                          "ledger_rows": 5, "disclosed_rows": 5, "unverified_rows": 0,
+                          "blocking_findings": [], "last_audit": "integ"},
         "quality_gate": {"status": "pass", "scorecard": "00_meta/quality_scorecard.md"},
         "replication_pack": {"status": "ready", "readme": "REPLICATION.md", "master_script": "run_all.sh",
                              "data_availability_statement": "09_submission/DAS.md", "archive_plan": "Zenodo",
@@ -225,6 +230,31 @@ def run_integration(workspace: Path) -> None:
     if "replication_pack" not in _gate_failures(workspace):
         fail("replication_pack=ready with a non-final citation log was NOT caught")
     citation.write_text(citation_saved, encoding="utf-8")
+
+    # 3e: Stage 7 done but the AI-use ledger deleted -> ai_disclosure:stage7
+    state_path.write_text(saved, encoding="utf-8")
+    disclosure = workspace / "00_meta" / "ai_use_disclosure.md"
+    disclosure_saved = disclosure.read_text(encoding="utf-8")
+    disclosure.unlink()
+    st = json.loads(saved)
+    st["stages"]["7_language_dehumanize"] = "done"
+    state_path.write_text(json.dumps(st), encoding="utf-8")
+    hits = _gate_failures(workspace)
+    if "ai_disclosure:stage7" not in hits:
+        fail("Stage 7 done with the AI-use ledger deleted was NOT caught")
+    if "ai_disclosure" not in hits:
+        fail("ai_disclosure=pass with its ledger deleted was NOT caught")
+    disclosure.write_text(disclosure_saved, encoding="utf-8")
+
+    # 3f: delivery cannot outrun the disclosure gate -> replication_pack
+    st = json.loads(saved)
+    st["ai_disclosure"]["status"] = "not_pass"
+    state_path.write_text(json.dumps(st), encoding="utf-8")
+    hits = _gate_failures(workspace)
+    if "replication_pack" not in hits:
+        fail("replication_pack=ready while ai_disclosure=not_pass was NOT caught")
+    if "orchestration:ethics_gate" not in hits:
+        fail("ethics_gate=pass while ai_disclosure=not_pass was NOT caught")
 
     state_path.write_text(saved, encoding="utf-8")  # restore clean PASS
     if _gate_failures(workspace):

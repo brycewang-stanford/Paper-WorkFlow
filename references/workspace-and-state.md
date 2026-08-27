@@ -39,6 +39,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 │   ├── evidence_ledger.md         # ★estimand→claim→data→estimate→exhibit→script 总账
 │   ├── claim_integrity_audit.md   # ★claim/citation/number 忠实度审计
 │   ├── citation_integrity_log.md  # ★引用存在性 + 时序完整性（claim-audit 的互补半）
+│   ├── ai_use_disclosure.md       # ★生成式 AI 使用台账 + 期刊声明（Stage 7 不得抹掉）
 │   ├── preregistration.md         # ★Stage 2.5 设计锁：主设定在见到结果之前锁死
 │   ├── repro_environment.md       # ★Stage 3 冻结的环境记录（不是收尾才补）
 │   └── intake.md                  # 入口判定、交互档位、严格度档位、目标期刊、语言
@@ -112,7 +113,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `12`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`，v12 新增 `literature_base` / `design_lock` / `manuscript_numbers` / `project.scope` / 回退上限 / 复现包冻结） |
+| `schema_version` | 模板版本号（当前 `13`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`，v12 新增 `literature_base` / `design_lock` / `manuscript_numbers` / `project.scope` / 回退上限 / 复现包冻结，v13 新增 `ai_disclosure`） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -196,6 +197,13 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `integrity_audit.blocking_findings` | 仍阻断质量门或投稿包的 claim 忠实度问题列表 |
 | `integrity_audit.last_audit` | 最近一次 claim integrity 审计时间/摘要 |
 | `00_meta/citation_integrity_log.md` | 引用存在性与时序完整性的 artifact-state（不新增顶层 state block）；`check_workspace_gates.py` 在质量门前跑 pre-final 校验，在 replication ready 前跑 `--final` 校验 |
+| `ai_disclosure.status` | `pending` / `pass` / `not_pass`——生成式 AI 使用声明闸门；`submission` scope 必过，`replication_pack.status=ready` 与 `orchestration.ethics_gate=pass` 均以其为前置 |
+| `ai_disclosure.disclosure_file` | AI 使用台账路径（默认 `00_meta/ai_use_disclosure.md`） |
+| `ai_disclosure.policy_family` | `elsevier` / `springer-nature` / `wiley-sage-tf` / `aea-econ` / `cn-journal` / `other`——目标venue 的 AI 政策族 |
+| `ai_disclosure.statement_placement` | 声明落在稿件何处（如「参考文献前的独立小节」/ Methods / 致谢） |
+| `ai_disclosure.ledger_rows` / `disclosed_rows` / `unverified_rows` | 台账行数 / 需声明行数 / 未经人工核验行数 |
+| `ai_disclosure.blocking_findings` | 仍阻断投稿的 B1–B8 违规（见 [`ai-use-disclosure.md`](ai-use-disclosure.md) §3） |
+| `ai_disclosure.last_audit` | 最近一次 `scripts/check_ai_disclosure.py` 运行时间/摘要 |
 | `design_risk.status` | `pending` / `pass` / `not_pass`——识别威胁、选择性报告、外部效度、SUTVA/attrition 风险总账是否关闭 |
 | `design_risk.risk_ledger` | 设计风险总账路径（默认 `03_analysis/design_risk_ledger.md`） |
 | `design_risk.threats_reviewed` | 已审计的威胁清单，如 `["parallel_trends", "bad_controls", "external_validity"]` |

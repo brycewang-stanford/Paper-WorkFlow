@@ -1,17 +1,13 @@
 {
-  "recorded": "2026-07-21",
-  "note": "Section A of feat/week-polish-2026-07 polish: origin/main landed a SKILL.md consolidation (32230 -> 31966 bytes) so the always-loaded layer is now under the 32000-byte aspirational target. This branch adds scripts/check_compactness.py (orphan-reference detector, advisory only) and the policy block to make the ratchet enforceable. See docs/superpowers/specs/2026-07-21-paper-workflow-polish-design.md.",
-  "policy": {
-    "skill_md_growth": "no-growth-this-wave",
-    "rationale": "SkillOpt compactness half -- do not let the always-loaded layer drift upward. Bump the ceiling only via --update-baseline with a written justification."
-  },
+  "recorded": "2026-08-27",
+  "note": "2026-08 wave: adds the AI-use disclosure contract (references/ai-use-disclosure.md, +1 reference file) — the one gap this pipeline creates for itself, since Stage 7 removes the AI accent and nothing forced it to leave the AI disclosure behind. Paid for on the always-loaded layer: SKILL.md was consolidated from 32244 to under the 32000-byte target in the same wave (double-gate blockquote, Method Gate items 0/3/5/7/8, quality-gate rollback map, claim-integrity paragraph, and the demo-materials footer all deduplicated against the references that own them), so the reference count is the only ceiling that moved.",
   "ceiling": {
-    "skill_md_bytes": 31966,
-    "skill_md_tokens_est": 7992,
-    "reference_count": 32,
-    "reference_bytes": 511215,
-    "template_count": 25,
-    "template_bytes": 68963
+    "skill_md_bytes": 31931,
+    "skill_md_tokens_est": 7983,
+    "reference_count": 33,
+    "reference_bytes": 598946,
+    "template_count": 26,
+    "template_bytes": 74067
   },
   "targets": {
     "skill_md_bytes": 32000

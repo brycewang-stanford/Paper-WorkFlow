@@ -22,6 +22,7 @@ pipeline_status_template="$script_dir/../templates/pipeline_status.md"
 claim_integrity_template="$script_dir/../templates/claim_integrity_audit.md"
 citation_integrity_template="$script_dir/../templates/citation_integrity_log.md"
 data_governance_template="$script_dir/../templates/data_governance.md"
+ai_disclosure_template="$script_dir/../templates/ai_use_disclosure.md"
 
 if [[ -e "$workspace" ]]; then
   echo "refusing to overwrite existing path: $workspace" >&2
@@ -43,6 +44,7 @@ cp "$pipeline_status_template" "$workspace/00_meta/pipeline_status.md"
 cp "$claim_integrity_template" "$workspace/00_meta/claim_integrity_audit.md"
 cp "$citation_integrity_template" "$workspace/00_meta/citation_integrity_log.md"
 cp "$data_governance_template" "$workspace/00_meta/data_governance.md"
+cp "$ai_disclosure_template" "$workspace/00_meta/ai_use_disclosure.md"
 printf '# Paper workflow workspace\n\nCreated for staged empirical-paper orchestration.\n' > "$workspace/README.md"
 cat > "$workspace/00_meta/intake.md" <<'EOF'
 # Intake
@@ -62,5 +64,6 @@ cat > "$workspace/00_meta/intake.md" <<'EOF'
 - Data governance register: 00_meta/data_governance.md
 - Claim integrity audit: 00_meta/claim_integrity_audit.md
 - Citation integrity log: 00_meta/citation_integrity_log.md
+- AI-use disclosure ledger: 00_meta/ai_use_disclosure.md
 - Notes:
 EOF

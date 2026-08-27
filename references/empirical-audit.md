@@ -75,7 +75,7 @@ Method Gate 必须把 `sample_audit.md` 作为必需 artifact。以下情况直�
 
 ### 2b. 行为反模式 → 直接 NOT PASS（数据/样本层拦截）
 
-[`design-gate-cards.md`](design-gate-cards.md) §10 的跨设计行为护栏里，有三条本质是**数据操作错误**，
+[`design-gate-cards.md`](design-gate-cards.md) §15 的跨设计行为护栏里，有三条本质是**数据操作错误**，
 必须在样本审计这一层就拦掉，不能等到方法闸门——它们一旦发生，进估计器的样本本身就已被污染：
 
 - **G1 在因果估计样本上做 train/test split**：把估计样本切成训练/测试来"验证"因果系数是类别错误。
@@ -89,7 +89,7 @@ Method Gate 必须把 `sample_audit.md` 作为必需 artifact。以下情况直�
 
 命中以上任意一条，在 `sample_audit.md` 的 Inference-Level Check 段记下反模式 ID、证据路径与处置
 （删除 / 改写 estimand / claim 降级），并把 `blocking_issues` 写进 `workflow_state.json.empirical_audit`。
-其余护栏（G2/G4/G6–G10）在方法闸门层处理，见 design-gate-cards §10 的强制联动。
+其余护栏（G2/G4/G6–G10）在方法闸门层处理，见 design-gate-cards §15 的强制联动。
 
 ---
 

@@ -45,7 +45,11 @@
     "scripts/check_manuscript_numbers.py",
     "scripts/check_preregistration.py",
     "templates/preregistration.md",
-    "templates/repro_environment.md"
+    "templates/repro_environment.md",
+    "scripts/check_ai_disclosure.py",
+    "templates/ai_use_disclosure.md",
+    "references/ai-use-disclosure.md",
+    "scripts/pw.py"
   ],
   "contracts": [
     {
@@ -336,22 +340,50 @@
     {
       "id": "stage_preconditions_and_scope",
       "theme": "workflow_contract_state",
-      "invariant": "Each stage checks its entry requirements before doing the work (check_workspace_gates.py --preconditions), rollback is bounded by revision_rounds_cap and method_gate_rounds_cap with an explicit budget_exhausted_action, and project.scope (draft / working-paper / submission) fixes which gates a finished run owes without ever relaxing verification of a gate it claims to have passed.",
+      "invariant": "Each stage checks its entry requirements before doing the work (check_workspace_gates.py --preconditions), rollback is bounded by revision_rounds_cap and method_gate_rounds_cap with an explicit budget_exhausted_action, and project.scope (draft / working-paper / submission) fixes which gates a finished run owes without ever relaxing verification of a gate it claims to have passed. The stage -> gate map in scripts/pw.py is the single front door for both entry preconditions and exit gates, and no workspace-scoped run-time checker may be registered without being reachable from a stage.",
       "owner_files": [
         "scripts/check_workspace_gates.py",
         "assets/workflow_state.template.json",
         "references/stage-playbook.md",
-        "references/orchestration-and-handoff.md"
+        "references/orchestration-and-handoff.md",
+        "scripts/pw.py"
       ],
       "validators": [
         "scripts/check_workspace_gates.py",
         "scripts/check_cross_references.py",
-        "validate_skill.py"
+        "validate_skill.py",
+        "scripts/pw.py"
       ],
       "docs": [
         "references/orchestration-and-handoff.md",
         "references/workspace-and-state.md",
         "references/quality-rubric.md"
+      ]
+    },
+    {
+      "id": "ai_use_disclosure",
+      "theme": "workflow_contract_state",
+      "invariant": "Substantive generative-AI assistance is recorded per stage in 00_meta/ai_use_disclosure.md and rendered into the venue-shaped declaration: an AI system is never an author, AI-generated data or result images are refused as fabrication, AI-written code and AI-screened literature cannot ship unverified, every disclosed category appears in the statement, and Stage 7 -- the stage that removes the AI accent -- cannot complete without its own disclosure row. ai_disclosure.status=pass gates orchestration.ethics_gate, replication_pack readiness, and the submission scope.",
+      "owner_files": [
+        "scripts/check_ai_disclosure.py",
+        "scripts/check_workspace_gates.py",
+        "templates/ai_use_disclosure.md",
+        "assets/workflow_state.template.json",
+        "assets/init_workspace.sh"
+      ],
+      "validators": [
+        "scripts/check_ai_disclosure.py",
+        "scripts/check_workspace_gates.py",
+        "scripts/check_gate_integration.py",
+        "scripts/smoke_workspace.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/ai-use-disclosure.md",
+        "references/orchestration-and-handoff.md",
+        "references/workspace-and-state.md",
+        "SKILL.md",
+        "RIGOR.md"
       ]
     }
   ]
