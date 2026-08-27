@@ -583,8 +583,23 @@ Moreover 链）；(2) 术语准确性是否被破坏；(3) **数字/系数/引�
 与 48 产出的 **change log**（改了哪些节 / 触发了哪些规则号 / 哪些地方刻意不动）写入 `logs/stage_7.md`，
 供 Draft Quality Gate 的 critic 复核。
 
+**AI 使用声明（本阶段的第二个硬产物，与降味稿同等级）**：Stage 7 是全流程唯一一个**目的就是
+让 AI 痕迹不可见**的阶段。所以它必须在离开之前把自己写进 `00_meta/ai_use_disclosure.md`——
+追加一行 `| 7 | text | <工具+版本> | 重写第 1–6 节以提升可读性 | read-and-edited | <担责人> | yes |`；
+若同时做了中英互译或中文摘要，另起一行 `translation`。然后跑：
+
+```bash
+python3 scripts/check_ai_disclosure.py <workspace>
+```
+
+`stages.7_language_dehumanize=done` 而台账缺失或没有 Stage 7 行 = **硬违规**（B4），
+质量门与投稿包都不得 ready。契约、期刊政策族与 B1–B8 全部规则见
+[`ai-use-disclosure.md`](ai-use-disclosure.md)。
+
 > **学术诚信**：本阶段只把「作者自己的稿 + AI 辅助起草再经人工修订的稿」拉回研究者的语言分布，
 > 不为「整篇 AI 生成、作者没读过」的稿件做检测规避。稿件内容的责任始终在作者。
+> **降味 ≠ 隐瞒**：让稿子读起来像人写的，和向期刊如实声明用了什么工具，是两件**同时**要做的事——
+> 前者是可读性工程，后者是出版伦理，任何一方都不能拿来替代另一方。
 
 ---
 
@@ -699,7 +714,18 @@ python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证�
 - **引用/时序终审闸门**：跑 `python3 scripts/check_citation_integrity.py <workspace> --final` —— 不得残留
   `to-verify`、不得有未处置 `flagged`、撤稿筛查通过、§2 时序无未排除的 `risk`；不过则投稿包不得标 ready
   （见 [`citation-and-temporal-integrity.md`](citation-and-temporal-integrity.md) §4）。
-- 生成 cover letter / highlights / 作者贡献声明等投稿材料到 `09_submission/`。
+- **AI 使用声明终审闸门**：
+
+  ```bash
+  python3 scripts/check_ai_disclosure.py <workspace> --final
+  ```
+
+  `--final` 要求 `policy_family` 已按目标刊定死、`statement_placement` 写清（Elsevier 是**参考文献前
+  的独立小节**、Springer Nature 走 Methods、中文期刊走致谢/附录，全表见
+  [`ai-use-disclosure.md`](ai-use-disclosure.md) §1）、`§4 Rendered Statement` 不再是占位符且含
+  「作者已审阅并承担责任」条款、每条声明行都写了**具体的人**而不是 agent id。未过则投稿包不得标 ready。
+- 生成 cover letter / highlights / 作者贡献声明等投稿材料到 `09_submission/`。**AI 使用声明按
+  `statement_placement` 落进稿件本体**（不是只留在 `00_meta/`）——审稿人看不到工作区。
 - 从 `templates/submission_checklist.md` 生成 `09_submission/submission_checklist.md`，并按目标刊官网实时刷新：
   author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
   若政策页无法访问，按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 标 blocked，投稿包不得标 ready。
@@ -730,7 +756,7 @@ python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证�
   跑通，**不能因脚本报错就跳过答辩 PPT**——这是本硕博毕业流程的硬交付物。
 
 **review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明、
-IRB/DUA 与公开复现包边界）；若调用 AJS，同时核对 `adapter_report.md`，按「官网 > AJS > 通用建议」解决冲突。
+**生成式 AI 使用声明**、IRB/DUA 与公开复现包边界）；若调用 AJS，同时核对 `adapter_report.md`，按「官网 > AJS > 通用建议」解决冲突。
 
 **revise / 交付**：定稿投稿包到 `09_submission/`。
 

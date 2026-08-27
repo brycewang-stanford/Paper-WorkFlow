@@ -186,6 +186,7 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 | Claim 证据治理 | manuscript claim 是否有 estimand、结果、稳健性、表图和脚本支撑；措辞是否超过设计卡允许等级 | Stage 3→9 · 方法闸门/质量门/投稿终审 | [`design-gate-cards.md`](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Claim 忠实度审计 | 稿件里的数字、引用、因果措辞和 forbidden wording 是否忠实于 evidence ledger、源文献和项目估计 | Stage 7→8 / Stage 9 · 质量门/投稿终审 | [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) + `00_meta/claim_integrity_audit.md` |
 | 引用与时序完整性 | 引用是否真实、引对、未撤稿，数据和文献叙述是否存在 look-ahead / vintage / 样本期外推风险 | Stage 1/2/5/9 · 质量门/投稿终审 | [`citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md) + `00_meta/citation_integrity_log.md` |
+| AI 使用声明 | 生成式 AI 用在了哪些环节、谁核验的、谁担责；按目标刊政策族渲染声明，AI 永不署名，AI 生成数据/结果图直接拦死 | Stage 0→9 · 投稿终审 | [`ai-use-disclosure.md`](references/ai-use-disclosure.md) + `00_meta/ai_use_disclosure.md` |
 | 学者写作标准 | 引言五段公式、贡献锋利度、经济量级解读、目标期刊房风 | Stage 1/5/6 · 质量门 ①④⑤ | [`writing-craft.md`](references/writing-craft.md) |
 | 复现打包标准 | data provenance、复现包 README、数据可得性声明、一键重跑 | Stage 2→收尾 · 质量门 ⑦ | [`reproducibility-pack.md`](references/reproducibility-pack.md) |
 | 评审与投稿标准 | 模拟评审深度、逐条 response letter、选刊决策序、cover letter | Stage 8/9 | [`peer-review-and-submission.md`](references/peer-review-and-submission.md) |
@@ -197,7 +198,7 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 | 深化层 | 把哪一刀前置成作者自检 | 配合标准 |
 |---|---|---|
 | [识别威胁与审稿异议](references/threats-to-validity.md) | 坏控制 · 预趋势功效 · 弱工具 · 溢出…逐条「威胁 → 诊断 → 预防 → 回应」 | 方法证据 |
-| [设计分支证据卡](references/design-gate-cards.md) | DiD/IV/RDD/SC-SDID/Panel FE/DML-HTE 等逐卡列 required artifact、hard fail 与 claim 降级 | 方法证据 + Claim 治理 |
+| [设计分支证据卡](references/design-gate-cards.md) | DiD/IV/RDD/SC-SDID/Panel FE/DML-HTE/RCT/调查实验 等 14 张卡逐卡列 required artifact、hard fail 与 claim 降级 | 方法证据 + Claim 治理 |
 | [设计透明度与预分析](references/design-transparency.md) | 预分析计划 · 空结果报 MDE · 预趋势功效 + HonestDiD · 设定曲线 · 研究者自由度 | 方法 + 复现 |
 | [文献检索与贡献定位](references/literature-and-positioning.md) | 滚雪球 + 引用图找全文献 · 文献矩阵看 whitespace · 定位句式钉贡献 | 写作 |
 
@@ -220,6 +221,7 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 | [Claim evidence ledger](templates/evidence_ledger.md) | 摘要/引言/结果/cover letter 的 claim 没有对应数据、估计、表图、脚本或措辞越界 | `00_meta/evidence_ledger.md`、`workflow_state.json.evidence_governance` |
 | [Claim integrity audit](templates/claim_integrity_audit.md) | 引用存在但 claim 不忠实、数字漂移、因果措辞超过证据强度 | `00_meta/claim_integrity_audit.md`、`workflow_state.json.integrity_audit` |
 | [Citation integrity log](templates/citation_integrity_log.md) | 幻觉引用、撤稿/版本错配、look-ahead 或 vintage 时序穿越没有在终审前清零 | `00_meta/citation_integrity_log.md`、`scripts/check_citation_integrity.py --final` |
+| [AI 使用声明台账](templates/ai_use_disclosure.md) | 用 AI 起草/打磨/去味跑完全程，却没有一行可交给期刊的使用声明——Stage 7 的职责恰恰是让 AI 痕迹消失 | `00_meta/ai_use_disclosure.md`、`scripts/check_ai_disclosure.py --final` |
 | [SkillOpt-style 改进包](templates/SKILLOPT_PACKET.md) | 维护本 skill 时只凭训练样例或单次失败就大改说明文档 | `templates/SKILLOPT_PACKET.md`、`scripts/check_skillopt_packet.py` |
 | [可复用 artifact 模板](templates/) | 每次临场自创 sample audit、design register、method gate、scorecard、REPLICATION、FINAL_REPORT | `templates/*.md`、`templates/run_all.sh` |
 
@@ -575,12 +577,27 @@ Paper-WorkFlow/
 供 demo notebook 执行闸门使用；其余检查器只依赖标准库）：
 
 ```bash
-python3 validate_skill.py
+python3 validate_skill.py                      # 全量维护闸门（37 个 checker 的 selftest）
 python3 scripts/smoke_workspace.py
 python3 scripts/check_skillopt_packet.py --selftest
 ```
 
-它会检查本地 Markdown 链接、`workflow_state` schema、Stage 0 route/passport/pipeline-status/handoff 模板、claim integrity 与 data-governance 模板、`init_workspace.sh` 的拒绝覆盖行为、核心资产、模板契约、设计分支证据卡 contract、9 类设计的 Method Gate 方法特定失败 fixture、Method Gate Design Gate Card 运行期自测、runtime fallback 日志/decision/闸门诚实性、三后端 backend parity fixture、最小工作区 smoke fixture、Stage 0–9 完整场景 fixture、filled FINAL_REPORT 交付包与反例场景、DiD Notebook 结构与临时执行、复现脚手架、中英文 README parity、FINAL_REPORT 交付证据 contract、月度质量 worklog、RIGOR registry 覆盖，以及 SkillOpt-style 改进包 checker 的自测。若本次维护有实际改进包，再跑 `python3 scripts/check_skillopt_packet.py <packet>`。母仓库发布前再从仓库根目录跑：
+跑一篇论文时，**运行期**闸门统一走阶段感知入口 `scripts/pw.py`——哪个阶段欠哪些
+checker、带什么参数，由脚本里的 stage→gate 表定死，不靠记忆挑：
+
+```bash
+python3 scripts/pw.py plan 7                   # Stage 7 欠哪些闸门（只看不跑）
+python3 scripts/pw.py enter 3 <workspace>      # Stage 3 能不能开工（前置条件）
+python3 scripts/pw.py exit  3 <workspace>      # Stage 3 算不算做完（出口闸门）
+python3 scripts/pw.py check <workspace>        # 到当前阶段为止欠的全部
+python3 scripts/pw.py final <workspace>        # 投稿终审（Stage 9 严格档）
+python3 scripts/pw.py list                     # 完整 stage→gate 映射
+```
+
+底层仍是单点 checker，随时可以单独调；`pw.py --selftest` 反过来保证**没有任何运行期
+checker 挂在流程之外**——新加的闸门如果没有被任何阶段跑到，维护闸门直接失败。
+
+它会检查本地 Markdown 链接、`workflow_state` schema、Stage 0 route/passport/pipeline-status/handoff 模板、claim integrity 与 data-governance 模板、`init_workspace.sh` 的拒绝覆盖行为、核心资产、模板契约、设计分支证据卡 contract、14 类设计的 Method Gate 方法特定失败 fixture、Method Gate Design Gate Card 运行期自测、runtime fallback 日志/decision/闸门诚实性、三后端 backend parity fixture、最小工作区 smoke fixture、Stage 0–9 完整场景 fixture、filled FINAL_REPORT 交付包与反例场景、DiD Notebook 结构与临时执行、复现脚手架、中英文 README parity、FINAL_REPORT 交付证据 contract、月度质量 worklog、RIGOR registry 覆盖，以及 SkillOpt-style 改进包 checker 的自测。若本次维护有实际改进包，再跑 `python3 scripts/check_skillopt_packet.py <packet>`。母仓库发布前再从仓库根目录跑：
 
 ```bash
 make catalog

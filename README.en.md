@@ -154,7 +154,7 @@ Cross-cutting tools include `web-research` / `arxiv` for literature, `stata` / `
 | Evidence | Data, sample/estimand audit, identification design, analysis backend, estimation, robustness, method evidence, claim governance | `analysis_backend.md`, `sample_audit.md`, `design_register.md`, `method_gate.md`, `evidence_ledger.md`, `main_results.json`, `robustness/` |
 | Manuscript | Exhibits, draft, polish, de-slop, claim/citation integrity audit, simulated review, submission materials | `main.tex`, `quality_scorecard.md`, `claim_integrity_audit.md`, `response_letter.md`, `journal_shortlist.md` |
 
-The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules. [design-gate-cards.md](references/design-gate-cards.md) converts those requirements into reviewer-facing gate cards with required artifacts, hard fails, and claim-downgrade rules.
+The method layer is governed by [research-grade-methods.md](references/research-grade-methods.md). It turns modern applied econometrics and causal-inference expectations into stage-level evidence requirements: staggered DiD, RDD, Synthetic DiD, DML, EconML/DoubleML, GRF, DoWhy refuters, PyFixest, and replication-policy checks all have explicit artifacts and fallback rules. [design-gate-cards.md](references/design-gate-cards.md) converts those requirements into 14 reviewer-facing gate cards -- including randomised designs (RCT / field experiment) and survey experiments / conjoint -- each with required artifacts, hard fails, and claim-downgrade rules.
 
 [empirical-audit.md](references/empirical-audit.md) makes the Stage 2-3 sample contract explicit: raw-to-clean-to-estimation sample attrition, treated/control counts, treatment timing, missingness/balance/overlap, and cluster/weight choices must be recorded in `sample_audit.md` before the Method Gate can pass.
 
@@ -187,6 +187,7 @@ Finishing stages is not enough. The workflow enforces explicit standards that re
 | Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Claim integrity audit | Whether numbers, citations, causal wording, and forbidden wording in the manuscript are faithful to the evidence ledger, source text, and project estimates | Stage 7-8 / Stage 9 Quality Gate / final submission check | [integrity-and-claim-audit.md](references/integrity-and-claim-audit.md) + `00_meta/claim_integrity_audit.md` |
 | Citation and temporal integrity | Whether citations exist, match the intended source/version, avoid retracted results, and avoid look-ahead, vintage, or sample-period overreach | Stages 1/2/5/9 Quality Gate / final submission check | [citation-and-temporal-integrity.md](references/citation-and-temporal-integrity.md) + `00_meta/citation_integrity_log.md` |
+| Generative-AI use disclosure | Which stages used an AI system, how a human verified each output, and who is answerable; rendered into the target venue's required declaration. An AI is never an author, and AI-generated data or result images are refused as fabrication | Stage 0-9, final submission check | [ai-use-disclosure.md](references/ai-use-disclosure.md) + `00_meta/ai_use_disclosure.md` |
 | Scholarly writing | Introduction structure, contribution sharpness, economic magnitude, journal style | Stages 1, 5, 6 | [writing-craft.md](references/writing-craft.md) |
 | Reproducibility | Data provenance, replication README, data availability statement, one-command rebuild | Stage 2 through delivery | [reproducibility-pack.md](references/reproducibility-pack.md) |
 | Review and submission | Simulated review, response letter, journal decision order, cover letter | Stages 8, 9 | [peer-review-and-submission.md](references/peer-review-and-submission.md) |
@@ -293,6 +294,7 @@ paper_workspace/<short>_<YYYYMMDD-HHMM>/
 ├── 00_meta/evidence_ledger.md
 ├── 00_meta/claim_integrity_audit.md
 ├── 00_meta/citation_integrity_log.md
+├── 00_meta/ai_use_disclosure.md
 ├── 01_proposal/proposal.md
 ├── 02_data/clean.parquet + codebook.md + sample_audit.md
 ├── 03_analysis/design_register.md + design_risk_ledger.md + method_gate.md
@@ -447,6 +449,7 @@ Paper-WorkFlow/
 │   ├── writing-craft.md
 │   ├── literature-and-positioning.md
 │   ├── citation-and-temporal-integrity.md
+│   ├── ai-use-disclosure.md
 │   ├── reproducibility-pack.md
 │   ├── computational-reproducibility.md
 │   ├── peer-review-and-submission.md
@@ -481,6 +484,7 @@ Paper-WorkFlow/
 - [references/stage-playbook.md](references/stage-playbook.md): stage-by-stage operating manual.
 - [references/orchestration-and-handoff.md](references/orchestration-and-handoff.md): Stage 0 routing, stage passport, pipeline status, fresh evidence, and handoff protocol.
 - [references/integrity-and-claim-audit.md](references/integrity-and-claim-audit.md): claim, citation, number, and wording-faithfulness audit.
+- [references/ai-use-disclosure.md](references/ai-use-disclosure.md): generative-AI use ledger, venue policy families, and the rule that Stage 7 may remove the AI accent but never the AI disclosure.
 - [references/skill-map.md](references/skill-map.md): task-to-skill routing and child-skill loading rules.
 - [references/research-grade-methods.md](references/research-grade-methods.md): method evidence requirements.
 - [references/design-risk-ledger.md](references/design-risk-ledger.md): design-risk ledger for identification threats, selective reporting, external validity, spillovers, and attrition.
@@ -509,19 +513,37 @@ Run from this directory (first `pip install -r requirements-dev.txt` — needed 
 the demo-notebook execution gate; every other checker is stdlib-only):
 
 ```bash
-python3 validate_skill.py
+python3 validate_skill.py                      # full maintenance battery (37 checker selftests)
 python3 scripts/smoke_workspace.py
 python3 scripts/check_skillopt_packet.py --selftest
 ```
 
 For an actual maintenance packet, run `python3 scripts/check_skillopt_packet.py <packet>`.
 
+When running a *paper*, the run-time gates go through one stage-aware entry
+point, `scripts/pw.py`. Which checkers a stage owes, and with which flags, is a
+table in that script rather than something to remember:
+
+```bash
+python3 scripts/pw.py plan 7                   # what Stage 7 owes, without running it
+python3 scripts/pw.py enter 3 <workspace>      # may Stage 3 start? (entry preconditions)
+python3 scripts/pw.py exit  3 <workspace>      # is Stage 3 finished? (exit gates)
+python3 scripts/pw.py check <workspace>        # every gate owed at or before the current stage
+python3 scripts/pw.py final <workspace>        # submission-final sweep (Stage 9 strictness)
+python3 scripts/pw.py list                     # the whole stage -> gate map
+```
+
+The individual checkers still work standalone. `pw.py --selftest` enforces the
+converse: **no run-time checker may sit outside the stage flow.** A gate that is
+registered but reachable from no stage fails the maintenance battery, rather
+than silently never firing.
+
 The local gate also verifies that `init_workspace.sh` creates the Stage 0
 routing, passport, pipeline-status, handoff, claim-integrity, citation-integrity,
 and data-governance placeholders without overwriting an existing workspace. It
 also executes the bundled DiD notebook in a temporary workspace and exercises the
 replication scaffold's manifest success/failure paths, validates the design-gate
-contract, catches method-specific failure fixtures for all 9 contracted design families, selftests Method Gate
+contract, catches method-specific failure fixtures for all 14 contracted design families, selftests Method Gate
 Design Gate Card parsing, validates the Stage 0-9 scenario fixture, filled
 FINAL_REPORT delivery packet, and adversarial cases, checks bilingual README
 parity, validates the FINAL_REPORT

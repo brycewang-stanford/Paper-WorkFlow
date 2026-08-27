@@ -88,13 +88,14 @@ Both were cloned and read in full (147 and 98 skills respectively). Evidence-bac
 |---|---|:--:|:--:|:--:|
 | 1 | End-to-end lifecycle **orchestrator** (gated, resumable) | ✅ 10-stage + breakpoints | ❌ flat catalog | ✅ two-loop |
 | 2 | **Econometrics / causal-identification** depth (DiD/IV/RDD/SC) | ✅ core vertical | ❌ none | ❌ none (ML) |
-| 3 | **Executable** deterministic gates (not prose self-grade) | ✅ 28 `check_*.py` checkers（33 道 gate，见 [RIGOR.md](RIGOR.md) badge） | ❌ security only | 🟡 prose "ARA Seal" |
+| 3 | **Executable** deterministic gates (not prose self-grade) | ✅ 34 `check_*.py` checkers（37 道 gate，见 [RIGOR.md](RIGOR.md) badge） | ❌ security only | 🟡 prose "ARA Seal" |
 | 4 | **Method / identification gate** (design register, min-evidence pack) | ✅ hard gate, ordering-enforced | ❌ | 🟡 prose rubric |
 | 5 | **Citation integrity** (existence + retraction + temporal/look-ahead) | ✅ `check_citation_integrity.py --final` | 🟡 opt-in DOI | ❌ advice only |
 | 6 | **Claim fidelity** audit (number / quote / claim↔evidence) | ✅ `claim_integrity_audit` gated | ❌ | 🟡 prose entailment |
 | 7 | **Reproducibility** enforcement (DAS, `run_all`, env capture, rebuild check) | ✅ replication-pack gate | ❌ value only | ❌ described, not run |
 | 8 | **Pre-registration / researcher-DOF** guarding | ✅ `templates/preregistration.md` + `check_preregistration.py` | ❌ | 🟡 git-lock + prose |
 | 9 | Structured **quality rubric / review** (severity, accept/reject) | ✅ 7-dim gate | 🟡 ScholarEval averaging | ✅ 6-dim ARA review |
+| 9b | **AI-use disclosure / authorship integrity** (venue policy, no AI author, no AI-generated data) | ✅ `check_ai_disclosure.py`, gates submission + ethics_gate | ❌ | ❌ |
 | 10 | **Self-maintenance discipline** (eval harness, complexity ratchet, SkillOpt) | ✅ `score_skill` + ratchet + packet | 🟡 security CI | 🟡 inventory count |
 | 11 | **Multi-host distribution / install** polish | 🟡 in-repo, no installer | ✅ `npx`/`gh skill install --pin` | ✅ `npx` + marketplace |
 | 12 | **Public transparency / credibility** artifact (badge) | ✅ `RIGOR.md` + README badge, drift-gated in `validate_skill.py` | ✅ auto `SECURITY.md` + CI badge | 🟡 line/ref-count signals |
@@ -129,6 +130,12 @@ Three structural commitments encode the thesis:
 3. **Rigor-first, human-in-the-loop.** We reject the "never stop, the human is asleep" autonomy stance. Hard
    decision points (identification strategy, submission) are gated for a human in the default mode — because
    the failure modes of autonomous empirical research are silent and expensive.
+4. **The tool discloses its own use.** Row 9b has no analogue in either peer, and it is the one gap an AI
+   research pipeline *creates for itself*: Stage 7 exists to remove the stylistic fingerprint of the model, so
+   the run best equipped to look like it never used AI is also the run under no obligation to say it did.
+   `check_ai_disclosure.py` makes that non-optional — Stage 7 cannot complete without writing itself into the
+   ledger, and `replication_pack` cannot go `ready` until the venue-shaped declaration is rendered with a
+   named human accountable for every AI-assisted artifact. **降味是可读性工程，不是隐瞒工程。**
 
 ---
 

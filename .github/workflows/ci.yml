@@ -19,16 +19,25 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
+    # The checkers are stdlib-only by design (only the notebook gate needs the
+    # scientific stack), so they must keep working across the Python versions a
+    # user is plausibly running. A single pinned interpreter hides syntax and
+    # stdlib drift until someone else's machine finds it.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
           cache-dependency-path: requirements-dev.txt
 
@@ -49,3 +58,20 @@ jobs:
 
       - name: Run numeric-claims selftest
         run: python3 scripts/check_numeric_claims.py --selftest
+
+      - name: Run stage -> gate map selftest (no run-time gate is orphaned)
+        run: python3 scripts/pw.py --selftest
+
+      - name: Run AI-use disclosure gate selftest
+        run: python3 scripts/check_ai_disclosure.py --selftest
+
+      # A workspace built by the real init script must be accepted by the real
+      # gate runner. This is the one step that exercises the user-facing path
+      # end to end rather than a fixture.
+      - name: Smoke the stage-aware gate runner on a freshly initialised workspace
+        run: |
+          set -euo pipefail
+          bash assets/init_workspace.sh "${RUNNER_TEMP}/pw_ws"
+          python3 scripts/pw.py list
+          python3 scripts/pw.py plan
+          python3 scripts/pw.py exit 0 "${RUNNER_TEMP}/pw_ws"

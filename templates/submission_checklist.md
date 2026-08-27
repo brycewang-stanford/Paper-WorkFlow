@@ -18,6 +18,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 - IRB / ethics disclosure:
 - Preregistration / trial registration:
 - AsCollected or equivalent provenance disclosure:
+- Generative-AI use policy + where the declaration must sit (titled section before references / Methods / Acknowledgements / 致谢):
 
 ## 2. Files
 
@@ -29,6 +30,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 | Data availability statement | 09_submission/DAS.md | no |  |
 | Replication package | REPLICATION.md + code/data | no |  |
 | Author disclosures | 09_submission/disclosures.md | no |  |
+| Generative-AI use declaration (in the manuscript, at the placement the venue requires) | 09_submission/main.tex | no | ledger: 00_meta/ai_use_disclosure.md |
 | Table style audit | 04_results/table_style_audit.md | no |  |
 
 ## 3. Final Gates
@@ -36,6 +38,7 @@ Checked at (Beijing): <YYYY-MM-DD HH:MM>
 - Reference verification final pass:
 - Citation integrity log `--final` clean (no to-verify, no un-dispositioned flagged, retraction screen done): `python3 scripts/check_citation_integrity.py <workspace> --final`
 - Temporal integrity: no unresolved look-ahead / vintage / survivorship leakage behind any causal claim:
+- AI-use disclosure `--final` clean (venue policy fixed, statement rendered, a named human accountable): `python3 scripts/check_ai_disclosure.py <workspace> --final`
 - Method gate still valid after revisions:
 - Design risk ledger still allows abstract / cover letter external-validity claims:
 - Evidence ledger supports abstract / highlights / cover letter claims:
