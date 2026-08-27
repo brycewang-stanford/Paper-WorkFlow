@@ -39,6 +39,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import subprocess
 import json
 import re
 import sys
@@ -417,6 +418,17 @@ def check_tree(root: Path) -> Report:
             else:
                 rep.add(OKAY, "block_agreement", f"all {len(blocks)} gate-checker state blocks exist in the template")
 
+    # invariant 9: every long flag the docs show actually exists on that script.
+    # Invariant 1 verifies the script exists; nothing verified the *invocation*.
+    # A renamed flag leaves documented commands quietly wrong, and the person who
+    # finds out is a user running a command a gate told them to run.
+    flag_problems, flags_checked = _documented_flag_problems(root, md_files)
+    if flag_problems:
+        rep.add(FAIL, "documented_flags", f"{len(flag_problems)} documented flag(s) do not exist:\n    "
+                + "\n    ".join(flag_problems))
+    else:
+        rep.add(OKAY, "documented_flags", f"{flags_checked} documented CLI flag(s) exist on their script")
+
     # invariant 8: no executable in this package writes to one machine's home
     # directory. SKILL.md explicitly flags this anti-pattern in the *child* skills
     # it orchestrates ("硬编码了仓库外输出路径，调用时必须改写"); a package that
@@ -431,6 +443,50 @@ def check_tree(root: Path) -> Report:
         rep.add(OKAY, "absolute_paths", "no executable hard-codes a machine-specific path")
 
     return rep
+
+
+_DOC_INVOCATION_RE = re.compile(
+    r"python3?\s+((?:scripts|evals)/[A-Za-z0-9_]+\.py|validate_skill\.py|defense_pptx\.py"
+    r"|build_paper_workflow_intro\.py)([^\n`]*)")
+_LONG_FLAG_RE = re.compile(r"(?<![\w-])--[a-z][a-z0-9-]*")
+
+
+def _script_flags(root: Path, rel: str) -> set[str] | None:
+    """Long options a script accepts, read from its own --help. None if unrunnable."""
+    try:
+        proc = subprocess.run([sys.executable, str(root / rel), "--help"],
+                              capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    return set(_LONG_FLAG_RE.findall(proc.stdout))
+
+
+def _documented_flag_problems(root: Path, md_files: list[Path]) -> tuple[list[str], int]:
+    cache: dict[str, set[str] | None] = {}
+    problems: list[str] = []
+    checked = 0
+    for path in md_files:
+        rel_md = path.relative_to(root)
+        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for m in _DOC_INVOCATION_RE.finditer(line):
+                script, rest = m.group(1), m.group(2)
+                # Only the part before a trailing comment is argv; the rest is prose.
+                rest = rest.split("#", 1)[0]
+                flags = _LONG_FLAG_RE.findall(rest)
+                if not flags or not (root / script).exists():
+                    continue
+                if script not in cache:
+                    cache[script] = _script_flags(root, script)
+                known = cache[script]
+                if known is None:
+                    continue  # unrunnable here (missing deps) -- not a doc defect
+                for flag in flags:
+                    checked += 1
+                    if flag not in known:
+                        problems.append(f"{rel_md}:{line_no}: `{script} {flag}` -- no such option")
+    return problems, checked
 
 
 # Home-directory roots that only exist on one person's machine. `/tmp` and
@@ -568,6 +624,27 @@ def _selftest() -> int:
         rep3 = check_tree(root)
         assert not rep3.failures, f"selftest: playbook-reachable reference should pass, got {rep3.failures}"
 
+        # --- invariant 9: documented flags must exist on the script -----------
+        write("scripts/tool.py",
+              "import argparse\n"
+              "p = argparse.ArgumentParser()\n"
+              "p.add_argument('--selftest', action='store_true')\n"
+              "p.parse_args()\n")
+        write("references/usage.md", "Run `python3 scripts/tool.py --selftest`.\n")
+        write("references/stage-playbook.md",
+              "Stage 2 loads [playbook](playbook-only.md) and [usage](usage.md).\n")
+        rep_flag_ok = check_tree(root)
+        assert not rep_flag_ok.failures, f"a real flag must pass: {rep_flag_ok.failures}"
+        write("references/usage.md", "Run `python3 scripts/tool.py --no-such-flag`.\n")
+        rep_flag_bad = check_tree(root)
+        assert any(chk == "documented_flags" for lvl, chk, _ in rep_flag_bad.rows if lvl == FAIL), \
+            rep_flag_bad.failures
+        # trailing prose after '#' is a comment, not argv
+        write("references/usage.md",
+              "Run `python3 scripts/tool.py --selftest`  # --not-a-flag, just prose\n")
+        rep_flag_cmt = check_tree(root)
+        assert not rep_flag_cmt.failures, f"a comment must not be parsed as argv: {rep_flag_cmt.failures}"
+
         # --- invariant 8: machine-specific output paths in executables --------
         write("build_something.py", 'OUT = "/Users/someone/Documents/out.pptx"\n')  # pw-abs-path-ok: synthetic fixture for this very invariant
         rep4 = check_tree(root)
@@ -588,7 +665,8 @@ def _selftest() -> int:
         # markdown may quote such a path when describing the anti-pattern
         write("references/anti-patterns.md", 'Never write `"/Users/you/out.pptx"` into a script.\n')  # pw-abs-path-ok: synthetic fixture for this very invariant
         write("references/stage-playbook.md",
-              "Stage 2 loads [playbook](playbook-only.md) and [anti](anti-patterns.md).\n")
+              "Stage 2 loads [playbook](playbook-only.md), [usage](usage.md) "
+              "and [anti](anti-patterns.md).\n")
         rep8 = check_tree(root)
         assert not rep8.failures, f"prose quoting the anti-pattern must not fail: {rep8.failures}"
 

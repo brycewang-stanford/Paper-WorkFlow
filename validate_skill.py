@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -622,7 +623,19 @@ def run_checker_battery() -> None:
             subprocess.run([sys.executable, str(script), *argv], check=True)
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    # An argument parser, even though this gate takes no options. Without one,
+    # `validate_skill.py --help` silently ran the *entire* battery and any typo'd
+    # flag was ignored rather than reported -- and this is the command every
+    # contributor is told to run before shipping.
+    parser = argparse.ArgumentParser(
+        prog="validate_skill.py",
+        description="Full maintenance-gate battery for the Paper-WorkFlow skill. "
+                    "Takes no options; run it from anywhere in the repo.",
+        epilog="Run-time gates for an individual paper live behind scripts/pw.py.",
+    )
+    parser.parse_args(argv)
+
     os.chdir(ROOT)
     template = load_template()
     files = tracked_files()
