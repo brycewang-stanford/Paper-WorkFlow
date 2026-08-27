@@ -585,7 +585,7 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     ("scripts/check_skillopt_packet.py", [["--selftest"]]),
     # Advisory orphan-reference scan; the script exits 0 in advisory mode, so
     # check=True only surfaces genuine crashes (never advisory WARNs).
-    ("scripts/check_compactness.py", [[]]),
+    ("scripts/check_compactness.py", [["--selftest"], []]),
     ("scripts/check_cn_claim_audit.py", [["--selftest"], []]),
     # --strict: chaos coverage is complete today; the ratchet must not regress.
     ("scripts/check_chaos_coverage.py", [["--strict"]]),

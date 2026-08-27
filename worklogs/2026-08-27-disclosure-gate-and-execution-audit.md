@@ -18,6 +18,10 @@ to review and obvious within seconds of execution:
 | `make_three_line_tables.py` had a passing selftest nothing had ever run | widening checker discovery past the filename |
 | `validate_skill.py --help` ran the entire battery instead of printing help | invoking `--help` from a new checker |
 
+The same habit applies to worries, not just code. The "reference corpus needs
+consolidating" note in this file's first draft was a guess; measuring it (see
+*What the next wave should look at*) showed it was wrong.
+
 ## Part 1 — what was missing
 
 ### 1. AI-use disclosure & authorship integrity (schema v13, gate #36)
@@ -197,9 +201,15 @@ than a fixture.
 
 ## What the next wave should look at
 
-- The reference corpus grew to ~592 KB across 33 files; the ratchet is advisory
-  and says so. A consolidation pass is overdue and was deliberately not
-  attempted here — it needs its own wave, not a tail-end of this one.
+- ~~The reference corpus needs a consolidation pass.~~ **Checked, and it does
+  not.** `check_compactness.py` gained a cross-file near-duplicate paragraph
+  scan (token-shingle Jaccard) precisely so this question stops being a worry
+  and starts being a number. The answer for 591 KB across 33 files: **zero**
+  cross-file near-duplicates above 0.45, once the two intentional
+  `cn-data-claims` banners are exempted. The corpus is large because the subject
+  is large, not because the same paragraph lives in three files. The ratchet's
+  "+80 KB this wave" warning was measuring new material, and now says so.
+  Re-run the scan before assuming otherwise next time.
 - `check_defense_deck.py` verifies the shipped *generator*, not a user's
   workspace. A `--workspace` mode would make the playbook's Stage 9 hard
   requirement enforceable per run, but only if it can tell a thesis run from a

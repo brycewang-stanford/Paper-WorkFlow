@@ -418,13 +418,14 @@ REGISTRY: list[dict] = [
     },
     {
         "path": "scripts/check_compactness.py",
-        "argv": [],
+        "argv": ["--selftest"],
         "layer": MAINT,
         "enforces": (
-            "Orphan-reference detection: every references/*.md must be reachable "
-            "from SKILL.md or another reference; the ratchet is advisory and never "
-            "blocks a maintenance edit, but the report is the only honest signal of "
-            "whether pruning is keeping up with growth."
+            "Orphan and duplication detection: every references/*.md must be "
+            "reachable from SKILL.md or another reference, and cross-file "
+            "near-duplicate paragraphs are counted so 'the corpus grew' can be "
+            "answered as accretion vs new material rather than guessed at. The "
+            "ratchet is advisory and never blocks a maintenance edit."
         ),
     },
     {
