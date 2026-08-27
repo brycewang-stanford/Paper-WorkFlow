@@ -131,6 +131,9 @@ NON_STAGE_RUNTIME: dict[str, str] = {
         "temp workspace; the per-run requirement is Stage 9 of the Chinese thesis "
         "path only, so it is not a gate every run owes"),
     "scripts/check_verification_log.py": "repo-level: audits this package's own methods claims",
+    "scripts/make_three_line_tables.py": (
+        "a fixer, not a gate: Stage 4/9 run it to normalise .docx tables, and "
+        "check_table_style.py is what passes or fails on the result"),
     "evals/check_replication_accuracy.py": "benchmark: scores fixtures with known truth, not a workspace",
     "evals/check_quality_judge.py": "invoked with --scorecard by the Draft Quality Gate, not a workspace path",
 }

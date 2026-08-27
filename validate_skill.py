@@ -415,6 +415,7 @@ def check_assets() -> None:
         "scripts/check_ai_disclosure.py",
         "scripts/pw.py",
         "scripts/check_defense_deck.py",
+        "scripts/make_three_line_tables.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
         "templates/backend_capabilities.json",
@@ -593,6 +594,7 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     ("scripts/check_review_scorecard.py", [["--selftest"]]),
     ("scripts/check_cross_references.py", [["--selftest"], []]),
     ("scripts/check_table_style.py", [["--selftest"]]),
+    ("scripts/make_three_line_tables.py", [["--selftest"]]),
     ("scripts/check_manuscript_numbers.py", [["--selftest"]]),
     ("scripts/check_ai_disclosure.py", [["--selftest"]]),
     # Stage -> gate map. Its selftest is the only thing standing between a new

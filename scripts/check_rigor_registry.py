@@ -51,9 +51,20 @@ def discover_checker_paths(root: Path) -> set[str]:
         for path in base.glob("*.py"):
             if path.name == "__init__.py":
                 continue
-            if path.name.startswith(DISCOVERY_PREFIXES):
+            # Name prefix OR a declared `--selftest`. Prefix alone let
+            # make_three_line_tables.py and pw.py ship passing selftests that
+            # nothing ever ran; what makes a file a checker is that it offers to
+            # verify itself, not what it is called.
+            if path.name.startswith(DISCOVERY_PREFIXES) or _declares_selftest(path):
                 discovered.add(_rel(path, root))
     return discovered - EXCLUDED_DISCOVERED_PATHS
+
+
+def _declares_selftest(path: Path) -> bool:
+    try:
+        return '"--selftest"' in path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return False
 
 
 def load_rigor_module(root: Path) -> ModuleType:

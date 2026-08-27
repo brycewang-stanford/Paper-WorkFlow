@@ -125,6 +125,18 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/make_three_line_tables.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Three-line table normaliser: rewriting a .docx table's borders in "
+            "place produces exactly the heavy-top / light-header / heavy-bottom "
+            "rule structure check_table_style.py demands, preserves cell content "
+            "and the header-repeat flag, is idempotent, and never leaves a "
+            "partially-rewritten document behind."
+        ),
+    },
+    {
         "path": "scripts/check_manuscript_numbers.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,
@@ -489,6 +501,19 @@ def _run_selftest(entry: dict, timeout: int = 180) -> dict:
     return result
 
 
+def _declares_selftest(path: Path) -> bool:
+    """A script that offers `--selftest` is a checker, whatever it is called.
+
+    Name-prefix discovery alone missed `scripts/make_three_line_tables.py` and
+    `scripts/pw.py`: both ship a passing selftest that nothing ever ran, because
+    neither starts with `check_`. Intent is the honest signal, not the filename.
+    """
+    try:
+        return '"--selftest"' in path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError):
+        return False
+
+
 def _drift() -> list[str]:
     """Checkers present on disk but not in the registry — keeps the report honest."""
     registered = {e["path"] for e in REGISTRY}
@@ -496,7 +521,9 @@ def _drift() -> list[str]:
     for sub in ("scripts", "evals"):
         for p in (ROOT / sub).glob("*.py"):
             name = p.name
-            if name.startswith(("check_", "score_", "validate_")) and name != "__init__.py":
+            if name == "__init__.py":
+                continue
+            if name.startswith(("check_", "score_", "validate_")) or _declares_selftest(p):
                 found.add(f"{sub}/{name}")
     # validate_skill.py is the MASTER aggregator (it chains every leaf checker), and
     # generate_rigor_report.py is this generator — neither is a leaf gate in the table.
