@@ -49,7 +49,10 @@
     "scripts/check_ai_disclosure.py",
     "templates/ai_use_disclosure.md",
     "references/ai-use-disclosure.md",
-    "scripts/pw.py"
+    "scripts/pw.py",
+    "scripts/check_defense_deck.py",
+    "defense_pptx.py",
+    "templates/defense_ppt_config.yaml"
   ],
   "contracts": [
     {
@@ -383,6 +386,26 @@
         "references/orchestration-and-handoff.md",
         "references/workspace-and-state.md",
         "SKILL.md",
+        "RIGOR.md"
+      ]
+    },
+    {
+      "id": "defense_deck_deliverable",
+      "theme": "reproducibility_examples",
+      "invariant": "The Stage 9 defence deck is a hard deliverable for the Chinese thesis path, so its generator is gated rather than trusted: it builds from a real workspace, extracted content reaches the slides, --duration scales the slide budget, and the mandatory closing sections (机制分析 / 研究结论与主要贡献 / 研究局限与未来展望) can never be rationed away by a long findings list. A findings list that does not fit is truncated and the truncation is reported.",
+      "owner_files": [
+        "defense_pptx.py",
+        "templates/defense_ppt_config.yaml",
+        "references/stage-playbook.md",
+        "references/chinese-journals.md"
+      ],
+      "validators": [
+        "scripts/check_defense_deck.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/stage-playbook.md",
+        "references/chinese-journals.md",
         "RIGOR.md"
       ]
     }

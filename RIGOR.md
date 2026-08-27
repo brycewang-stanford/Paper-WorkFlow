@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 37/37 green.**
+**Rigor checkers selftest: PASSING — 38/38 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -24,6 +24,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_verification_log.py`](scripts/check_verification_log.py) | ✅ pass | The load-bearing methods-claim verification log exists and every claim it makes is backed by a recorded check. |
 | [`scripts/smoke_workspace.py`](scripts/smoke_workspace.py) | ✅ pass | A minimal workspace initialises and every template contract holds (templates instantiate with the fields the gates later require). |
 | [`scripts/check_demo_execution.py`](scripts/check_demo_execution.py) | ✅ pass | Bundled DiD demo execution: the notebook's code cells run in a temporary workspace, regenerate the table/figures, and preserve the core teaching estimates and staggered-adoption caution. |
+| [`scripts/check_defense_deck.py`](scripts/check_defense_deck.py) | ✅ pass | Defence-deck generation: the Stage 9 答辩 PPT builds from a real workspace, workspace content reaches the slides, --duration actually scales the slide budget, and the mandatory closing sections (机制 / 结论与贡献 / 局限与展望) are never rationed away by a long findings list -- the findings are what get truncated, and the truncation is announced. |
 | [`scripts/check_preregistration.py`](scripts/check_preregistration.py) | ✅ pass | Pre-registration lock: the primary specification is committed before estimation, and any main result not pre-registered is labelled exploratory (researcher-degrees-of-freedom guard). |
 | [`scripts/check_review_scorecard.py`](scripts/check_review_scorecard.py) | ✅ pass | L2 review scorecard: all 7 dimensions scored, every finding carries a severity + verbatim evidence span + locator, a blocking finding caps its dimension <=4, and a declared PASS is consistent with the scores. |
 | [`evals/check_replication_accuracy.py`](evals/check_replication_accuracy.py) | ✅ pass | Stage 3 output correctness: candidate estimates are scored against sourced gold coefficients on sign-correct, perfect-reproduction, and partial-or-better metrics; template cases cannot be scored as truth. |

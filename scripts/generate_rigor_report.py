@@ -189,6 +189,19 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_defense_deck.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Defence-deck generation: the Stage 9 答辩 PPT builds from a real "
+            "workspace, workspace content reaches the slides, --duration actually "
+            "scales the slide budget, and the mandatory closing sections "
+            "(机制 / 结论与贡献 / 局限与展望) are never rationed away by a long "
+            "findings list -- the findings are what get truncated, and the "
+            "truncation is announced."
+        ),
+    },
+    {
         "path": "scripts/check_preregistration.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

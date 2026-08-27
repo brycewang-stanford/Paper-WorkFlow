@@ -1,8 +1,13 @@
 # Dependencies for the executable-gate battery (python3 validate_skill.py).
-# Only scripts/check_demo_execution.py needs these: it executes did_demo.ipynb
-# for real. Every other checker is stdlib-only by design.
+# Two checkers need real libraries; every other checker is stdlib-only by design.
+#
+#   scripts/check_demo_execution.py  executes did_demo.ipynb for real
+#   scripts/check_defense_deck.py    builds the Stage 9 defence deck for real
+#     (defense_pptx.py is a *hard* Stage 9 deliverable for the Chinese thesis
+#      path, so its generator needs a gate, and the gate needs python-pptx)
 numpy
 pandas
 matplotlib
 statsmodels
 linearmodels
+python-pptx

@@ -126,6 +126,10 @@ PRECONDITION_STAGES = ["1L", "2", "2_5", "3", "4", "5", "7", "8", "9"]
 NON_STAGE_RUNTIME: dict[str, str] = {
     "scripts/smoke_workspace.py": "maintenance: proves templates instantiate; not a per-run gate",
     "scripts/check_demo_execution.py": "maintenance: executes the bundled teaching notebook",
+    "scripts/check_defense_deck.py": (
+        "verifies the shipped defence-deck generator by building decks in its own "
+        "temp workspace; the per-run requirement is Stage 9 of the Chinese thesis "
+        "path only, so it is not a gate every run owes"),
     "scripts/check_verification_log.py": "repo-level: audits this package's own methods claims",
     "evals/check_replication_accuracy.py": "benchmark: scores fixtures with known truth, not a workspace",
     "evals/check_quality_judge.py": "invoked with --scorecard by the Draft Quality Gate, not a workspace path",

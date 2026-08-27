@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-37%2F37_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-38%2F38_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -453,6 +453,7 @@ Paper-WorkFlow/
 │   ├── check_manuscript_numbers.py   # 稿件数字锚定 + Stage 6→7 改写零漂移闸门
 │   ├── check_ai_disclosure.py        # 生成式 AI 使用声明闸门：作者署名/伪造/未核验/Stage 7 自曝
 │   ├── pw.py                         # 阶段感知的闸门入口：enter/exit/check/final/plan/list
+│   ├── check_defense_deck.py         # 答辩 PPT 生成闸门：必备节不被发现挤掉 + 内容真落盘
 │   ├── check_gate_integration.py     # 真实 init + 真实模板 + gate checker 集成测试
 │   ├── check_reproducibility_scaffold.py # run_all + check_outputs 复现脚手架测试
 │   ├── check_cross_references.py     # 内部链接、路径、checker wiring、Stage/table 合约

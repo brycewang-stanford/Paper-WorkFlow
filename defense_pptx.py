@@ -122,12 +122,15 @@ class DefenseConfig:
     duration_min: int = 15   # 答辩时长（分钟）
     type: str = "thesis"     # thesis / journal-talk
 
-    # 自动从 duration_min 推算每页时间（不需要再手动配）
+    # 张数由 duration_min 推算，而不是写死——否则「调大 --duration」这句提示是假的。
+    # 锚点取文档里的缺省：thesis 15 分钟 = 22 张，journal-talk 15 分钟 = 18 张，
+    # 所以默认时长下的行为与旧版逐张一致；范围沿用模板注释的 18–28 / 15–22。
     @property
     def total_slides(self) -> int:
-        # thesis 模板：10-12 节 ≈ 18-28 张
-        # journal-talk 模板：8-10 节 ≈ 15-22 张
-        return {"thesis": 22, "journal-talk": 18}.get(self.type, 22)
+        anchors = {"thesis": (22, 18, 28), "journal-talk": (18, 15, 22)}
+        base, lo, hi = anchors.get(self.type, anchors["thesis"])
+        scaled = round(base * (self.duration_min or 15) / 15)
+        return max(lo, min(hi, scaled))
 
     # 演讲者备注（每页）
     notes: dict[str, str] = field(default_factory=dict)
@@ -571,8 +574,25 @@ def _slide_thank_you(prs, cfg: DefenseConfig, page_no, total):
 # ============================================================================
 # 模板组装（按 chinese-journals.md §6.5 标准结构）
 # ============================================================================
+def _findings_budget(total: int, fixed_slides: int, wanted: int, hard_cap: int) -> int:
+    """How many finding slides fit once the mandatory sections are reserved.
+
+    The closing sections (机制 / 结论与贡献 / 局限与展望) are **not optional** in a
+    Chinese thesis defence — a committee asks about exactly those. The findings
+    list, by contrast, is variable-length and can be merged. So the budget is
+    taken out of the findings, never out of the conclusion; when a run has more
+    findings than fit, the truncation is announced rather than silent.
+    """
+    room = max(1, min(hard_cap, total - fixed_slides))
+    if wanted > room:
+        print(f"  提示：{wanted} 条主要发现超出 {total} 页模板的容量，只放前 {room} 条；"
+              f"其余请合并到一页或调大 --duration。结论/局限等必备节不参与压缩。",
+              file=sys.stderr)
+    return min(wanted, room)
+
+
 def build_thesis_pptx(cfg: DefenseConfig, output_path: Path):
-    """学位论文答辩 PPT 模板：22 张。"""
+    """学位论文答辩 PPT 模板：22 张（结论与局限为必备节，不因发现过多被挤掉）。"""
     prs = Presentation()
     prs.slide_width = EMU_W
     prs.slide_height = EMU_H
@@ -618,41 +638,42 @@ def build_thesis_pptx(cfg: DefenseConfig, output_path: Path):
     # 13. 章节分割：05 实证结果
     _slide_section_divider(prs, "05", "实证结果", "EMPIRICAL RESULTS", 13, total, cfg)
 
-    # 14-19. 主要发现（每项 1 张）
+    # 14-N. 主要发现（每项 1 张，容量由必备节反推）
+    findings = cfg.main_findings or [{
+        "title": "（主发现未自动提取）",
+        "key": "请编辑 03_analysis/results/main_results.json 或 evidence_ledger.md",
+        "result": "",
+    }]
+    # 13 张已排 + 06 分割 + 稳健性 + 机制 + 结论 + 局限 + 致谢 = 19 张固定开销
+    n_findings = _findings_budget(total, fixed_slides=19, wanted=len(findings), hard_cap=6)
     page = 14
-    for f in (cfg.main_findings or [{"title": "（主发现未自动提取）", "key": "请编辑 03_analysis/results/main_results.json 或 evidence_ledger.md", "result": ""}])[:6]:
+    for f in findings[:n_findings]:
         _slide_finding(prs, "主要发现", f, page, total, cfg)
         page += 1
 
-    # 20. 章节分割：06 稳健性
-    if page < total - 1:
-        _slide_section_divider(prs, "06", "稳健性检验", "ROBUSTNESS", page, total, cfg)
-        page += 1
-        _slide_bullets(prs, "稳健性检验", cfg.robustness[:4], page, total, cfg, accent="green")
-        page += 1
+    # 章节分割：06 稳健性
+    _slide_section_divider(prs, "06", "稳健性检验", "ROBUSTNESS", page, total, cfg)
+    page += 1
+    _slide_bullets(prs, "稳健性检验", cfg.robustness[:4], page, total, cfg, accent="green")
+    page += 1
 
-    # 21. 机制与异质性（如果还有页）
-    if page < total - 1:
-        _slide_bullets(prs, "机制分析与异质性", cfg.mechanism[:4], page, total, cfg, accent="orange")
-        page += 1
+    # 机制与异质性 —— 必备
+    _slide_bullets(prs, "机制分析与异质性", cfg.mechanism[:4], page, total, cfg, accent="orange")
+    page += 1
 
-    # 22. 结论与贡献
-    if page < total - 1:
-        _slide_bullets(prs, "研究结论与主要贡献", cfg.contributions[:4], page, total, cfg, accent="navy")
-        page += 1
+    # 结论与贡献 —— 必备：答辩委员会一定会问这一页
+    _slide_bullets(prs, "研究结论与主要贡献", cfg.contributions[:4], page, total, cfg, accent="navy")
+    page += 1
 
-    # 23. 局限与展望
-    if page < total - 1:
-        _slide_bullets(prs, "研究局限与未来展望", cfg.limitations[:3] or ["样本期可能限制外推；待更长时段验证", "机制识别可进一步引入实验设计", "政策评估可拓展至区域间比较"], page, total, cfg, accent="red")
-        page += 1
+    # 局限与展望 —— 必备
+    _slide_bullets(prs, "研究局限与未来展望", cfg.limitations[:3] or ["样本期可能限制外推；待更长时段验证", "机制识别可进一步引入实验设计", "政策评估可拓展至区域间比较"], page, total, cfg, accent="red")
+    page += 1
 
-    # 24. 答辩致谢
+    # 答辩致谢
     _slide_thank_you(prs, cfg, page, total)
 
-    # 实际生成页数
-    actual_total = page
     prs.save(str(output_path))
-    print(f"✓ 已生成 {output_path}（{actual_total} 页 / 模板估算 {total} 页）")
+    print(f"✓ 已生成 {output_path}（{len(prs.slides)} 页 / 模板估算 {total} 页）")
     return output_path
 
 
@@ -662,7 +683,7 @@ def build_journal_talk_pptx(cfg: DefenseConfig, output_path: Path):
     prs.slide_width = EMU_W
     prs.slide_height = EMU_H
     blank = prs.slide_layouts[6]
-    total = 18
+    total = cfg.total_slides
 
     # 1. 封面
     _slide_cover(prs, cfg, total)
@@ -686,28 +707,30 @@ def build_journal_talk_pptx(cfg: DefenseConfig, output_path: Path):
     _slide_section_divider(prs, "04", "Data & Identification", "数据与识别策略", 9, total, cfg)
     _slide_text(prs, "数据描述", cfg.data_description or "请补充", 10, total, cfg, accent="teal")
 
-    # 7. 主要发现
+    # 7. 主要发现（容量由必备节反推，同 thesis）
     _slide_section_divider(prs, "05", "Main Results", "实证结果", 11, total, cfg)
+    findings = cfg.main_findings or [
+        {"title": "（未自动提取）", "key": "请编辑 main_results.json", "result": ""}]
+    # 11 张已排 + Robustness + Contribution + 致谢 = 14 张固定开销
+    n_findings = _findings_budget(total, fixed_slides=14, wanted=len(findings), hard_cap=5)
     page = 12
-    for f in (cfg.main_findings or [{"title": "（未自动提取）", "key": "请编辑 main_results.json", "result": ""}])[:5]:
+    for f in findings[:n_findings]:
         _slide_finding(prs, "Main Finding", f, page, total, cfg)
         page += 1
 
-    # 8. 稳健性
-    if page < total - 1:
-        _slide_bullets(prs, "Robustness", cfg.robustness[:3], page, total, cfg, accent="green")
-        page += 1
+    # 8. 稳健性 —— 必备
+    _slide_bullets(prs, "Robustness", cfg.robustness[:3], page, total, cfg, accent="green")
+    page += 1
 
-    # 9. 贡献
-    if page < total - 1:
-        _slide_bullets(prs, "Contribution", cfg.contributions[:4], page, total, cfg, accent="navy")
-        page += 1
+    # 9. 贡献 —— 必备：汇报会问的就是这一页
+    _slide_bullets(prs, "Contribution", cfg.contributions[:4], page, total, cfg, accent="navy")
+    page += 1
 
     # 致谢
     _slide_thank_you(prs, cfg, page, total)
 
     prs.save(str(output_path))
-    print(f"✓ 已生成 {output_path}（{page} 页）")
+    print(f"✓ 已生成 {output_path}（{len(prs.slides)} 页 / 模板估算 {total} 页）")
     return output_path
 
 

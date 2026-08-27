@@ -753,7 +753,14 @@ python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证�
   `--type journal-talk`（默认 18 张）。该 PPT 与 `build_pptx.py`（skill 演示版 30 张）视觉风格
   统一（深蓝/橙/金配色），但 build_pptx.py 演示整个工作流，defense_pptx.py 专攻答辩/汇报。
   **Stage 9 结束前的硬要求**：`defense_pptx.py --workspace <ws> --type <type> --duration <min>`
-  跑通，**不能因脚本报错就跳过答辩 PPT**——这是本硕博毕业流程的硬交付物。
+  跑通，**不能因脚本报错就跳过答辩 PPT**——这是本硕博毕业流程的硬交付物。需要 `python-pptx`
+  （已列入 `requirements-dev.txt`）；缺依赖时脚本退出码非 0，按
+  [`runtime-fallbacks.md`](runtime-fallbacks.md) 记录，不得当作已完成。
+  **页数由 `--duration` 决定，不是写死的**：thesis 15 分钟 ≈ 22 张（范围 18–28），
+  journal-talk 15 分钟 ≈ 18 张（范围 15–22）。**机制分析 / 研究结论与主要贡献 / 研究局限与未来展望
+  是必备节，永远不会被"发现太多"挤掉**——被压缩的是主要发现的张数，且会在 stderr 明确提示压缩了几条。
+  发现放不下时的正确做法是合并到一页或调大 `--duration`，不是让结论页消失。
+  生成器本身由 `python3 scripts/check_defense_deck.py` 守着（真建真读，不是看脚本存不存在）。
 
 **review**：critic 走一遍目标期刊的 submission checklist（字数、匿名化、利益冲突声明、数据可得性声明、
 **生成式 AI 使用声明**、IRB/DUA 与公开复现包边界）；若调用 AJS，同时核对 `adapter_report.md`，按「官网 > AJS > 通用建议」解决冲突。

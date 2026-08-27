@@ -414,6 +414,7 @@ def check_assets() -> None:
         "scripts/check_manuscript_numbers.py",
         "scripts/check_ai_disclosure.py",
         "scripts/pw.py",
+        "scripts/check_defense_deck.py",
         "scripts/check_review_scorecard.py",
         "scripts/generate_rigor_report.py",
         "templates/backend_capabilities.json",
@@ -597,6 +598,9 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     # Stage -> gate map. Its selftest is the only thing standing between a new
     # run-time checker and being registered but never actually run.
     ("scripts/pw.py", [["--selftest"]]),
+    # Builds the Stage 9 defence deck for real. Delegated like the notebook
+    # gate: generate_rigor_report --check runs its selftest below.
+    ("scripts/check_defense_deck.py", []),
     ("evals/score_skill.py", [["--selftest"]]),
     ("evals/check_complexity_budget.py", [["--selftest"], []]),
     ("evals/check_replication_accuracy.py", [["--selftest"]]),
