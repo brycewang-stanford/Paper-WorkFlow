@@ -275,6 +275,8 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 /paper-workflow 初稿在 ./paper/main.tex，从打磨开始
 ```
 
+> 想要更详细的 prompt（带变量名、固定效应、聚类层级、档位与约束的完整写法）、中途干预指令和常见坑，看 **[详细使用指南 · docs/USAGE-zh.md](docs/USAGE-zh.md)**。
+
 开跑前一次确认六项：**交互模式、严格度档位、目标期刊、稿件语言、分析后端和表格格式**。
 
 交互模式管**多久停一次问你**：

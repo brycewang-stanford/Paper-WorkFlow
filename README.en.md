@@ -245,6 +245,8 @@ Use it from Claude Code with a research idea, proposal, dataset, results folder,
 /paper-workflow draft at ./paper/main.tex, polish and prepare submission package
 ```
 
+> For fuller prompts (variable names, fixed effects, cluster level, tiers and constraints spelled out), mid-run steering commands, and common pitfalls, see the detailed usage guide: **[docs/USAGE-zh.md](docs/USAGE-zh.md)** (Chinese).
+
 Before execution, the skill resolves the interaction mode, scope tier, target journal, manuscript language, analysis backend, and table style once.
 
 The interaction mode controls **how often it stops to ask you**:
