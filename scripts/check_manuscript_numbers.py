@@ -211,6 +211,25 @@ def strip_latex(text: str) -> str:
     return text
 
 
+# The reference list is bibliographic furniture, not claims about this paper: its
+# volume numbers and page ranges (`94`, `1053--1062`) are numbers no analysis run
+# will ever produce. strip_latex already drops `\begin{thebibliography}` for exactly
+# this reason; once the assembled .docx renders that list as ordinary paragraphs,
+# the same exclusion has to hold there or every run with a bibliography trips the
+# anchor check.
+_REFERENCES_HEADING_RE = re.compile(
+    r"^[#\s]*(?:参考文献|參考文獻|文\s*献|References?|Bibliography|Works\s+Cited)"
+    r"(?:\s*[/·|]\s*(?:参考文献|References?))?\s*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+
+
+def drop_reference_list(text: str) -> str:
+    """Everything from the reference heading onward is not an empirical claim."""
+    matches = list(_REFERENCES_HEADING_RE.finditer(text))
+    return text[: matches[-1].start()] if matches else text
+
+
 def strip_markdown(text: str) -> str:
     """Prose from a Markdown body: exhibits and link targets are not claims."""
     text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)          # code fences
@@ -218,7 +237,7 @@ def strip_markdown(text: str) -> str:
     text = re.sub(r"^\s*\|.*$", " ", text, flags=re.MULTILINE)         # pipe-table rows
     text = re.sub(r"!?\[[^\]]*\]\([^)]*\)", " ", text)                 # links + images
     text = re.sub(r"\{\{[^}]*\}\}", " ", text)                          # include directives
-    return text
+    return drop_reference_list(text)
 
 
 def strip_docx(path: Path) -> str:
@@ -234,8 +253,9 @@ def strip_docx(path: Path) -> str:
     # element alone so raw markup never reaches the number scanner.
     parts = re.findall(r"<w:t(?:\s[^>]*)?>(.*?)</w:t>|(\n)", xml, flags=re.DOTALL)
     text = "".join(a or b for a, b in parts)
-    return (text.replace("&lt;", "<").replace("&gt;", ">")
+    text = (text.replace("&lt;", "<").replace("&gt;", ">")
             .replace("&quot;", '"').replace("&apos;", "'").replace("&amp;", "&"))
+    return drop_reference_list(text)
 
 
 def read_manuscript(path: Path) -> str:
@@ -766,6 +786,37 @@ def _selftest() -> int:
         (docx_lost / "09_submission" / "main.docx").write_bytes(_docx_bytes(_DOCX_PARAS[:1]))
         hits = {chk for lvl, chk, _ in run(docx_lost).rows if lvl == FAIL}
         assert "drift:typeset" in hits, f"a number lost in typesetting must fail; got {hits}"
+
+        # --- a rendered reference list is not a set of empirical claims -------
+        # Volume numbers and page ranges are numbers no analysis run produces. The
+        # assembled .docx renders them as ordinary paragraphs, so without this
+        # exclusion every run that ships a bibliography fails the anchor check.
+        bib_paras = _DOCX_PARAS + [
+            "参考文献 / References",
+            "Dehejia, Rajeev H., Wahba, Sadek (1999). Causal Effects in "
+            "Nonexperimental Studies. Journal of the American Statistical "
+            "Association, 94, 1053--1062.",
+        ]
+        with_bib = make("with_bib", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "08_review/main.tex": _DRAFT,
+        })
+        (with_bib / "09_submission").mkdir(parents=True, exist_ok=True)
+        (with_bib / "09_submission" / "main.docx").write_bytes(_docx_bytes(bib_paras))
+        rep = run(with_bib)
+        assert not rep.failures, (
+            f"a rendered reference list must not read as unanchored claims: {rep.failures}")
+        # …but prose *before* the reference heading is still checked.
+        fabricated = make("fabricated", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "08_review/main.tex": _DRAFT,
+        })
+        (fabricated / "09_submission").mkdir(parents=True, exist_ok=True)
+        (fabricated / "09_submission" / "main.docx").write_bytes(_docx_bytes(
+            [p.replace("0.118", "0.771") for p in _DOCX_PARAS] + bib_paras[len(_DOCX_PARAS):]))
+        hits = {chk for lvl, chk, _ in run(fabricated).rows if lvl == FAIL}
+        assert "anchors" in hits, (
+            f"dropping the reference list must not disable the anchor check; got {hits}")
 
         # --- the typeset boundary binds whatever precedes Stage 9 --------------
         # A `draft`-scope run goes 07 -> 09 with no Stage 8 in between; keying the
