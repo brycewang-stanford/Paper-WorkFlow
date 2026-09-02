@@ -107,6 +107,49 @@ Setup 的一次性询问除交互档位、目标期刊、稿件语言外，还�
 
 ---
 
+## 4.2 全文交付契约（正文格式 → Word 定稿）
+
+Stage 4 出的是**单张表**，Stage 9 欠的是**一整篇能交上去的稿子**。两者之间那一跳——把正文、它引用的
+每张表每张图、参考文献合成一个文件——以前没有任何一步负责，于是最容易出事的转换环节也是唯一没有闸门的
+环节。现在它由 [`../scripts/assemble_manuscript_docx.py`](../scripts/assemble_manuscript_docx.py)
+（写）和 [`../scripts/check_deliverable_contract.py`](../scripts/check_deliverable_contract.py)
+（验）一对程序守住，分工与三线表那对完全一样：**写的人不许给自己判分**。
+
+**正文格式在 Stage 0 就定**（`workflow_state.json.manuscript.format`）：
+
+| 目标 | `manuscript.format` | 理由 |
+|---|---|---|
+| 中文期刊 / 学位论文 / 合作者在 Word 里改 | `markdown` | Markdown → `.docx` 高保真；这是绝大多数国内投稿场景 |
+| arXiv / 英文经济学刊 LaTeX 投稿系统 | `latex` | `.tex` 本身就是交付物，Word 只是可选副本 |
+
+选 `latex` 又要 Word 稿是可以的，只是要接受 LaTeX → `.docx` 的有损转换（复杂公式、自定义宏、
+`\input` 嵌套）——**代价要在 Stage 0 就知道，而不是 Stage 9 才发现**。
+
+**两条转换路径，用了哪条必须记进 `manuscript.converter`**：
+
+| converter | 何时用 | 强在哪 | 弱在哪 |
+|---|---|---|---|
+| `pandoc` | `pandoc` 在 PATH 上（缺省优先） | citeproc + CSL、目标刊 `--reference-doc` 模板、行内公式 | 需要外部二进制 |
+| `builtin` | 没装 pandoc | 纯标准库，零依赖，任何机器都能出稿 | 参考文献是朴素罗列，不套 CSL；公式按纯文本走 |
+
+**组装器先解析 include，再交给 pandoc。** 直接把 `main.tex` 喂给 pandoc 会静默丢掉每一个
+`\input{results/table2}`：文件照样生成、照样能打开、没有任何报错，只是少了一张表。这是本层存在的
+首要理由，所以两条路径都走同一套 include 解析，然后**从成品文件里重新数**表数图数对账。
+
+**验收（`pw.py exit 9` 会自动跑）**：
+
+```bash
+python3 scripts/assemble_manuscript_docx.py <workspace>              # 写
+python3 scripts/check_deliverable_contract.py <workspace> --strict   # 验
+```
+
+闸门判红的四类情况：文件不存在（而状态说已组装）、`.docx` 里的表/图少于正文 include 的数量
+（转换丢件）、只有表没有正文（转换塌了）、残留 `\input{}` / `??` / `[UNRESOLVED …]` 标记。
+另外它比对状态与实物：`manuscript.docx_status=verified` 或 `replication_pack.status=ready`
+只要比成品文件"更绿"，一律判红——**`verified` 是挣来的，不是写进状态文件的**。
+
+---
+
 ## 4.1 三线表导出契约（默认表格格式）
 
 **默认值**：`workflow_state.json.table_style.format = "three-line"`。这是经管期刊（AER/QJE/JPE 与
@@ -141,8 +184,9 @@ Setup 的一次性询问除交互档位、目标期刊、稿件语言外，还�
 - Stata：`esttab ... , booktabs` 出 `.tex`；`.docx` 走 `outreg2`/`putdocx`/`collect` 后**必须**过规整器
   （`putdocx` 默认画全框线）。
 - R：`modelsummary(..., output = "latex")` 默认 booktabs；`flextable`/`officer` 出的 `.docx` 同样过规整器。
-- Markdown → Word（Stage 9 用 `67/md-to-docx` 转全文时）：pandoc 生成的表继承 `Table` 样式，
-  **必然**不是三线表，转完必须过规整器。
+- 全文 Word 定稿（Stage 9 `scripts/assemble_manuscript_docx.py`）：组装器**自己已经跑过一遍规整器**
+  （内置写入器直接按三线结构写出，pandoc 路径转完立刻规整），所以正常情况下不需要人工补跑；
+  要换字号字体（`--preset cn-journal` / `en-journal`）时再显式跑一次即可，规整器幂等。
 
 **规整与验收（两个命令，一写一验）**：
 

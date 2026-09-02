@@ -8,7 +8,9 @@
     {
       "id": "python",
       "label": "Python runtime",
-      "required_for": ["python-statspai"],
+      "required_for": [
+        "python-statspai"
+      ],
       "probe": "python3 --version",
       "status": "pending",
       "version": "",
@@ -18,7 +20,9 @@
     {
       "id": "statspai",
       "label": "StatsPAI MCP or package",
-      "required_for": ["python-statspai"],
+      "required_for": [
+        "python-statspai"
+      ],
       "probe": "python -c 'import statspai'",
       "status": "pending",
       "version": "",
@@ -28,7 +32,9 @@
     {
       "id": "stata",
       "label": "Stata executable",
-      "required_for": ["stata"],
+      "required_for": [
+        "stata"
+      ],
       "probe": "stata-mp -q",
       "status": "pending",
       "version": "",
@@ -38,7 +44,9 @@
     {
       "id": "r",
       "label": "R runtime",
-      "required_for": ["r"],
+      "required_for": [
+        "r"
+      ],
       "probe": "R --version",
       "status": "pending",
       "version": "",
@@ -64,6 +72,16 @@
       "version": "",
       "path": "",
       "notes": "PDF + PNG export support"
+    },
+    {
+      "id": "manuscript_export",
+      "label": "Manuscript → Word converter",
+      "required_for": [],
+      "probe": "pandoc --version",
+      "status": "pending",
+      "version": "",
+      "path": "",
+      "notes": "pandoc is preferred (citeproc + --reference-doc); absent, assemble_manuscript_docx.py falls back to its stdlib builtin writer, which is recorded in manuscript.converter"
     }
   ],
   "missing_dependencies": [],

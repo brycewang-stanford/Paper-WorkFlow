@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 39/39 green.**
+**Rigor checkers selftest: PASSING — 41/41 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -20,6 +20,8 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 | [`scripts/check_table_style.py`](scripts/check_table_style.py) | ✅ pass | Three-line table (三线表) export contract: exported .docx tables carry a heavy top rule, a light header rule and a heavy closing rule with no vertical or stray interior rules, borders are explicit rather than inherited from a Word table style, and the paired .tex uses booktabs instead of \hline / '|' column specs. |
 | [`scripts/make_three_line_tables.py`](scripts/make_three_line_tables.py) | ✅ pass | Three-line table normaliser: rewriting a .docx table's borders in place produces exactly the heavy-top / light-header / heavy-bottom rule structure check_table_style.py demands, preserves cell content and the header-repeat flag, is idempotent, and never leaves a partially-rewritten document behind. |
 | [`scripts/check_manuscript_numbers.py`](scripts/check_manuscript_numbers.py) | ✅ pass | Manuscript numeric anchoring and rewrite inertness: every coefficient, standard error and sample size asserted in the manuscript must trace to 03_analysis/results or 04_results at the precision it is printed, and the Stage 6->7 de-AIGC rewrite must not change a single number in either direction. Unanchored figures are waived only by an in-text, referee-readable `% pw-number-ok:` comment. |
+| [`scripts/check_deliverable_contract.py`](scripts/check_deliverable_contract.py) | ✅ pass | Full-text deliverable contract: the .docx the venue asked for exists at the declared path, carries at least as many tables and figures as the manuscript includes (the silent-drop failure mode of any format conversion), holds real prose rather than floating exhibits, retains no unresolved include / cross-reference / placeholder, and is never claimed `verified` -- nor shipped inside a `ready` replication pack -- while the artifact on disk says otherwise. |
+| [`scripts/assemble_manuscript_docx.py`](scripts/assemble_manuscript_docx.py) | ✅ pass | Manuscript assembly: the finished body, its exhibit includes and its figures are built into one full-text .docx -- resolving every include before conversion, because handing raw LaTeX to pandoc drops `\input{}` exhibits without a word. Both converters (pandoc and the stdlib builtin writer) are exercised, the emitted tables satisfy the three-line contract, and anything that could not be resolved is recorded rather than dropped. |
 | [`scripts/check_ai_disclosure.py`](scripts/check_ai_disclosure.py) | ✅ pass | AI-use disclosure and authorship integrity: an AI system can never be an author, AI-generated data or result images are fabrication, AI-written code and AI-screened literature cannot be shipped unverified, the rendered venue statement must cover every disclosed category, and the de-AIGC stage that removes the AI accent must not also remove the AI disclosure. |
 | [`scripts/check_citation_integrity.py`](scripts/check_citation_integrity.py) | ✅ pass | Citation existence + temporal integrity: DOI resolution, retraction screening, citation-laundering, and look-ahead / vintage / sample-vs-claim-period leakage. |
 | [`scripts/check_verification_log.py`](scripts/check_verification_log.py) | ✅ pass | The load-bearing methods-claim verification log exists and every claim it makes is backed by a recorded check. |
@@ -64,4 +66,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-08-27 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-09-02 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.

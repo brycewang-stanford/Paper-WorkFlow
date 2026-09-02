@@ -111,6 +111,8 @@ STAGE_EXIT_GATES: dict[str, list[Gate]] = {
          "advisory numeric tiers become hard failures at submission"),
         ("scripts/check_table_style.py", [WS],
          "the Word export is still a three-line table after the last edit"),
+        ("scripts/check_deliverable_contract.py", [WS, "--strict"],
+         "the full-text .docx exists, keeps every exhibit, and is not over-claimed"),
         BASE_GATE,
     ],
 }
@@ -131,6 +133,9 @@ NON_STAGE_RUNTIME: dict[str, str] = {
         "temp workspace; the per-run requirement is Stage 9 of the Chinese thesis "
         "path only, so it is not a gate every run owes"),
     "scripts/check_verification_log.py": "repo-level: audits this package's own methods claims",
+    "scripts/assemble_manuscript_docx.py": (
+        "a builder, not a gate: Stage 9 runs it to produce the full-text .docx, "
+        "and check_deliverable_contract.py is what passes or fails on the result"),
     "scripts/make_three_line_tables.py": (
         "a fixer, not a gate: Stage 4/9 run it to normalise .docx tables, and "
         "check_table_style.py is what passes or fails on the result"),

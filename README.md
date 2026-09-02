@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-39%2F39_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-41%2F41_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -297,7 +297,9 @@ scope 只决定**这次交付欠哪些闸门**，**不放松**任何已声明 `p
 
 分析后端可选 `python-statspai`（默认）、`stata` 或 `r`，决定 Stage 3–4 的脚本与导出工具，和稿件语言相互独立。
 
-表格格式默认 `three-line`（经管期刊主流的**三线表**）：Stage 4 出表和 Stage 9 全文导出 Word 后，都会跑一遍 `scripts/make_three_line_tables.py` 把顶线 / 栏目线 / 底线写实、清掉竖线与底纹，再由 `scripts/check_table_style.py` 只读校验（同时查配套 `.tex` 的 booktabs 合规）。目标刊自带 Word 模板或要求全边框时，把 `workflow_state.json.table_style.format` 改掉即可跳过，理由记进 `decisions`。细则见 [三语言分析后端](references/analysis-backends.md) §4.1。
+表格格式默认 `three-line`（经管期刊主流的**三线表**）：Stage 4 出表和 Stage 9 全文组装 Word 后，都会跑一遍 `scripts/make_three_line_tables.py` 把顶线 / 栏目线 / 底线写实、清掉竖线与底纹，再由 `scripts/check_table_style.py` 只读校验（同时查配套 `.tex` 的 booktabs 合规）。目标刊自带 Word 模板或要求全边框时，把 `workflow_state.json.table_style.format` 改掉即可跳过，理由记进 `decisions`。细则见 [三语言分析后端](references/analysis-backends.md) §4.1。
+
+**全文交付（Stage 9）**：正文格式在 Stage 0 就定（`manuscript.format` = `markdown` / `latex`——**要交 Word 就写 `markdown`**，LaTeX → `.docx` 是有损转换）。Stage 9 由 `scripts/assemble_manuscript_docx.py` 把正文、它 include 的每张表每张图和参考文献合成**一份** `09_submission/main.docx`，装了 pandoc 走 pandoc、没装就走零依赖内置写入器；再由 `scripts/check_deliverable_contract.py --strict` 从成品文件重新数表数图对账。**裸 pandoc 会静默丢掉 `\input{}` 表格**——文件照样能打开，只是少了结果，所以组装器先自己解析 include 再转换，闸门再验一遍。只收 LaTeX 的期刊显式声明 `docx_status=not-required`。细则见 [三语言分析后端](references/analysis-backends.md) §4.2。
 
 > [!NOTE]
 > **接入已有材料时，请把依赖一起交给工作流。** 数据至少应附主键、时间 / 处理变量、变量说明与研究设计；回归结果应附生成代码、规格和样本口径；`main.tex` 应连同 `.bib`、图片以及自定义 class / style 文件传入。相对路径按 agent 当前工作目录解析，拿不准时使用绝对路径。材料不足时，Stage 0 应先记录缺口并降级或暂停，不能假定结果可追溯。
@@ -450,7 +452,9 @@ Paper-WorkFlow/
 │   ├── check_cn_claim_audit.py       # 中文数据源/期刊 claim 台账（_verification_log/）审计闸门
 │   ├── check_review_scorecard.py     # Draft Quality Gate 评分卡 L1/L2 机械校验
 │   ├── check_preregistration.py      # 预注册锁与 exploratory 标注校验
-│   ├── check_manuscript_numbers.py   # 稿件数字锚定 + Stage 6→7 改写零漂移闸门
+│   ├── check_manuscript_numbers.py   # 稿件数字锚定 + Stage 6→7 改写零漂移 + Stage 8→9 排版零漂移闸门
+│   ├── assemble_manuscript_docx.py   # 正文+表+图+参考文献 → 一份 Word 全文定稿（pandoc 或零依赖内置写入器）
+│   ├── check_deliverable_contract.py # 全文交付闸门：.docx 存在、表图不少、无未解析标记、状态不得比实物绿
 │   ├── check_ai_disclosure.py        # 生成式 AI 使用声明闸门：作者署名/伪造/未核验/Stage 7 自曝
 │   ├── pw.py                         # 阶段感知的闸门入口：enter/exit/check/final/plan/list
 │   ├── check_defense_deck.py         # 答辩 PPT 生成闸门：必备节不被发现挤掉 + 内容真落盘

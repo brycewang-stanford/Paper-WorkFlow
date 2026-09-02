@@ -4,9 +4,11 @@ description: >
   经管 / 社科实证论文全流程 meta-orchestrator：把选题、设计、数据、估计、方法闸门、
   表图、写作、去 AI 味、质量门、修订、投稿与复盘编排成 Stage 0–9 可断点续跑流水线。
   本 skill 不重复实现子能力，而是按阶段调用既有 skill 或并行 subagent，并在 Stage 3–4
-  路由 Python/StatsPAI、Stata、R 三种分析后端。触发：/paper-workflow、帮我写一篇实证论文、
-  从选题到投稿、端到端 empirical paper、已有 proposal/数据/初稿要推进到投稿，或明确要求
-  用 Stata / R/fixest / Python-StatsPAI 完整复现。
+  路由 Python/StatsPAI、Stata、R 三种分析后端，Stage 9 交付**一份含正文+表+图+参考文献的
+  Word 全文定稿**（`09_submission/main.docx`，另可出 `.tex`）。触发：/paper-workflow、
+  帮我写一篇实证论文、从选题到投稿、端到端 empirical paper、从数据到 docx 论文全文、
+  出一份 Word 版全文、已有 proposal/数据/初稿要推进到投稿，或明确要求用 Stata / R/fixest /
+  Python-StatsPAI 完整复现。
 
   Parent-invoked with any trigger above: jump straight to Stage 0 Setup
   without re-asking.
@@ -39,13 +41,13 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | **1L** | 文献基座（先于查新打分） | 多路并行检索：`59-openalex` / `36` / `52` + Zotero MCP | `01_proposal/lit/corpus.md` + `lit_matrix.md` |
 | **2** | 数据 | `data-fetcher` → `data-cleaning` + sample/estimand audit + 测量效度 | `02_data/clean.parquet` + `codebook.md` + `sample_audit.md` + `measurement_audit.md` |
 | **2.5** | 设计锁定（先于第一个估计） | *(编排器本体，人类决策点)* | `00_meta/preregistration.md` + `design_lock` 状态 |
-| **3** | 计量识别、估计与方法闸门 | **分析后端路由**：默认 Python/StatsPAI（MCP 优先：`detect_design→preflight→recommend→fit(as_handle)→audit_result→sensitivity_from_result→bibtex`），也可切 Stata（`.do`）或 R（fixest/Quarto）；再按设计配 `did-analysis` / `iv-estimation` / `rdd-analysis` / `synthetic-control` / `panel-data` / `ml-causal` 等（全表见 skill-map）+ empirical audit + methods pack + design gate cards | `03_analysis/` 代码 + `design_register.md` + `method_gate.md` + `evidence_ledger.md` |
+| **3** | 计量识别、估计与方法闸门 | **分析后端路由**：默认 Python/StatsPAI（MCP 优先，调用链见 `statspai-analysis.md`），也可切 Stata（`.do`）或 R（fixest/Quarto）；再按设计配 `did-analysis` / `iv-estimation` / `rdd-analysis` / `synthetic-control` / `panel-data` / `ml-causal` 等（全表见 skill-map）+ empirical audit + methods pack + design gate cards | `03_analysis/` 代码 + `design_register.md` + `method_gate.md` + `evidence_ledger.md` |
 | **4** | 表与图 | 按同一后端生成出版级表图：Python/StatsPAI `regtable`/`paper_tables`/`collect`，Stata `esttab`/`outreg2`/`collect`，R `modelsummary`/`etable`/Quarto；均需三线表 Word/Excel/LaTeX 同出 + PDF/PNG 图 | `04_results/*.{tex,docx,xlsx}` + `*.pdf/png` |
-| **5** | 写作初稿 | `paper-writer` | `05_draft/main.tex` + `ref.bib` |
-| **6** | **结构层**打磨（段落及以上） | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify 全量基线） | 打磨后的 `main.tex` |
+| **5** | 写作初稿 | `paper-writer` | `05_draft/main.{tex,md}`（按 `manuscript.format`）+ `ref.bib`；表图一律 include 引用 |
+| **6** | **结构层**打磨（段落及以上） | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify 全量基线） | 打磨后的 `main.{tex,md}` |
 | **7** | **语言层**去 AI 味（句子及以下） | `de-aigc-skills`(48 中英双语六步闭环) → `readability`/`fix-chinese` 收尾 | 降味稿 + 审计表 + 数字零漂移 + `00_meta/ai_use_disclosure.md` 补上本阶段台账行 |
 | **8** | 模拟评审与修订 | `referee-report` → `paper-referee-revise`（或 `paper-self-revise`） | 修订稿 + response letter |
-| **9** | 选刊与投稿 | `paper-submission` → 可选 AJS 目标期刊适配器 → `reference-verify`（终审） | 期刊清单 + 期刊专属预检 + cover letter + 按目标刊政策渲染的 AI 使用声明 |
+| **9** | 选刊与投稿 + **全文交付** | `paper-submission` → 可选 AJS 适配器 → `reference-verify`（终审）→ `assemble_manuscript_docx.py` | 期刊清单 + 专属预检 + cover letter + AI 使用声明 + **`09_submission/main.docx` 全文定稿** |
 | **—** | 复盘与交付 | *(编排器本体)* | `FINAL_REPORT.md` + 打包交付物 |
 
 > 完整阶段细节、每阶段的 plan→execute→review→revise 微循环、subagent 派发模板，全部在
@@ -74,9 +76,11 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
    [`references/workspace-and-state.md`](references/workspace-and-state.md)；交付物优先用 [`templates/`](templates/)。
 4. **写 Stage 0 账本**：`00_meta/entry_routing.md` 记录入口、材料、假设、人类决策分支；
    `00_meta/stage_passport.md` 和 `workflow_state.json.orchestration` 记录 handoff / 断点恢复指针。
-5. **一次问清六件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、**严格度档位 scope**
+5. **一次问清七件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、**严格度档位 scope**
    （`draft` / `working-paper` / `submission` 缺省）、目标期刊、语言、分析后端（`python-statspai` 推荐 /
-   `stata` / `r`）、表格格式（默认三线表）。**交互档位管多久停一次问人，scope 管完成的标准是什么，
+   `stata` / `r`）、表格格式（默认三线表）、**正文格式 + 交付物**（`manuscript.format`、
+   `manuscript.deliverable`）。**要交 Word 全文就写 `markdown`**（LaTeX → `.docx` 有损）；必须问在
+   Stage 5 之前，改格式=重排全文。路由表见 [`analysis-backends.md`](references/analysis-backends.md) §4.2。**交互档位管多久停一次问人，scope 管完成的标准是什么，
    两者正交**：`draft` 只欠方法闸门，`submission` 欠全部六道；scope 只定完成契约，**不放松**任何
    已声明 `pass` 的闸门的证据验证。参数足够或要求无人值守时自动填保守缺省，写入 `00_meta/intake.md`、
    `00_meta/analysis_backend.md`、`workflow_state.json.decisions`。
@@ -137,8 +141,8 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 
 2. **入口检查（先跑，再干活）**：`python3 scripts/pw.py enter <N> <workspace>`。返回非零就**别开工**——阶段闸门是做完之后才发现问题，前置条件是同一批事实在开工之前检查，回退只丢一个决定而非一个阶段的工作量。
 3. **置 `in_progress`** → 读 [`references/stage-playbook.md`](references/stage-playbook.md) 对应章节 → 按其 plan→execute→review→revise 跑（该用 `Skill` 用 `Skill`、该派 `Agent` 派 `Agent`，全程守上面的上下文保护协议）。
-4. **冲突 / 退化检查**（沿用 `paper-pipeline`）：每阶段前后 `Glob` 一次 `*冲突副本*` / `*conflicted copy*`，发现就停下让用户定夺哪份为准；每阶段末把关键产物快照进 `backups/after_stage<N>/` 作为回滚路径。若 `Skill` / `Agent` / 网络 / MCP / Stata/R/Python/Zotero 不可用，按 [`references/runtime-fallbacks.md`](references/runtime-fallbacks.md) 选 fallback，影响写入日志、`decisions` 与对应闸门，不可把工具缺失伪装成已验证。
-5. **阶段闸门**：先跑 `python3 scripts/pw.py exit <N> <workspace>`（该阶段欠哪些 checker 由 [`pw.py`](scripts/pw.py) 的 stage→gate 表定死，别凭记忆挑），全绿才置 `done` → 按交互档位决定是否暂停——`全自动` 直进下一阶段；`阶段确认`（缺省）输出**摘要卡**（产出清单 + 关键数字 + 红旗 + 下阶段计划）等放行；`全程交互` 再确认一次。遇**硬阻断**（平行趋势不过、IV 弱工具、查新撞车、数据取不到）不要硬往下走——按 playbook「失败回退」分支处理，并在摘要卡里**显著标红**说明发生了什么、采取了什么回退。
+4. **冲突 / 退化检查**（沿用 `paper-pipeline`）：每阶段前后 `Glob` 一次 `*冲突副本*` / `*conflicted copy*`，发现就停下让用户定夺哪份为准；每阶段末把关键产物快照进 `backups/after_stage<N>/` 作为回滚路径。工具 / 网络 / MCP / 统计软件不可用时按 [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化并记录（见下「运行时退化必须披露」）。
+5. **阶段闸门**：先跑 `python3 scripts/pw.py exit <N> <workspace>`（该阶段欠哪些 checker 由 [`pw.py`](scripts/pw.py) 的 stage→gate 表定死，别凭记忆挑），全绿才置 `done` → 按交互档位决定是否暂停——`全自动` 直进下一阶段；`阶段确认`（缺省）输出**摘要卡**（产出清单 + 关键数字 + 红旗 + 下阶段计划）等放行；`全程交互` 再确认一次。遇**硬阻断**不要硬往下走——按 playbook「失败回退」分支处理，并在摘要卡里**显著标红**说明发生了什么、采取了什么回退。
 
 ---
 
@@ -150,7 +154,7 @@ Stage 3 的目标不是「跑出显著系数」，而是把识别设计、估计
 0. **设计锁前置**（Stage 2.5）：`design_lock.status=locked` 且 `locked_before_estimation=true`，**否则不得开始估计、也不得 `PASS`**；锁后偏离登记 deviations，未登记的降级 exploratory。第一批估计跑通即冻结复现环境（`00_meta/repro_environment.md` + master script 骨架），**不是收尾才补**。
 1. **设计注册** `03_analysis/design_register.md`：estimand、处理定义、比较组、识别假设、主 / 替代估计量、失败回退。
 2. **样本审计** `02_data/sample_audit.md`：estimation sample、treated/control 数、treatment timing、missingness/balance/overlap、cluster level 与变量构造对齐 estimand。
-3. **最低证据包**：按设计分支补齐必需 artifact（逐卡见 [`design-gate-cards.md`](references/design-gate-cards.md)，如交错 DiD→CS/SA/BJS group-time 稳健估计、RDD→bandwidth+robust bias-corrected CI+密度/协变量连续性）。推断口径按 `inference-and-uncertainty.md` 定死并写 `03_analysis/inference_report.md`；有机制主张按 `mechanism-and-channels.md` 分类、把中介移出主设定、证据落 `03_analysis/mechanism/`。
+3. **最低证据包**：按设计分支补齐必需 artifact（逐卡见 [`design-gate-cards.md`](references/design-gate-cards.md)）。推断口径按 `inference-and-uncertainty.md` 定死并写 `03_analysis/inference_report.md`；有机制主张按 `mechanism-and-channels.md` 分类、把中介移出主设定、证据落 `03_analysis/mechanism/`。
 4. **方法闸门报告** `03_analysis/method_gate.md`：逐项列必需证据是否齐、路径、是否 `PASS`，填 **Design Gate Card** 与最强允许 claim 等级。`NOT PASS` 不得进入 Stage 4，须回 Stage 1/2/3 修设计 / 数据 / 估计。
 5. **Design risk ledger** `03_analysis/design_risk_ledger.md`：按 [`design-risk-ledger.md`](references/design-risk-ledger.md) 逐项关掉或降级适用威胁。任何 blocking threat 未关 → `design_risk.status=not_pass`、Method Gate 不得 `PASS`；风险只限外推时把 claim consequence 写进两本 ledger。
 6. **Evidence ledger** `00_meta/evidence_ledger.md`：每个 manuscript claim 连到 estimand、样本审计、结果文件、稳健性、表图、脚本与允许措辞；摘要 / 引言 / 结果 / 结论 / cover letter 的 claim 不得强于 ledger 的 `Strength`。
@@ -168,17 +172,17 @@ Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉
 [`references/quality-rubric.md`](references/quality-rubric.md) 的 7 维评分卡给当前初稿打分（派发模板见
 [`subagent-templates.md`](references/subagent-templates.md) §QG）：
 
-1. critic 读 `07_dehumanize/main.tex`（含表图、`ref.bib`）+ `01_proposal/proposal.md`（对照贡献承诺）+ `03_analysis/results/summary.md`（对照真实结果），逐维打分写入 `00_meta/quality_scorecard.md`，只回传总分 / 各维分 / 是否达标 / 最关键 3 条短板。
+1. critic 读 `07_dehumanize/main.{tex,md}`（含表图、`ref.bib`）+ `01_proposal/proposal.md`（对照贡献承诺）+ `03_analysis/results/summary.md`（对照真实结果），逐维打分写入 `00_meta/quality_scorecard.md`，只回传总分 / 各维分 / 是否达标 / 最关键 3 条短板。
 2. **7 维**（各满分 10，细则见 rubric）：① 选题与贡献锋利度 ② 识别可信度 ③ 稳健性完整度 ④ 结果与解读克制度 ⑤ 写作与结构 ⑥ 引用真实性与文献定位 ⑦ 可复现性。
 3. **达标线**：每维 ≥7 **且**总分 ≥56/70 **且**第②③⑥维（识别 / 稳健 / 引用）无致命红旗，**且** `00_meta/claim_integrity_audit.md` 的 `pre-review` 无 blocking finding → 标 `quality_gate=pass`、`draft_milestone=done`，进入可选 Stage 8–9。
-   **机械前置（先于 critic 打分）**：跑 `python3 scripts/check_manuscript_numbers.py <workspace>`——每个系数 / 标准误 / 样本量都要能在 `03_analysis/results/` 或 `04_results/` 按显示精度找到来源（`0.123` 匹配 `0.12345`），且 Stage 6→7 这条**只改语言不改数字**的边界零漂移。`unanchored_claims` 或 `inert_boundary_drift` >0 → 质量门直接不得 `pass`，无需打分：没有来源的数字比任何一维失分都更前置。引自他文的数字用稿内 `% pw-number-ok: <n> -- 理由` 豁免。
+   **机械前置（先于 critic 打分）**：跑 `python3 scripts/check_manuscript_numbers.py <workspace>`。`unanchored_claims` 或 `inert_boundary_drift` >0 → 质量门直接不得 `pass`，无需打分：没有来源的数字比任何一维失分都更前置。
    同批再跑 `python3 scripts/check_ai_disclosure.py <workspace>`：Stage 7 一旦 `done`，`00_meta/ai_use_disclosure.md` 必须存在且带 Stage 7 台账行——**去 AI 味只能抹掉 AI 腔，不能抹掉 AI 声明**。契约见 [`ai-use-disclosure.md`](references/ai-use-disclosure.md)。
 4. **未达标**按 rubric「短板 → 回退阶段」映射重做，**最多回退 2 轮**（`revision_rounds_cap`）；Method Gate 方向另受 `method_gate_rounds_cap`（缺省 2）约束。任一触顶按 `budget_exhausted_action`（缺省 `deliver-with-known-gaps`）记「已知短板」标红交用户裁决是否带病投稿——**没有上限，`全自动`档位在一个永远过不了的闸门上就是无界循环**。
 5. 每轮打分追加进 `logs/quality_gate.md`，让用户看到分数随修订上升（审计轨迹）。
 
 > 质量门**不是**重跑 Stage 6 打磨、也不替代 Stage 8 评审——只按统一 rubric 量化「这份初稿够不够格」并决定放行还是回炉。
 
-**Claim Integrity Audit**：Stage 7→8（`pre-review`）与 Stage 9（`final-check`）按 [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 用 [`templates/claim_integrity_audit.md`](templates/claim_integrity_audit.md) 写 / 刷新 `00_meta/claim_integrity_audit.md`：摘要、引言贡献段、结果主题句、结论、cover letter 的每条数值与因果 claim 逐条定位到 evidence ledger row、结果文件 / 脚本、表图或可核引用。任一 blocking verdict → `integrity_audit.status=not_pass`、质量门不得 `pass`；`replication_pack.status=ready` 要求 `pass` 且 `blocking_findings=[]`（终审的中央 claim 不许抽样）。计数写入状态后跑 `check_workspace_gates.py` 抓矛盾。
+**Claim Integrity Audit**：Stage 7→8（`pre-review`）与 Stage 9（`final-check`）按 [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 用 [`templates/claim_integrity_audit.md`](templates/claim_integrity_audit.md) 写 / 刷新 `00_meta/claim_integrity_audit.md`，把摘要、引言贡献段、结果主题句、结论、cover letter 的每条数值与因果 claim 逐条定位到证据。任一 blocking verdict → `integrity_audit.status=not_pass`、质量门不得 `pass`；`replication_pack.status=ready` 要求 `pass` 且 `blocking_findings=[]`（终审的中央 claim 不许抽样）。计数写入状态后跑 `check_workspace_gates.py` 抓矛盾。
 
 ---
 
@@ -199,9 +203,10 @@ Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉
 
 - **绝不替子 skill 重新发明轮子**：识别策略、表格规范、查新、审稿口吻都在既有 skill 里；本编排器只在对的时点把对的 skill 喂对的输入。
 - **绝不伪造数据 / 结果 / 文献**：引用交给 `reference-verify` / StatsPAI `bibtex`（`paper.bib` 唯一真源），数据交给 `data-fetcher`，计量结论以真实运行为准。
-- **绝不贴空方法标签**：DiD/IV/RDD/SDID/DML 等必须对应 `research-grade-methods.md` 与 `design-gate-cards.md` 的证据包；缺 `method_gate.md`、闸门未过或 ledger 不允许该强度，就不得写成主因果发现。
+- **绝不贴空方法标签**：DiD/IV/RDD/SDID/DML 等必须对应 `design-gate-cards.md` 的证据包；缺 `method_gate.md`、闸门未过或 ledger 不允许该强度，就不得写成主因果发现。
 - **绝不在没锁设计的情况下开始估计**：Stage 2.5 的 `00_meta/preregistration.md` 必须在 `03_analysis/results/main_results.json` 出现**之前**锁定（`locked_before_estimation=true`）。事后补的锁不是锁——它让选择性报告不可检验；未登记的偏离一律降级 exploratory。
-- **绝不让稿件出现没有来源的数字**：每个系数 / 标准误 / 样本量都要能在结果文件里按显示精度找到，Stage 6→7 只改语言不改数字。跑 `scripts/check_manuscript_numbers.py`；漂移只能把数字改回结果值，**绝不允许反过来改结果文件迁就稿件**。
+- **绝不让稿件出现没有来源的数字**：每个系数 / 标准误 / 样本量都要能在结果文件里按显示精度找到，Stage 6→7 只改语言不改数字、Stage 8→9 排版只换格式不换数字。跑 `scripts/check_manuscript_numbers.py`（`.tex` / `.md` / `.docx` 三种格式都读）；漂移只能把数字改回结果值，**绝不允许反过来改结果文件迁就稿件**。
+- **绝不交一份少表少图的 Word 稿**：Stage 9 跑 `assemble_manuscript_docx.py` 合成 `09_submission/main.docx`（正文+表+图+参考文献），再跑 `check_deliverable_contract.py --strict` 从成品文件重数对账——**裸 pandoc 会静默丢掉 `\input{}` 表格**。未解析项进 `manuscript.unresolved_markers`，非空则 `docx_status` 不得 `verified`、投稿包不得 `ready`；只收 LaTeX 的刊须显式声明 `not-required`。详见 [`analysis-backends.md`](references/analysis-backends.md) §4.2。
 - **绝不让估计样本漂移**：`sample_audit.md` 未说明 raw→clean→estimation 的 N、drop 原因、treated/control 数、missingness/balance/overlap 与聚类层级时，不得宣称已过方法闸门。
 - **绝不让不确定性量化错位**：聚类层级 ≥ 处理分配层级；G≲30–50 用 wild bootstrap / CR2 / 随机化推断；多 outcome / 子样本预指定或族内校正；弱工具用 AR/tF 区间——口径写进 `inference_report.md`，缺则按 [`inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 在质量门封顶。
 - **绝不把机制当主回归的赠品**：按 [`mechanism-and-channels.md`](references/mechanism-and-channels.md) 分清描述性分解 / 因果中介 / 异质性；中介绝不进主设定，措辞退到证据支持的档位。
@@ -212,7 +217,7 @@ Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉
 - **运行时退化必须披露**：工具 / 网络 / MCP / 统计软件缺失时按 [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化执行；影响最低证据包或复现的必须降低闸门状态/分数，不得把工具缺失伪装成已验证。
 - **claim 忠实度必须单独验**：citation 存在 ≠ claim 忠实。Stage 7→8 与 Stage 9 按 [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) 审计数字、引用、因果措辞与 forbidden wording；有 blocking finding 时质量门与投稿包都不得 ready。
 - **引用存在性与时序完整性也必须单独验**：引用真实存在且引对（DOI / 撤稿 / 版本 / 无 citation laundering），且无时序穿越（look-ahead / vintage / 训练-测试切分 / 样本期 vs 论断期），按 [`citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md) 落 `00_meta/citation_integrity_log.md`，终审跑 `check_citation_integrity.py --final`；未排除的 look-ahead 把结论封顶到 `descriptive`。
-- **AI 使用必须声明，去 AI 味不是隐瞒**：本流水线用 LLM 起草（5）、打磨（6）、去味（7），ICMJE/COPE/Elsevier/Springer/Wiley/AEA 与中文期刊、学位论文规范都要求如实披露、且 AI 永远不能署名。每阶段把工具+版本、用途、**人工核验方式**、担责人追加进 `00_meta/ai_use_disclosure.md`，Stage 9 按目标刊政策渲染声明；AI 生成数据/结果图 = 伪造，AI 写的代码与筛的文献不得以 `unverified` 交付。跑 `scripts/check_ai_disclosure.py`（`--final` 收尾）；未过则 `ethics_gate`、投稿包与 `submission` scope 均不得 ready。见 [`ai-use-disclosure.md`](references/ai-use-disclosure.md)。
+- **AI 使用必须声明，去 AI 味不是隐瞒**：本流水线用 LLM 起草（5）、打磨（6）、去味（7），主流期刊与学位论文规范都要求如实披露、且 AI 永远不能署名。每阶段把工具+版本、用途、**人工核验方式**、担责人追加进 `00_meta/ai_use_disclosure.md`，Stage 9 按目标刊政策渲染声明；AI 生成数据/结果图 = 伪造，AI 写的代码与筛的文献不得以 `unverified` 交付。跑 `scripts/check_ai_disclosure.py`（`--final` 收尾）；未过则 `ethics_gate`、投稿包与 `submission` scope 均不得 ready。见 [`ai-use-disclosure.md`](references/ai-use-disclosure.md)。
 - **上下文保护优先于一切**：任何会把大段文本灌回主代理的操作，一律改成「写盘 + 回传摘要」。
 - **断点交接必须可恢复**：阶段完成更新 `00_meta/stage_passport.md`；长暂停 / 阶段切换 / 接手前写 `00_meta/handoff/`，续跑时用 fresh evidence 重核事实。
 - **维护本 skill 不靠感觉**：按 [`skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) 收 rollout、拆 train / held-out、提有界 patch、过 selection gate，守 [`evals/check_complexity_budget.py`](evals/check_complexity_budget.py) 体积棘轮；改完跑 `python3 validate_skill.py` 与 [`evals/score_skill.py`](evals/score_skill.py) `--selftest`（有改进包再跑 `check_skillopt_packet.py <packet>`），全绿才算可交付。
@@ -226,14 +231,14 @@ Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉
 
 | 何时 | 读什么 |
 |---|---|
-| 编排本身 | [`stage-playbook.md`](references/stage-playbook.md) 逐阶段手册 · [`skill-map.md`](references/skill-map.md) §0 注册名与输出重定向 · [`orchestration-and-handoff.md`](references/orchestration-and-handoff.md) 路由/handoff/schema v13 · [`workspace-and-state.md`](references/workspace-and-state.md) 状态字段 · [`subagent-templates.md`](references/subagent-templates.md) 派发模板 · [`skill-coverage-map.md`](references/skill-coverage-map.md) 47 技能溯源 |
+| 编排本身 | [`stage-playbook.md`](references/stage-playbook.md) 逐阶段手册 · [`skill-map.md`](references/skill-map.md) §0 注册名与输出重定向 · [`orchestration-and-handoff.md`](references/orchestration-and-handoff.md) 路由/handoff/schema v14 · [`workspace-and-state.md`](references/workspace-and-state.md) 状态字段 · [`subagent-templates.md`](references/subagent-templates.md) 派发模板 · [`skill-coverage-map.md`](references/skill-coverage-map.md) 47 技能溯源 |
 | Stage 1L/1 文献 | [`literature-and-positioning.md`](references/literature-and-positioning.md)（§0.1 语料契约·检索·矩阵·定位句式） |
 | Stage 2 数据 | [`measurement-and-data-quality.md`](references/measurement-and-data-quality.md) 构念效度与测量误差（review 必读）· [`empirical-audit.md`](references/empirical-audit.md) 样本/estimand 对齐 · [`dataset-cards.md`](references/dataset-cards.md) 数据源卡 · [`china-data-sources.md`](references/china-data-sources.md) 中国数据源总表 |
 | Stage 2.5 设计锁 | [`design-transparency.md`](references/design-transparency.md)（§2.1 可执行预注册锁·功效/MDE·研究者自由度） |
 | Stage 3 估计 | [`analysis-backends.md`](references/analysis-backends.md) 三后端路由 · [`statspai-analysis.md`](references/statspai-analysis.md) · [`research-grade-methods.md`](references/research-grade-methods.md) 最低证据包 · [`design-gate-cards.md`](references/design-gate-cards.md) 设计卡 · [`computational-reproducibility.md`](references/computational-reproducibility.md)（§0.1 冻结点在 Stage 3） |
 | Stage 3/5/8 深化 | [`inference-and-uncertainty.md`](references/inference-and-uncertainty.md) 聚类与推断 · [`mechanism-and-channels.md`](references/mechanism-and-channels.md) 机制三分类 · [`threats-to-validity.md`](references/threats-to-validity.md) 威胁×异议预案 · [`design-risk-ledger.md`](references/design-risk-ledger.md) 风险状态表 |
 | Stage 5–8 写作质量 | [`writing-craft.md`](references/writing-craft.md) · [`quality-rubric.md`](references/quality-rubric.md) 7 维评分卡 · [`integrity-and-claim-audit.md`](references/integrity-and-claim-audit.md) claim/数字忠实度 · [`citation-and-temporal-integrity.md`](references/citation-and-temporal-integrity.md) 引用与时序 · [`ai-use-disclosure.md`](references/ai-use-disclosure.md) AI 使用声明契约 |
-| Stage 9 投稿 | [`peer-review-and-submission.md`](references/peer-review-and-submission.md) 英文刊 · [`chinese-journals.md`](references/chinese-journals.md) 中国期刊总册（GB/T 7714·选刊·答辩） |
+| Stage 9 投稿 | [`peer-review-and-submission.md`](references/peer-review-and-submission.md) 英文刊 · [`chinese-journals.md`](references/chinese-journals.md) 中国期刊总册（GB/T 7714·选刊·答辩） · [`analysis-backends.md`](references/analysis-backends.md) §4.2 全文交付契约 |
 | 收尾与治理 | [`reproducibility-pack.md`](references/reproducibility-pack.md) 复现包完整性 · [`data-governance.md`](references/data-governance.md) · [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化与封顶 · [`worked-example.md`](references/worked-example.md) 端到端 trace |
 | 维护本 skill | [`skillopt-improvement-loop.md`](references/skillopt-improvement-loop.md) · [`evals/`](evals/)（[`score_skill.py`](evals/score_skill.py)·[`check_complexity_budget.py`](evals/check_complexity_budget.py) 体积棘轮·[`complexity_audit.md`](evals/complexity_audit.md)）· [`templates/`](templates/) |
 

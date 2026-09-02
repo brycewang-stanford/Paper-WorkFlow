@@ -31,6 +31,8 @@
 | Stata 不可用 | 若 Stata 是用户指定主后端，先记录 blocked；可用 Python/R 等价实现做 fallback 或 secondary validation | Stata 版本缺失、替代包 | 关键 artifact 缺失则 Method Gate `NOT PASS` |
 | R/Python 包缺失 | 建安装脚本；若不能安装，用同类包或另一后端但保留差异说明 | 包名、版本、替代 | 数字不可复核时不得放行 |
 | LaTeX / PDF 工具缺失 | 生成 `.tex`、`.md`、`.docx` 替代；投稿前补 PDF render | 缺失命令 | 写作可继续，submission checklist 不可过 |
+| pandoc 缺失（Word 交付路径） | `assemble_manuscript_docx.py` 自动落到内置 stdlib 写入器，把 `manuscript.converter` 记成 `builtin`；保真度差异（citeproc、目标刊 `--reference-doc` 模板、行内公式）写进 `decisions` | 缺失命令、降级的转换能力 | `check_deliverable_contract.py` 照常跑——**降级的是转换器，不是闸门**；表图齐、无未解析标记即可 `verified` |
+| 图只有 `.pdf`、没有 `.png` | 由绘图后端补出 `.png`（`graph export` / `savefig` / `ggsave`）；内置写入器无法把 PDF 塞进 `.docx` | 缺失的位图、受影响图号 | 组装器记 unresolved marker，`check_deliverable_contract.py` 判 `exhibits:figures` 红——Word 稿不得少图 |
 | 受限数据不可访问 | 用公开样例/合成数据跑代码结构；真实估计标 blocked | 数据访问限制 | 主结果不可声称真实；复现 `not_ready` |
 | 目标期刊政策页不可访问 | 用本文件官方入口 + 已知模板先占位；投稿前刷新 | policy URL blocked | Stage 9 checklist 未完成 |
 | AJS 未安装 / 无精确期刊 skill / 调用失败 | 写 `09_submission/ajs/adapter_report.md` 标 `not_installed` / `no_exact_match` / `failed`，继续 `paper-submission` + 官网核验 + `reference-verify` | 发现方式、候选 pack、错误与降级原因 | AJS 本身不阻断；官网规则未核则 Stage 9 仍不得 `ready` |

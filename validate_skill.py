@@ -152,7 +152,7 @@ REQUIRED_REFERENCES = {
         "Stage Passport",
         "Fresh Evidence",
         "Handoff Card",
-        "schema_version 13",
+        "schema_version 14",
     ],
     "references/integrity-and-claim-audit.md": [
         "Integrity & Claim Audit",
@@ -195,8 +195,8 @@ def load_template() -> dict:
         data = json.loads(template_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         fail(f"{template_path.relative_to(ROOT)} is not valid JSON: {exc}")
-    if data.get("schema_version") != 13:
-        fail("workflow_state.template.json schema_version must be 13")
+    if data.get("schema_version") != 14:
+        fail("workflow_state.template.json schema_version must be 14")
     if list(data.get("stages", {}).keys()) != EXPECTED_STAGE_KEYS:
         fail("workflow_state.template.json stage keys do not match Stage 0-9 contract")
     for key in [
@@ -204,6 +204,7 @@ def load_template() -> dict:
         "orchestration",
         "analysis_backend",
         "table_style",
+        "manuscript",
         "empirical_audit",
         "method_gate",
         "evidence_governance",
@@ -254,6 +255,29 @@ def load_template() -> dict:
     ]:
         if key not in backend:
             fail(f"analysis_backend missing key: {key}")
+    manuscript = data["manuscript"]
+    for key in [
+        "format",
+        "body_file",
+        "deliverable",
+        "deliverable_docx",
+        "docx_status",
+        "converter",
+        "reference_docx",
+        "csl",
+        "exhibits_embedded",
+        "figures_embedded",
+        "unresolved_markers",
+        "last_assembly",
+    ]:
+        if key not in manuscript:
+            fail(f"manuscript missing key: {key}")
+    if manuscript.get("format") not in {"latex", "markdown"}:
+        fail("manuscript.format must default to 'latex' or 'markdown'")
+    if manuscript.get("docx_status") != "pending":
+        fail("manuscript.docx_status must default to 'pending'")
+    if not isinstance(manuscript.get("unresolved_markers"), list):
+        fail("manuscript.unresolved_markers must default to an empty list")
     audit = data["empirical_audit"]
     for key in [
         "status",
@@ -413,6 +437,8 @@ def check_assets() -> None:
         "scripts/check_citation_integrity.py",
         "scripts/check_preregistration.py",
         "scripts/check_manuscript_numbers.py",
+        "scripts/check_deliverable_contract.py",
+        "scripts/assemble_manuscript_docx.py",
         "scripts/check_ai_disclosure.py",
         "scripts/pw.py",
         "scripts/check_defense_deck.py",
@@ -597,6 +623,8 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     ("scripts/check_table_style.py", [["--selftest"]]),
     ("scripts/make_three_line_tables.py", [["--selftest"]]),
     ("scripts/check_manuscript_numbers.py", [["--selftest"]]),
+    ("scripts/check_deliverable_contract.py", [["--selftest"]]),
+    ("scripts/assemble_manuscript_docx.py", [["--selftest"]]),
     ("scripts/check_ai_disclosure.py", [["--selftest"]]),
     # Stage -> gate map. Its selftest is the only thing standing between a new
     # run-time checker and being registered but never actually run.

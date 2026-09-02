@@ -297,6 +297,33 @@
       ]
     },
     {
+      "id": "full_text_deliverable",
+      "theme": "runtime_validators_evals",
+      "invariant": "The artifact the venue actually receives is built and verified, not assumed. A run declares its body format (manuscript.format) at Stage 0 and what it owes (manuscript.deliverable); Stage 9 assembles the body, every exhibit it includes, its figures and its reference list into one 09_submission/main.docx, resolving includes before conversion because a bare converter drops \\input{} exhibits silently; the shipped file is then re-counted independently, must carry at least as many tables and figures as the manuscript includes, must hold running prose rather than floating exhibits, must retain no unresolved include, cross-reference or placeholder, and may never be claimed verified -- nor shipped inside a ready replication pack -- while the file on disk says otherwise. The conversion is inside the numeric-anchor contract: check_manuscript_numbers.py reads .tex, .md and .docx alike and treats Stage 8 -> Stage 9 as a typesetting boundary where numbers may not be lost or invented.",
+      "owner_files": [
+        "scripts/assemble_manuscript_docx.py",
+        "scripts/check_deliverable_contract.py",
+        "scripts/check_manuscript_numbers.py",
+        "assets/workflow_state.template.json",
+        "references/analysis-backends.md",
+        "references/stage-playbook.md"
+      ],
+      "validators": [
+        "scripts/check_deliverable_contract.py",
+        "scripts/assemble_manuscript_docx.py",
+        "scripts/check_manuscript_numbers.py",
+        "scripts/check_state_template_paths.py",
+        "validate_skill.py"
+      ],
+      "docs": [
+        "references/analysis-backends.md",
+        "references/workspace-and-state.md",
+        "references/orchestration-and-handoff.md",
+        "references/runtime-fallbacks.md",
+        "RIGOR.md"
+      ]
+    },
+    {
       "id": "design_lock_before_estimation",
       "theme": "workflow_contract_state",
       "invariant": "Stage 2.5 locks the primary specification after the data is in hand but before any main result exists: 00_meta/preregistration.md is filled and committed, design_lock.locked_before_estimation is true, Stage 3 cannot start and the Method Gate cannot pass without it, and post-lock changes are admissible only when registered in the deviations log.",

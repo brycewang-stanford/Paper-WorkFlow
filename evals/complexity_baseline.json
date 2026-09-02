@@ -1,13 +1,13 @@
 {
-  "recorded": "2026-08-27",
-  "note": "2026-08 wave: adds the AI-use disclosure contract (references/ai-use-disclosure.md, +1 reference file) — the one gap this pipeline creates for itself, since Stage 7 removes the AI accent and nothing forced it to leave the AI disclosure behind. Paid for on the always-loaded layer: SKILL.md was consolidated from 32244 to under the 32000-byte target in the same wave (double-gate blockquote, Method Gate items 0/3/5/7/8, quality-gate rollback map, claim-integrity paragraph, and the demo-materials footer all deduplicated against the references that own them), so the reference count is the only ceiling that moved.",
+  "recorded": "2026-09-02",
+  "note": "2026-09 wave: adds the full-text Word deliverable layer (schema v14 'manuscript' block, scripts/assemble_manuscript_docx.py + scripts/check_deliverable_contract.py, analysis-backends.md §4.2, Stage 5/9 playbook rewrites). Stage 9 previously owed a .docx that two gates already read and nothing produced, and the format conversion — the hop that touches every number, table and citation — sat outside the gate battery entirely. Reference count held at 33 (no new file; the contract went into analysis-backends.md, which already owned table export), and SKILL.md was consolidated ~1.1KB in the same wave (design-gate-card lists, the StatsPAI call chain, the AI-disclosure policy roll-call and the runtime-fallback restatement all deduplicated against the references that own them) so the always-loaded layer paid for most of its own growth.",
   "ceiling": {
-    "skill_md_bytes": 31931,
-    "skill_md_tokens_est": 7983,
+    "skill_md_bytes": 32485,
+    "skill_md_tokens_est": 8121,
     "reference_count": 33,
-    "reference_bytes": 598946,
+    "reference_bytes": 617241,
     "template_count": 26,
-    "template_bytes": 74067
+    "template_bytes": 74527
   },
   "targets": {
     "skill_md_bytes": 32000

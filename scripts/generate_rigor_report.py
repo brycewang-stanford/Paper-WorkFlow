@@ -150,6 +150,33 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_deliverable_contract.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Full-text deliverable contract: the .docx the venue asked for exists at "
+            "the declared path, carries at least as many tables and figures as the "
+            "manuscript includes (the silent-drop failure mode of any format "
+            "conversion), holds real prose rather than floating exhibits, retains no "
+            "unresolved include / cross-reference / placeholder, and is never claimed "
+            "`verified` -- nor shipped inside a `ready` replication pack -- while the "
+            "artifact on disk says otherwise."
+        ),
+    },
+    {
+        "path": "scripts/assemble_manuscript_docx.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Manuscript assembly: the finished body, its exhibit includes and its "
+            "figures are built into one full-text .docx -- resolving every include "
+            "before conversion, because handing raw LaTeX to pandoc drops `\\input{}` "
+            "exhibits without a word. Both converters (pandoc and the stdlib builtin "
+            "writer) are exercised, the emitted tables satisfy the three-line contract, "
+            "and anything that could not be resolved is recorded rather than dropped."
+        ),
+    },
+    {
         "path": "scripts/check_ai_disclosure.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

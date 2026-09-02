@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-39%2F39_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-41%2F41_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -267,7 +267,9 @@ Scope decides **which gates a finished run owes**; it never relaxes verification
 
 Backend choices are `python-statspai` (default), `stata`, and `r`. Backend choice controls Stage 3-4 scripts and export tools; it is separate from manuscript language.
 
-Table style defaults to `three-line` — the booktabs-style table economics and management journals actually print. After Stage 4 exports its tables and again after the Stage 9 full-manuscript Word export, `scripts/make_three_line_tables.py` writes the top / header / bottom rules explicitly and strips vertical rules and shading, and `scripts/check_table_style.py` verifies the result read-only (it also checks the paired `.tex` for booktabs compliance). When the target journal ships its own Word template, change `workflow_state.json.table_style.format` to opt out and record why in `decisions`. See [analysis backends](references/analysis-backends.md) §4.1.
+Table style defaults to `three-line` — the booktabs-style table economics and management journals actually print. After Stage 4 exports its tables and again after the Stage 9 full-manuscript Word assembly, `scripts/make_three_line_tables.py` writes the top / header / bottom rules explicitly and strips vertical rules and shading, and `scripts/check_table_style.py` verifies the result read-only (it also checks the paired `.tex` for booktabs compliance). When the target journal ships its own Word template, change `workflow_state.json.table_style.format` to opt out and record why in `decisions`. See [analysis backends](references/analysis-backends.md) §4.1.
+
+**Full-text deliverable (Stage 9).** The body format is fixed at Stage 0 (`manuscript.format` = `markdown` / `latex` — **choose `markdown` when the deliverable is Word**, because LaTeX → `.docx` is a lossy conversion). Stage 9 runs `scripts/assemble_manuscript_docx.py`, which resolves the body, every table and figure it includes, and the reference list into **one** `09_submission/main.docx` — via pandoc when it is installed, otherwise via a dependency-free builtin writer — and `scripts/check_deliverable_contract.py --strict` then recounts the tables and figures from the shipped file. **Handing raw LaTeX to pandoc silently drops every `\input{}` table**: the file still opens, it is just missing a result. So the assembler resolves the includes itself before converting, and the gate verifies the outcome independently. A venue that takes LaTeX only declares `docx_status=not-required`. See [analysis backends](references/analysis-backends.md) §4.2.
 
 If the user explicitly asks for autonomous execution, the skill infers conservative defaults, records assumptions in `00_meta/intake.md` and `00_meta/analysis_backend.md`, and continues without blocking on preferences.
 
@@ -385,6 +387,8 @@ Paper-WorkFlow/
 │   ├── check_review_scorecard.py
 │   ├── check_preregistration.py
 │   ├── check_manuscript_numbers.py
+│   ├── assemble_manuscript_docx.py
+│   ├── check_deliverable_contract.py
 │   ├── check_ai_disclosure.py
 │   ├── pw.py
 │   ├── check_defense_deck.py

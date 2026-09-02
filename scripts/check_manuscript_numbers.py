@@ -67,10 +67,12 @@ or numeric drift across a rewrite boundary that is contractually inert.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import re
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 FAIL = "FAIL"
@@ -80,17 +82,34 @@ OKAY = "OK"
 
 # Manuscript chain, earliest to latest. Stage 6 copies Stage 5, Stage 7 rewrites
 # Stage 6, Stage 9 typesets Stage 8's revision: consecutive pairs are comparable.
-MANUSCRIPT_CHAIN = [
-    ("05_draft", "05_draft/main.tex"),
-    ("06_polish", "06_polish/main.tex"),
-    ("07_dehumanize", "07_dehumanize/main.tex"),
-    ("08_review", "08_review/main.tex"),
-    ("09_submission", "09_submission/main.tex"),
-]
+#
+# The *format* is not fixed. A run declares `manuscript.format` at Stage 0 and may
+# author in LaTeX or Markdown, and Stage 9 additionally ships a `.docx`. Each stage
+# is therefore a directory whose body file is resolved by extension, in the order
+# below. Reading the .docx here is the point: format conversion touches every
+# number in the paper, and until it was in this chain it was the one hop no gate
+# ever opened.
+MANUSCRIPT_STAGES = ["05_draft", "06_polish", "07_dehumanize", "08_review", "09_submission"]
+BODY_STEM = "main"
+BODY_SUFFIXES = (".tex", ".md", ".docx")
 
 # Boundaries whose contract is "language may change, numbers may not". Any numeric
 # delta across one of these is a hard violation, in either direction.
 INERT_BOUNDARIES = {("06_polish", "07_dehumanize"), ("05_draft", "07_dehumanize")}
+
+# Whatever immediately precedes it, the step into `09_submission` is a *typesetting*
+# boundary: the submission copy is the same paper in its delivery format. Keying on
+# the destination rather than on a fixed pair matters because the stage before it is
+# whichever one the run actually produced -- a `draft` scope may go 07 -> 09, and a
+# contract that only knew ("08_review", "09_submission") would silently not apply.
+#
+# Full inertness would be the honest contract, but the two sides can legitimately
+# differ in format (`.tex` -> `.docx`), and a reference list rendered into the Word
+# file introduces text the source never had. So the contract is directional and
+# still substantive:
+#   - a number that DISAPPEARS is content lost in conversion  -> hard failure;
+#   - a number that APPEARS must be backed by analysis output -> hard failure if not.
+TYPESET_TARGET = "09_submission"
 
 RESULTS_DIR = "03_analysis/results"
 EXHIBIT_DIR = "04_results"
@@ -108,6 +127,7 @@ YEAR_MIN, YEAR_MAX = 1800, 2100
 # LaTeX constructs whose numeric payload is structural, not empirical.
 _COMMENT_RE = re.compile(r"(?<!\\)%.*$", re.MULTILINE)
 _WAIVER_RE = re.compile(r"(?<!\\)%\s*pw-number-ok:\s*(-?[\d.,]+)", re.MULTILINE)
+_WAIVER_HTML_RE = re.compile(r"<!--\s*pw-number-ok:\s*(-?[\d.,]+)", re.MULTILINE)
 _STRIP_PATTERNS = [
     re.compile(r"\\(?:cite|citep|citet|citeauthor|citeyear|ref|eqref|autoref|pageref|label|input|include|includegraphics|usepackage|documentclass|bibliography|bibliographystyle|hspace|vspace|setlength|geometry|color|definecolor)\s*(?:\[[^\]]*\])?\s*(?:\{[^{}]*\})*", re.DOTALL),
     re.compile(r"\\begin\{(?:tabular|tabularx|longtable|table|figure|thebibliography)\}.*?\\end\{(?:tabular|tabularx|longtable|table|figure|thebibliography)\}", re.DOTALL),
@@ -191,9 +211,51 @@ def strip_latex(text: str) -> str:
     return text
 
 
-def extract_claims(text: str) -> list[tuple[str, float, int]]:
+def strip_markdown(text: str) -> str:
+    """Prose from a Markdown body: exhibits and link targets are not claims."""
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)          # code fences
+    text = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)          # comments (incl. waivers)
+    text = re.sub(r"^\s*\|.*$", " ", text, flags=re.MULTILINE)         # pipe-table rows
+    text = re.sub(r"!?\[[^\]]*\]\([^)]*\)", " ", text)                 # links + images
+    text = re.sub(r"\{\{[^}]*\}\}", " ", text)                          # include directives
+    return text
+
+
+def strip_docx(path: Path) -> str:
+    """Prose from a .docx: table cells are exhibits, so drop `<w:tbl>` first."""
+    try:
+        with zipfile.ZipFile(path) as archive:
+            xml = archive.read("word/document.xml").decode("utf-8", errors="ignore")
+    except (OSError, KeyError, zipfile.BadZipFile):
+        return ""
+    xml = re.sub(r"<w:tbl(?:\s[^>]*)?>.*?</w:tbl>", " ", xml, flags=re.DOTALL)
+    xml = re.sub(r"</w:p>", "\n", xml)
+    # `<w:t[^>]*>` would also match `<w:tbl>`/`<w:tc>`/`<w:tr>`; match the run-text
+    # element alone so raw markup never reaches the number scanner.
+    parts = re.findall(r"<w:t(?:\s[^>]*)?>(.*?)</w:t>|(\n)", xml, flags=re.DOTALL)
+    text = "".join(a or b for a, b in parts)
+    return (text.replace("&lt;", "<").replace("&gt;", ">")
+            .replace("&quot;", '"').replace("&apos;", "'").replace("&amp;", "&"))
+
+
+def read_manuscript(path: Path) -> str:
+    """Raw manuscript text for waiver scanning (format-preserving)."""
+    if path.suffix.lower() == ".docx":
+        return strip_docx(path)
+    return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def to_prose(text: str, suffix: str) -> str:
+    if suffix == ".md":
+        return strip_markdown(text)
+    if suffix == ".docx":
+        return text          # strip_docx already dropped the exhibits
+    return strip_latex(text)
+
+
+def extract_claims(text: str, suffix: str = ".tex") -> list[tuple[str, float, int]]:
     """Numeric claims in manuscript prose as (token, value, decimals)."""
-    body = strip_latex(text)
+    body = to_prose(text, suffix)
     out: list[tuple[str, float, int]] = []
     for m in _NUMBER_RE.finditer(body):
         token = m.group(1)
@@ -205,12 +267,18 @@ def extract_claims(text: str) -> list[tuple[str, float, int]]:
 
 
 def extract_waivers(text: str) -> set[float]:
-    """Values explicitly waived by a `% pw-number-ok: <n> -- reason` comment."""
+    """Values waived by a `pw-number-ok: <n> -- reason` note next to the claim.
+
+    Written as a LaTeX comment (`% pw-number-ok: …`) or, in a Markdown body, an
+    HTML comment (`<!-- pw-number-ok: … -->`). Both keep the waiver versioned with
+    the paper and readable by a referee, which is the whole point of the form.
+    """
     out: set[float] = set()
-    for m in _WAIVER_RE.finditer(text):
-        value = _to_float(m.group(1))
-        if value is not None:
-            out.add(abs(value))
+    for pattern in (_WAIVER_RE, _WAIVER_HTML_RE):
+        for m in pattern.finditer(text):
+            value = _to_float(m.group(1))
+            if value is not None:
+                out.add(abs(value))
     return out
 
 
@@ -285,7 +353,42 @@ def is_anchored(value: float, decimals: int, index: set[float]) -> bool:
 # checks                                                                       #
 # --------------------------------------------------------------------------- #
 def _present_manuscripts(workspace: Path) -> list[tuple[str, Path]]:
-    return [(name, workspace / rel) for name, rel in MANUSCRIPT_CHAIN if (workspace / rel).is_file()]
+    """(stage, body file) for every stage that has one, earliest to latest.
+
+    A stage that ships more than one format (Stage 9 typically holds both
+    `main.docx` and the `.tex` it came from) is represented by the *delivery*
+    format the run declared, falling back to the first that exists. Only one body
+    per stage takes part in the boundary comparison, so a stage never drifts
+    against itself.
+    """
+    declared = _declared_suffix(workspace)
+    order = (declared,) + tuple(s for s in BODY_SUFFIXES if s != declared) if declared else BODY_SUFFIXES
+    out: list[tuple[str, Path]] = []
+    for stage in MANUSCRIPT_STAGES:
+        # The submission stage is the one place the .docx is authoritative: it is
+        # what the venue receives.
+        stage_order = (".docx",) + order if stage == "09_submission" else order
+        for suffix in stage_order:
+            candidate = workspace / stage / f"{BODY_STEM}{suffix}"
+            if candidate.is_file():
+                out.append((stage, candidate))
+                break
+    return out
+
+
+def _declared_suffix(workspace: Path) -> str:
+    """`.tex` / `.md` from `manuscript.format`, or "" when undeclared."""
+    for rel in ("00_meta/workflow_state.json", "workflow_state.json"):
+        path = workspace / rel
+        if not path.is_file():
+            continue
+        try:
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return ""
+        fmt = str((state.get("manuscript") or {}).get("format", "")).lower()
+        return {"markdown": ".md", "latex": ".tex"}.get(fmt, "")
+    return ""
 
 
 def check_anchors(workspace: Path, index: set[float], rep: Report, strict: bool) -> None:
@@ -304,9 +407,9 @@ def check_anchors(workspace: Path, index: set[float], rep: Report, strict: bool)
         return
 
     name, path = stages[-1]          # the live manuscript is the last one produced
-    text = path.read_text(encoding="utf-8", errors="ignore")
+    text = read_manuscript(path)
     waived = extract_waivers(text)
-    claims = extract_claims(text)
+    claims = extract_claims(text, path.suffix.lower())
     unanchored: list[str] = []
     seen: set[float] = set()
     for token, value, decimals in claims:
@@ -344,10 +447,10 @@ def check_drift(workspace: Path, index: set[float], rep: Report) -> None:
 
     for (prev_name, prev_path), (name, path) in zip(stages, stages[1:]):
         prev_vals = {abs(v) for _, v, _ in extract_claims(
-            prev_path.read_text(encoding="utf-8", errors="ignore"))}
-        text = path.read_text(encoding="utf-8", errors="ignore")
+            read_manuscript(prev_path), prev_path.suffix.lower())}
+        text = read_manuscript(path)
         waived = extract_waivers(text)
-        cur_vals = {abs(v) for _, v, _ in extract_claims(text)}
+        cur_vals = {abs(v) for _, v, _ in extract_claims(text, path.suffix.lower())}
 
         added = sorted(cur_vals - prev_vals - waived)
         removed = sorted(prev_vals - cur_vals)
@@ -369,6 +472,33 @@ def check_drift(workspace: Path, index: set[float], rep: Report) -> None:
                 )
             else:
                 rep.add(OKAY, "drift:inert", f"{boundary}: numerically inert ({len(cur_vals)} value(s) preserved)")
+            continue
+
+        if name == TYPESET_TARGET and (prev_name, name) not in INERT_BOUNDARIES:
+            fmt_note = (f" ({prev_path.suffix} -> {path.suffix})"
+                        if prev_path.suffix != path.suffix else "")
+            lost = [v for v in removed if v not in waived]
+            if lost:
+                rep.add(
+                    FAIL,
+                    "drift:typeset",
+                    f"{boundary}{fmt_note}: {len(lost)} number(s) present before typesetting "
+                    "are gone from the delivery copy — content was lost in conversion: "
+                    + ", ".join(f"{v:g}" for v in lost[:8]) + (" …" if len(lost) > 8 else ""),
+                )
+            introduced = [v for v in added if not is_anchored(v, 3, index)] if index else []
+            if introduced:
+                rep.add(
+                    FAIL,
+                    "drift:typeset",
+                    f"{boundary}{fmt_note}: {len(introduced)} number(s) appeared during "
+                    "typesetting that no analysis output backs: "
+                    + ", ".join(f"{v:g}" for v in introduced[:8]),
+                )
+            if not lost and not introduced:
+                rep.add(OKAY, "drift:typeset",
+                        f"{boundary}{fmt_note}: typesetting preserved every number "
+                        f"({len(cur_vals)} value(s))")
             continue
 
         unanchored_new = [v for v in added if not is_anchored(v, 3, index)] if index else []
@@ -423,6 +553,47 @@ See Table 3 and Figure 2 for details, and \cite{chen2021} for background.
 \hspace{0.8\textwidth}
 \end{document}
 """
+
+
+# A Markdown body carrying the same claims, plus a pipe table whose cells are
+# exhibit content rather than prose assertions.
+_MD_DRAFT = """# Results
+
+The treatment raises log wages by 0.123 (s.e. 0.041), significant at the 1% level.
+The estimation sample contains 12,345 firm-year observations over 2010--2020.
+Dropping the largest province leaves the coefficient at 0.118.
+
+| Variable | (1) |
+|---|---|
+| treat | 0.9991 |
+"""
+
+
+def _docx_bytes(paragraphs: list[str], table_cells: list[str] | None = None) -> bytes:
+    """A minimal, valid-enough .docx for the reader under test. Stdlib only."""
+    body = "".join(
+        f"<w:p><w:r><w:t xml:space=\"preserve\">{para}</w:t></w:r></w:p>" for para in paragraphs)
+    if table_cells:
+        cells = "".join(
+            f"<w:tc><w:p><w:r><w:t>{c}</w:t></w:r></w:p></w:tc>" for c in table_cells)
+        body += f"<w:tbl><w:tr>{cells}</w:tr></w:tbl>"
+    document = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        f'<w:document xmlns:w="{_W_NS}"><w:body>{body}</w:body></w:document>'
+    )
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("word/document.xml", document)
+    return buffer.getvalue()
+
+
+_W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+_DOCX_PARAS = [
+    "The treatment raises log wages by 0.123 (s.e. 0.041), significant at the 1% level.",
+    "The estimation sample contains 12,345 firm-year observations over 2010--2020.",
+    "Dropping the largest province leaves the coefficient at 0.118.",
+]
 
 
 def _selftest() -> int:
@@ -527,6 +698,100 @@ def _selftest() -> int:
         })
         hits = {chk for lvl, chk, _ in run(invented).rows if lvl == FAIL}
         assert "drift:new" in hits, f"an invented revision number must fail; got {hits}"
+
+        # --- a Markdown body is read like any other manuscript ----------------
+        md_good = make("md_good", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "00_meta/workflow_state.json": json.dumps(
+                {"schema_version": 14, "manuscript": {"format": "markdown"}}),
+            "05_draft/main.md": _MD_DRAFT,
+        })
+        rep = run(md_good)
+        assert not rep.failures, f"a Markdown draft with anchored numbers must pass: {rep.failures}"
+        # 0.9991 lives in a pipe table -- an exhibit, not a prose claim.
+        md_vals = {round(v, 5) for _, v, _ in extract_claims(_MD_DRAFT, ".md")}
+        assert 0.9991 not in md_vals, f"a Markdown table cell leaked into prose claims: {md_vals}"
+        assert 0.123 in md_vals and 12345.0 in md_vals, md_vals
+
+        md_bad = make("md_bad", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "00_meta/workflow_state.json": json.dumps(
+                {"schema_version": 14, "manuscript": {"format": "markdown"}}),
+            "05_draft/main.md": _MD_DRAFT.replace("0.123 (s.e. 0.041)", "0.876 (s.e. 0.041)"),
+        })
+        hits = {chk for lvl, chk, _ in run(md_bad).rows if lvl == FAIL}
+        assert "anchors" in hits, f"a fabricated number in a Markdown body must fail; got {hits}"
+
+        # --- the HTML-comment waiver form works in Markdown -------------------
+        md_waived = make("md_waived", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "00_meta/workflow_state.json": json.dumps(
+                {"schema_version": 14, "manuscript": {"format": "markdown"}}),
+            "05_draft/main.md": "<!-- pw-number-ok: 0.876 -- quoted from Chen (2021) -->\n"
+                                + _MD_DRAFT.replace("0.123 (s.e. 0.041)", "0.876 (s.e. 0.041)"),
+        })
+        assert not run(md_waived).failures, "an HTML-comment waiver must clear the anchor failure"
+
+        # --- the Stage 9 .docx is inside the audited surface -------------------
+        docx_ok = make("docx_ok", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "08_review/main.tex": _DRAFT,
+        })
+        (docx_ok / "09_submission").mkdir(parents=True, exist_ok=True)
+        (docx_ok / "09_submission" / "main.docx").write_bytes(
+            _docx_bytes(_DOCX_PARAS, table_cells=["treat", "0.9991"]))
+        rep = run(docx_ok)
+        assert not rep.failures, f"a faithful typeset .docx must pass: {rep.failures}"
+        assert any(chk == "drift:typeset" and lvl == OKAY for lvl, chk, _ in rep.rows), \
+            f"the typeset boundary should be reported: {rep.rows}"
+
+        # A number fabricated during typesetting is caught in the .docx itself.
+        docx_bad = make("docx_bad", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "08_review/main.tex": _DRAFT,
+        })
+        (docx_bad / "09_submission").mkdir(parents=True, exist_ok=True)
+        (docx_bad / "09_submission" / "main.docx").write_bytes(
+            _docx_bytes([para.replace("0.118", "0.771") for para in _DOCX_PARAS]))
+        hits = {chk for lvl, chk, _ in run(docx_bad).rows if lvl == FAIL}
+        assert "drift:typeset" in hits, f"typesetting must not invent a number; got {hits}"
+        assert "anchors" in hits, f"the .docx must also be anchor-checked; got {hits}"
+
+        # A number LOST in conversion is the silent-drop failure mode.
+        docx_lost = make("docx_lost", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "08_review/main.tex": _DRAFT,
+        })
+        (docx_lost / "09_submission").mkdir(parents=True, exist_ok=True)
+        (docx_lost / "09_submission" / "main.docx").write_bytes(_docx_bytes(_DOCX_PARAS[:1]))
+        hits = {chk for lvl, chk, _ in run(docx_lost).rows if lvl == FAIL}
+        assert "drift:typeset" in hits, f"a number lost in typesetting must fail; got {hits}"
+
+        # --- the typeset boundary binds whatever precedes Stage 9 --------------
+        # A `draft`-scope run goes 07 -> 09 with no Stage 8 in between; keying the
+        # contract on a fixed ("08_review", "09_submission") pair would silently
+        # exempt exactly those runs.
+        draft_scope = make("draft_scope", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "07_dehumanize/main.tex": _DRAFT,
+        })
+        (draft_scope / "09_submission").mkdir(parents=True, exist_ok=True)
+        (draft_scope / "09_submission" / "main.docx").write_bytes(_docx_bytes(_DOCX_PARAS[:1]))
+        rows = run(draft_scope).rows
+        hits = {chk for lvl, chk, _ in rows if lvl == FAIL}
+        assert "drift:typeset" in hits, (
+            f"typesetting must be audited on a 07->09 run too; got {hits}")
+
+        # --- inert boundaries hold for Markdown bodies too --------------------
+        md_drift = make("md_drift", {
+            f"{RESULTS_DIR}/main_results.json": results_json,
+            "00_meta/workflow_state.json": json.dumps(
+                {"schema_version": 14, "manuscript": {"format": "markdown"}}),
+            "06_polish/main.md": _MD_DRAFT,
+            "07_dehumanize/main.md": _MD_DRAFT.replace("12,345 firm-year", "12,845 firm-year"),
+        })
+        hits = {chk for lvl, chk, _ in run(md_drift).rows if lvl == FAIL}
+        assert "drift:inert" in hits, f"de-AIGC drift in Markdown must fail; got {hits}"
 
         # --- an unfinished run is not a violation -----------------------------
         early = make("early", {f"{RESULTS_DIR}/main_results.json": results_json})

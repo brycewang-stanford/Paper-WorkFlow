@@ -113,7 +113,7 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 
 | 字段 | 含义 |
 |---|---|
-| `schema_version` | 模板版本号（当前 `13`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`，v12 新增 `literature_base` / `design_lock` / `manuscript_numbers` / `project.scope` / 回退上限 / 复现包冻结，v13 新增 `ai_disclosure`） |
+| `schema_version` | 模板版本号（当前 `14`；v2 新增 `quality_gate`，v3 新增 `method_gate`，v4 新增 `replication_pack`，v5 新增 `analysis_backend`，v6 新增 `empirical_audit`，v7 新增 `evidence_governance`，v8 新增 `design_risk`，v9 新增 `orchestration`，v10 新增 `pipeline_status` / reset boundary / `integrity_audit`，v11 新增 `table_style`，v12 新增 `literature_base` / `design_lock` / `manuscript_numbers` / `project.scope` / 回退上限 / 复现包冻结，v13 新增 `ai_disclosure`，v14 新增 `manuscript`（正文格式路由 + Word 交付物契约）） |
 | `project.short_name` | 研究短名（工作区目录名的一部分） |
 | `project.created_at_beijing` | 北京时间字符串（`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`） |
 | `project.entry_stage` | 入口路由判定的起始阶段编号 0–9（见 SKILL.md Phase 0 第 2 步） |
@@ -154,6 +154,17 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `table_style.status` | `pending` / `pass` / `not_pass`——`scripts/check_table_style.py` 最近一次结论 |
 | `table_style.audit_report` | 表格格式审计落盘路径（默认 `04_results/table_style_audit.md`） |
 | `table_style.last_check` | 最近一次跑闸门的北京时间 |
+| `manuscript.format` | 正文写作格式：`latex` 或 `markdown`。**Stage 0 就要问定**，它决定 Stage 5–9 整条链路的 `main.*` 后缀。目标是 Word 交付（中文期刊 / 学位论文 / 合作者在 Word 里改）就选 `markdown`——Markdown → `.docx` 是高保真转换，LaTeX → `.docx` 是有损转换 |
+| `manuscript.body_file` | Stage 5 初稿路径（`05_draft/main.tex` 或 `05_draft/main.md`）；Stage 6–9 在各自目录下沿用同一 basename |
+| `manuscript.deliverable` | 本次交付欠什么：`tex` / `docx` / `both` |
+| `manuscript.deliverable_docx` | 全文 Word 定稿路径（默认 `09_submission/main.docx`），由 `scripts/assemble_manuscript_docx.py` 生成 |
+| `manuscript.docx_status` | `pending` / `assembled` / `verified` / `not-required`（目标刊只收 LaTeX 时用最后一个，理由进 `decisions`） |
+| `manuscript.converter` | 实际用的转换器：`pandoc` 或 `builtin`（内置 stdlib 写入器）。**记录而非假设**——两者保真度不同，稿子由谁转出来必须可查 |
+| `manuscript.reference_docx` | 目标刊 Word 模板路径，交给 pandoc 的 `--reference-doc`；空则用内置版式 |
+| `manuscript.csl` | 参考文献样式（中文期刊 GB/T 7714，经济学刊 AEA/Chicago）；空则按 `ref.bib` 原样罗列 |
+| `manuscript.exhibits_embedded` / `figures_embedded` | 组装器实际放进 `.docx` 的表数与图数——转换悄悄丢表时这两个数会对不上 |
+| `manuscript.unresolved_markers` | `.docx` 里残留的 `\input{...}` / `??` 交叉引用 / 引用占位符；非空即不得标 `verified` |
+| `manuscript.last_assembly` | 最近一次组装的北京时间 |
 | `literature_base.status` | `pending` / `pass` / `not_pass`——Stage 1L 文献语料是否建成。查新分数、related work 与引用终审复用**同一份**语料 |
 | `literature_base.corpus` | 语料清单路径（`01_proposal/lit/corpus.md`）：每条含 bibkey、DOI、年份、与本文的关系 |
 | `literature_base.lit_matrix` | 文献矩阵路径（`01_proposal/lit/lit_matrix.md`）：设计 × 数据 × 结论，用来让贡献白space可见 |

@@ -1,5 +1,5 @@
 {
-  "schema_version": 13,
+  "schema_version": 14,
   "project": {
     "short_name": "",
     "created_at_beijing": "",
@@ -47,6 +47,20 @@
     "status": "pending",
     "audit_report": "04_results/table_style_audit.md",
     "last_check": ""
+  },
+  "manuscript": {
+    "format": "latex",
+    "body_file": "05_draft/main.tex",
+    "deliverable": "tex",
+    "deliverable_docx": "09_submission/main.docx",
+    "docx_status": "pending",
+    "converter": "",
+    "reference_docx": "",
+    "csl": "",
+    "exhibits_embedded": 0,
+    "figures_embedded": 0,
+    "unresolved_markers": [],
+    "last_assembly": ""
   },
   "literature_base": {
     "status": "pending",

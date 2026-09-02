@@ -15,7 +15,7 @@
 > **必须发生在父阶段结束之前**的事。
 >
 > **严格度档位**：`project.scope` = `draft` / `working-paper` / `submission`（缺省）决定这次交付
-> 欠哪些闸门（见 [`orchestration-and-handoff.md`](orchestration-and-handoff.md) §schema_version 13）。
+> 欠哪些闸门（见 [`orchestration-and-handoff.md`](orchestration-and-handoff.md) §schema_version 14）。
 > 它与交互档位正交：交互档位管**多久停一次问人**，scope 管**完成的标准是什么**。
 > scope 只决定完成契约，**不放松**任何已声明 `pass` 的闸门的证据验证。
 >
@@ -415,12 +415,21 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 
 ## Stage 5 · 写作初稿
 
-**目的**：从表图产出一份结构完整的 LaTeX 初稿。
+**目的**：从表图产出一份结构完整的初稿，格式按 Stage 0 定下的 `manuscript.format` 走。
+
+**先确认写作格式**（Stage 0 已问定，这里只核对，不重开会）：`workflow_state.json.manuscript.format`
+是 `latex` 还是 `markdown`。**目标交付是 Word 就写 `markdown`**——Markdown → `.docx` 是高保真转换，
+LaTeX → `.docx` 是有损转换；中文期刊、学位论文、以及任何要合作者在 Word 里改稿的场景都属于前者。
+目标是 arXiv / 英文经济学刊的 LaTeX 投稿系统才写 `latex`。选定后整条 Stage 5–9 链路都用同一 basename
+（`main.tex` 或 `main.md`），`manuscript.body_file` 记住它；中途改格式等于重排一次全文，代价记 `decisions`。
 
 **execute**
 - `Skill` 调用 `67/paper-writer`，喂入 `04_results/`（表图）+ `01_proposal/proposal.md`（动机/贡献/
   假设），让它按"Intro → 文献/制度背景 → 数据 → 识别策略 → 结果 → 机制 → 稳健性 → 结论"写出
-  `05_draft/main.tex` 与 `05_draft/ref.bib`。
+  `05_draft/main.{tex,md}` 与 `05_draft/ref.bib`。**表图一律用 include 引用**（LaTeX `\input{results/table2}`、
+  Markdown `{{ include: table2 }}`，图用 Markdown 图片语法指向 `04_results/` 里的 `.png`），不要把表格数字手抄进正文——
+  Stage 9 的组装器按这些 include 把 `04_results/` 的真表塞进 Word 稿，手抄的数字既进不了表、也会被
+  `check_manuscript_numbers.py` 当成无出处的 claim。
 - **中文期刊/学位论文投稿**：加载 [`chinese-journals.md`](chinese-journals.md) §3-4 选定目标期刊
   的字数、摘要、关键词、JEL 分类号、参考文献格式等规范，**写 `05_draft/format_plan.md`** 列出本文
   计划遵循的格式条款（避免投稿前返工）；中文期刊特有的"研究意义"、"政策含义"段落必须显式
@@ -729,10 +738,30 @@ python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证�
 - 从 `templates/submission_checklist.md` 生成 `09_submission/submission_checklist.md`，并按目标刊官网实时刷新：
   author guidelines、data/code policy、匿名化、DAS、IRB/ethics、disclosure、AsCollected 或等价 provenance。
   若政策页无法访问，按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 标 blocked，投稿包不得标 ready。
-- 需要排版成 Word / 提交版 PDF 时用 `67/md-to-docx`、`67/markitdown`、`08-ndpvt-web-latex-document-skill`。
+- **组装全文 Word 定稿**（`manuscript.deliverable` 含 `docx` 时是**硬交付物**，不是"需要时再说"）：
+
+  ```bash
+  python3 scripts/assemble_manuscript_docx.py <workspace>
+  python3 scripts/check_deliverable_contract.py <workspace> --strict
+  ```
+
+  组装器把链路最末的正文（`09_submission` → … → `05_draft`，按 `manuscript.format` 认后缀）、
+  它引用的每张表、每张图和参考文献合成**一份** `09_submission/main.docx`，然后自动跑一遍三线表规整。
+  两条转换路径，用了哪条记进 `manuscript.converter`：装了 pandoc 走 pandoc（citeproc、目标刊
+  `--reference-doc` 模板、行内公式更准），没装就走内置 stdlib 写入器——**没有 pandoc 不等于交不出 Word 稿**。
+
+  > **关键**：组装器**先自己解析 include、再交给 pandoc**。直接把 `main.tex` 喂给 pandoc 会静默丢掉
+  > 每一个 `\input{results/table2}`——文件照样生成、照样能打开，只是少了表，而且没有任何报错。
+  > 这正是本层要堵的失败模式，所以组装器数它放进去了几张表几张图，`check_deliverable_contract.py`
+  > 再从成品文件里重新数一遍对账。
+
+  解析不了的东西一律不静默丢弃：找不到的 include、只有 `.pdf` 没有 `.png` 的图、残留的 `??` 交叉引用，
+  都会进 `manuscript.unresolved_markers` 并在 `.docx` 里留下可见的 `[UNRESOLVED …]` 标记；非空即不得
+  标 `docx_status=verified`，投稿包也不得 `ready`。
+
 - **全文 Word 定稿的表格必须是三线表**（见 [`analysis-backends.md`](analysis-backends.md) §4.1）。
-  `md-to-docx` / pandoc 转出来的表继承 Word 的 `Table` 样式，几乎一定带全框线，所以转换**之后**
-  按 `workflow_state.json.table_style` 再规整一次，最后过闸门：
+  组装器已经按 `manuscript.typography_preset` 规整过一遍；目标刊要特定字号字体时再显式跑一次，
+  最后过闸门：
 
   ```bash
   python3 scripts/make_three_line_tables.py 09_submission/main.docx --preset cn-journal
@@ -741,7 +770,13 @@ python3 scripts/check_workspace_gates.py <workspace>      # 闸门次序与证�
 
   `--preset cn-journal` 同时套宋体 + Times New Roman 小五；英文刊用 `--preset en-journal`；
   目标刊自带 Word 模板时把 `table_style.format` 改成 `journal-template`，闸门会跳过并记录理由。
-  规整器幂等，Stage 4 已经跑过也可以在这里放心再跑一次。
+  规整器幂等，Stage 4 与组装器已经跑过也可以在这里放心再跑一次。
+- **数字要跨过转换这一跳**：`check_manuscript_numbers.py` 现在把 `09_submission/main.docx` 读进
+  稿件链，Stage 8 → Stage 9 是一条 **typeset 边界**——排版前有、排版后没了的数字判红（转换丢内容），
+  排版中新冒出来、结果文件里又查无此数的判红。排版只换格式，不换数字。
+- 只收 LaTeX 的期刊：把 `manuscript.docx_status` 显式写成 `not-required`（理由进 `decisions`），
+  闸门会尊重这个声明——但必须是**声明的**，不能靠"文件不存在"默认推断。
+  提交版 PDF 与格式互转另配 `67/markitdown`、`08-ndpvt-web-latex-document-skill`。
 - **中文学位论文答辩 PPT（Stage 9 子任务）**：调用
   `python3 defense_pptx.py --workspace <workspace> --type thesis --output 答辩.pptx`
   （默认 22 页结构，按 [`chinese-journals.md`](chinese-journals.md) §6.5 模板）；

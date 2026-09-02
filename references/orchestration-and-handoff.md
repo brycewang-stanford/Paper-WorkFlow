@@ -115,6 +115,52 @@ mutating an old one.
 - Any fallback or unavailable probe goes into `logs/stage_<N>.md` and
   `workflow_state.json.decisions`.
 
+## schema_version 14
+
+Schema v14 keeps everything v13 shipped and adds one block,
+`workflow_state.json.manuscript`: **what the reader finally opens**, and in which
+format it was authored.
+
+Until v14 the pipeline's terminal artifact was implicitly LaTeX — every gate read
+`main.tex`, and the Word deliverable most Chinese journals, 学位论文 committees and
+co-authors actually require was an afterthought at Stage 9. That made the last hop
+the only unaudited one: the conversion that touches every number, table and
+citation ran outside the gate battery. v14 makes the format a **declared decision
+at Stage 0** and the `.docx` a **first-class, gated deliverable**. Fields:
+
+- `format` — `latex` or `markdown`, chosen at Stage 0 intake. It decides
+  `body_file`'s extension for every stage in the manuscript chain. Word-bound runs
+  should author in `markdown`: Markdown → `.docx` is a high-fidelity conversion,
+  LaTeX → `.docx` is a lossy one.
+- `body_file` — the Stage 5 draft path (`05_draft/main.tex` or `05_draft/main.md`);
+  later stages mirror the same basename in their own directory.
+- `deliverable` — `tex`, `docx`, or `both`: what Stage 9 owes.
+- `deliverable_docx` → `09_submission/main.docx`, written by
+  [`scripts/assemble_manuscript_docx.py`](../scripts/assemble_manuscript_docx.py).
+- `docx_status` — `pending` → `assembled` → `verified`, or `not-required` when the
+  target venue takes LaTeX only.
+- `converter` — `pandoc` or `builtin`, recorded rather than assumed, because the
+  two have different fidelity and the run must say which one produced the file.
+- `reference_docx` / `csl` — the journal Word template and citation style handed
+  to the converter (GB/T 7714 for 中文期刊, AEA/Chicago for the econ list).
+- `exhibits_embedded` / `figures_embedded` — how many tables and figures the
+  assembler actually placed, so a silently empty conversion is countable.
+- `unresolved_markers` — leftover `\input{...}`, `??` cross-references or
+  citation placeholders found in the assembled file. Non-empty ⇒ not `verified`.
+
+Ordering, enforced by
+[`scripts/check_deliverable_contract.py`](../scripts/check_deliverable_contract.py)
+and `scripts/check_workspace_gates.py`:
+
+- `manuscript.docx_status = verified` requires the file on disk, at least as many
+  embedded exhibits as the manuscript includes, and `unresolved_markers = []`.
+- `replication_pack.status = ready` requires `docx_status` in
+  {`verified`, `not-required`} — a submission package cannot claim readiness while
+  the deliverable the venue asked for is unbuilt or unchecked.
+- `check_manuscript_numbers.py` reads the manuscript chain in whichever format the
+  run declared, `.docx` included, so the conversion is inside the numeric-anchor
+  and inert-boundary contract rather than after it.
+
 ## schema_version 13
 
 Schema v13 keeps everything v12 shipped and adds one block,
