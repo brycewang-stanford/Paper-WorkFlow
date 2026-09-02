@@ -10,11 +10,14 @@ __pycache__/
 paper_workspace/
 
 # Local-only demo build artifacts (not shipped to remote)
-# - build scripts and the PPTX output stay local; the PDF export is the shipped copy
+# - build scripts and every PPTX output stay local; the PDF export is the shipped
+#   copy. The pattern is repo-wide on purpose: decks are regenerated from the
+#   build scripts (build_pptx.py, defense_pptx.py), so a committed .pptx would be
+#   a large binary that goes stale the moment its source moves.
 # - pandas tutorial is a generic, off-topic teaching notebook
 build_pptx.py
 build_notebook.py
-社科实证论文工作流.pptx
+*.pptx
 pandas_30_core_features.ipynb
 
 CLAUDE.md
