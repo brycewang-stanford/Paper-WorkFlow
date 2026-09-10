@@ -154,9 +154,9 @@ Setup 时由 [`../assets/init_workspace.sh`](../assets/init_workspace.sh) 自动
 | `table_style.status` | `pending` / `pass` / `not_pass`——`scripts/check_table_style.py` 最近一次结论 |
 | `table_style.audit_report` | 表格格式审计落盘路径（默认 `04_results/table_style_audit.md`） |
 | `table_style.last_check` | 最近一次跑闸门的北京时间 |
-| `manuscript.format` | 正文写作格式：`latex` 或 `markdown`。**Stage 0 就要问定**，它决定 Stage 5–9 整条链路的 `main.*` 后缀。目标是 Word 交付（中文期刊 / 学位论文 / 合作者在 Word 里改）就选 `markdown`——Markdown → `.docx` 是高保真转换，LaTeX → `.docx` 是有损转换 |
-| `manuscript.body_file` | Stage 5 初稿路径（`05_draft/main.tex` 或 `05_draft/main.md`）；Stage 6–9 在各自目录下沿用同一 basename |
-| `manuscript.deliverable` | 本次交付欠什么：`tex` / `docx` / `both` |
+| `manuscript.format` | 正文写作格式：**缺省 `markdown`**，可选 `latex`。**Stage 0 就要问定**，它决定 Stage 5–9 整条链路的 `main.*` 后缀。缺省是 Word 轨，因为中文期刊采编系统、学位论文模板与合作者批注都在 Word 里，且 Markdown → `.docx` 高保真、LaTeX → `.docx` 有损；只有目标刊只收 LaTeX 才切 `latex`，理由进 `decisions` |
+| `manuscript.body_file` | Stage 5 初稿路径（缺省 `05_draft/main.md`；`latex` 轨为 `main.tex`）；Stage 6–9 在各自目录下沿用同一 basename |
+| `manuscript.deliverable` | 本次交付欠什么：**缺省 `docx`**，可选 `tex` / `both` |
 | `manuscript.deliverable_docx` | 全文 Word 定稿路径（默认 `09_submission/main.docx`），由 `scripts/assemble_manuscript_docx.py` 生成 |
 | `manuscript.docx_status` | `pending` / `assembled` / `verified` / `not-required`（目标刊只收 LaTeX 时用最后一个，理由进 `decisions`） |
 | `manuscript.converter` | 实际用的转换器：`pandoc` 或 `builtin`（内置 stdlib 写入器）。**记录而非假设**——两者保真度不同，稿子由谁转出来必须可查 |

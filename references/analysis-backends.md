@@ -115,14 +115,17 @@ Stage 4 出的是**单张表**，Stage 9 欠的是**一整篇能交上去的稿�
 （写）和 [`../scripts/check_deliverable_contract.py`](../scripts/check_deliverable_contract.py)
 （验）一对程序守住，分工与三线表那对完全一样：**写的人不许给自己判分**。
 
-**正文格式在 Stage 0 就定**（`workflow_state.json.manuscript.format`）：
+**正文格式在 Stage 0 就定**（`workflow_state.json.manuscript.format`），**缺省是 `markdown` + `docx`**：
 
 | 目标 | `manuscript.format` | 理由 |
 |---|---|---|
-| 中文期刊 / 学位论文 / 合作者在 Word 里改 | `markdown` | Markdown → `.docx` 高保真；这是绝大多数国内投稿场景 |
-| arXiv / 英文经济学刊 LaTeX 投稿系统 | `latex` | `.tex` 本身就是交付物，Word 只是可选副本 |
+| 中文期刊 / 学位论文 / 合作者在 Word 里改（**缺省**） | `markdown` | 投稿系统收 `.doc/.docx`、学位论文模板是 Word；Markdown → `.docx` 高保真 |
+| arXiv / 英文经济学刊 LaTeX 投稿系统 | `latex`（**opt-in**） | `.tex` 本身就是交付物，Word 只是可选副本 |
 
-选 `latex` 又要 Word 稿是可以的，只是要接受 LaTeX → `.docx` 的有损转换（复杂公式、自定义宏、
+缺省之所以是 Word 而不是 LaTeX：本 skill 的绝大多数稿件最终进的是中文刊采编系统、学位论文答辩，
+或者一轮 Word 批注的合作者往返；即使英文刊接受 LaTeX，编辑加工与校样往往仍在 Word 里发生。
+**切 `latex` 是可以的，但它是被记录的选择**——理由写进 `decisions`，和三线表的退出机制同款。
+选 `latex` 又要 Word 稿也可以，只是要接受 LaTeX → `.docx` 的有损转换（复杂公式、自定义宏、
 `\input` 嵌套）——**代价要在 Stage 0 就知道，而不是 Stage 9 才发现**。
 
 **两条转换路径，用了哪条必须记进 `manuscript.converter`**：

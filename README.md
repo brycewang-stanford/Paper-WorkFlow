@@ -301,7 +301,7 @@ scope 只决定**这次交付欠哪些闸门**，**不放松**任何已声明 `p
 
 表格格式默认 `three-line`（经管期刊主流的**三线表**）：Stage 4 出表和 Stage 9 全文组装 Word 后，都会跑一遍 `scripts/make_three_line_tables.py` 把顶线 / 栏目线 / 底线写实、清掉竖线与底纹，再由 `scripts/check_table_style.py` 只读校验（同时查配套 `.tex` 的 booktabs 合规）。目标刊自带 Word 模板或要求全边框时，把 `workflow_state.json.table_style.format` 改掉即可跳过，理由记进 `decisions`。细则见 [三语言分析后端](references/analysis-backends.md) §4.1。
 
-**全文交付（Stage 9）**：正文格式在 Stage 0 就定（`manuscript.format` = `markdown` / `latex`——**要交 Word 就写 `markdown`**，LaTeX → `.docx` 是有损转换）。Stage 9 由 `scripts/assemble_manuscript_docx.py` 把正文、它 include 的每张表每张图和参考文献合成**一份** `09_submission/main.docx`，装了 pandoc 走 pandoc、没装就走零依赖内置写入器；再由 `scripts/check_deliverable_contract.py --strict` 从成品文件重新数表数图对账。**裸 pandoc 会静默丢掉 `\input{}` 表格**——文件照样能打开，只是少了结果，所以组装器先自己解析 include 再转换，闸门再验一遍。只收 LaTeX 的期刊显式声明 `docx_status=not-required`。细则见 [三语言分析后端](references/analysis-backends.md) §4.2。
+**全文交付（Stage 9）**：**缺省交付 Word 全文**——`manuscript.format` 默认 `markdown`、`manuscript.deliverable` 默认 `docx`，因为中文期刊采编系统、学位论文模板与合作者批注都在 Word 里，而且 Markdown → `.docx` 高保真、LaTeX → `.docx` 有损。目标刊只收 LaTeX 投稿系统时才在 Stage 0 切 `latex`，理由记进 `decisions`。Stage 9 由 `scripts/assemble_manuscript_docx.py` 把正文、它 include 的每张表每张图和参考文献合成**一份** `09_submission/main.docx`，装了 pandoc 走 pandoc、没装就走零依赖内置写入器；再由 `scripts/check_deliverable_contract.py --strict` 从成品文件重新数表数图对账。**裸 pandoc 会静默丢掉 `\input{}` 表格**——文件照样能打开，只是少了结果，所以组装器先自己解析 include 再转换，闸门再验一遍。只收 LaTeX 的期刊显式声明 `docx_status=not-required`。细则见 [三语言分析后端](references/analysis-backends.md) §4.2。
 
 > [!NOTE]
 > **接入已有材料时，请把依赖一起交给工作流。** 数据至少应附主键、时间 / 处理变量、变量说明与研究设计；回归结果应附生成代码、规格和样本口径；`main.tex` 应连同 `.bib`、图片以及自定义 class / style 文件传入。相对路径按 agent 当前工作目录解析，拿不准时使用绝对路径。材料不足时，Stage 0 应先记录缺口并降级或暂停，不能假定结果可追溯。

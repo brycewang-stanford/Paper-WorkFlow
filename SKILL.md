@@ -13,7 +13,7 @@ description: >
   Parent-invoked with any trigger above: jump straight to Stage 0 Setup
   without re-asking.
 allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch, NotebookEdit
-argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [目标期刊(可选)]"
+argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目标期刊(可选)]"
 ---
 
 # Paper-WorkFlow — 经管 / 社科实证论文全流程总编排器
@@ -43,7 +43,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 | **2.5** | 设计锁定（先于第一个估计） | *(编排器本体，人类决策点)* | `00_meta/preregistration.md` + `design_lock` 状态 |
 | **3** | 计量识别、估计与方法闸门 | **分析后端路由**：默认 Python/StatsPAI（MCP 优先，调用链见 `statspai-analysis.md`），也可切 Stata（`.do`）或 R（fixest/Quarto）；再按设计配 `did-analysis` / `iv-estimation` / `rdd-analysis` / `synthetic-control` / `panel-data` / `ml-causal` 等（全表见 skill-map）+ empirical audit + methods pack + design gate cards | `03_analysis/` 代码 + `design_register.md` + `method_gate.md` + `evidence_ledger.md` |
 | **4** | 表与图 | 按同一后端生成出版级表图：Python/StatsPAI `regtable`/`paper_tables`/`collect`，Stata `esttab`/`outreg2`/`collect`，R `modelsummary`/`etable`/Quarto；均需三线表 Word/Excel/LaTeX 同出 + PDF/PNG 图 | `04_results/*.{tex,docx,xlsx}` + `*.pdf/png` |
-| **5** | 写作初稿 | `paper-writer` | `05_draft/main.{tex,md}`（按 `manuscript.format`）+ `ref.bib`；表图一律 include 引用 |
+| **5** | 写作初稿 | `paper-writer` | `05_draft/main.md`（缺省；`latex` 轨为 `main.tex`）+ `ref.bib`；表图一律 include 引用 |
 | **6** | **结构层**打磨（段落及以上） | `paper-pipeline`（内部跑 polish→self-revise→style→polish→reference-verify 全量基线） | 打磨后的 `main.{tex,md}` |
 | **7** | **语言层**去 AI 味（句子及以下） | `de-aigc-skills`(48 中英双语六步闭环) → `readability`/`fix-chinese` 收尾 | 降味稿 + 审计表 + 数字零漂移 + `00_meta/ai_use_disclosure.md` 补上本阶段台账行 |
 | **8** | 模拟评审与修订 | `referee-report` → `paper-referee-revise`（或 `paper-self-revise`） | 修订稿 + response letter |
@@ -68,7 +68,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 
 1. **取北京时间**：`TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M'`，记为 `NOW`。
 2. **判定入口**，不要一律从 Stage 1 开始：想法→1；成形 proposal→2；已清洗数据+设计→3；
-   已有结果/表图→5；`main.tex`→6；初稿+审稿意见→8；成稿投稿→9。能从 `$ARGUMENTS`
+   已有结果/表图→5；已有初稿（`.md`/`.tex`）→6；初稿+审稿意见→8；成稿投稿→9。能从 `$ARGUMENTS`
    后缀和内容推断就别问；否则一次 `AskUserQuestion` 问清。
 3. **建工作区**：在用户目录或当前目录创建 `paper_workspace/{研究短名}_{NOW紧凑时间戳}/`，
    运行 `assets/init_workspace.sh`。同名目录另建，不覆盖。目录、`00_meta/` 状态文件、entry routing、
@@ -78,9 +78,11 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
    `00_meta/stage_passport.md` 和 `workflow_state.json.orchestration` 记录 handoff / 断点恢复指针。
 5. **一次问清七件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、**严格度档位 scope**
    （`draft` / `working-paper` / `submission` 缺省）、目标期刊、语言、分析后端（`python-statspai` 推荐 /
-   `stata` / `r`）、表格格式（默认三线表）、**正文格式 + 交付物**（`manuscript.format`、
-   `manuscript.deliverable`）。**要交 Word 全文就写 `markdown`**（LaTeX → `.docx` 有损）；必须问在
-   Stage 5 之前，改格式=重排全文。路由表见 [`analysis-backends.md`](references/analysis-backends.md) §4.2。**交互档位管多久停一次问人，scope 管完成的标准是什么，
+   `stata` / `r`）、表格格式（默认三线表）、**正文格式 + 交付物**（`manuscript.format` 默认
+   `markdown`、`manuscript.deliverable` 默认 `docx`——中文期刊、学位论文与合作者改稿都收 Word，
+   且 Markdown → `.docx` 高保真、LaTeX → `.docx` 有损）。只在目标刊只收 LaTeX 投稿系统时才切
+   `latex`，理由记 `decisions`；必须在 Stage 5 之前定，改格式=重排全文。路由表见
+   [`analysis-backends.md`](references/analysis-backends.md) §4.2。**交互档位管多久停一次问人，scope 管完成的标准是什么，
    两者正交**：`draft` 只欠方法闸门，`submission` 欠全部六道；scope 只定完成契约，**不放松**任何
    已声明 `pass` 的闸门的证据验证。参数足够或要求无人值守时自动填保守缺省，写入 `00_meta/intake.md`、
    `00_meta/analysis_backend.md`、`workflow_state.json.decisions`。
@@ -103,7 +105,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | main.tex 目录] [�
 2. **为子代理放行 Read + Write + Bash**（必要时含 Skill），让它独立闭环。
 3. **能并行就并行**：同阶段内彼此独立的任务（多路文献检索、多个稳健性、多个候选期刊、多份机制检验）一次性并行派发（每批 ≤10；选题漏斗与文献检索沿用 `PARALLEL_BATCH_SIZE=5`）；有依赖的串行。
 4. **每阶段是一个微循环** `plan → execute → review → revise`；重活阶段（1L 文献、1 选题、3 估计、6 打磨、8 评审）尤其要派**独立 critic subagent** 做对抗式审阅再修订。
-5. **子 skill 调用**：轻量且需主线上下文的（如 `paper-style` 顺着同一份 `main.tex`）直接在主代理调；重量可隔离的（多路文献扫描、批量稳健性）派 subagent，并在其 prompt 里**强制按下节「子 skill 调用协议」加载**，绝不许凭记忆脑补。
+5. **子 skill 调用**：轻量且需主线上下文的（如 `paper-style` 顺着同一份主稿）直接在主代理调；重量可隔离的（多路文献扫描、批量稳健性）派 subagent，并在其 prompt 里**强制按下节「子 skill 调用协议」加载**，绝不许凭记忆脑补。
 6. **日志**：每阶段把「调用了哪些 skill / 派了哪些 agent / 产出哪些文件 / 关键决策」追加到 `logs/stage_<N>.md`，并同步 `00_meta/stage_passport.md` 与 `00_meta/pipeline_status.md`。
 7. **交接**：阶段切换 / 长暂停 / 上下文变薄 / 并行 agent 接手前，在 `00_meta/handoff/` 写 handoff card 并把路径写入 `workflow_state.json.orchestration.latest_handoff`；下一位 agent 先刷新现实再继续。
 

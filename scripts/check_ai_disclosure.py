@@ -51,10 +51,19 @@ OKAY = "OK"
 REL_DISCLOSURE = "00_meta/ai_use_disclosure.md"
 REL_STATE = "workflow_state.json"
 REL_CITATION_LOG = "00_meta/citation_integrity_log.md"
-MANUSCRIPT_CANDIDATES = (
-    "07_dehumanize/main.tex",
-    "06_polish/main.tex",
-    "05_draft/main.tex",
+# Latest first: the byline that matters is the one on the manuscript about to
+# ship. Which file that is depends on the declared track -- `main.md` on the
+# default Word track, `main.tex` on the LaTeX one, and a stage may hold only the
+# assembled `.docx`. Hard-coding `.tex` here meant B1 (an AI can never be an
+# author) went unenforced on the default track.
+MANUSCRIPT_STAGES = ("07_dehumanize", "06_polish", "05_draft")
+MANUSCRIPT_SUFFIXES = (".md", ".tex", ".docx")
+
+# A byline is a byline in either source language, and in the Word export.
+_AUTHOR_PATTERNS = (
+    re.compile(r"\\author\s*\{([^}]*)\}", re.DOTALL),                        # LaTeX
+    re.compile(r"^authors?\s*:\s*(.+)$", re.IGNORECASE | re.MULTILINE),      # YAML front matter
+    re.compile(r"^\s*[*_]{0,2}(?:作者|署名)[*_]{0,2}\s*[:：]\s*(.+)$", re.MULTILINE),
 )
 
 PLACEHOLDER_RE = re.compile(r"<[^>\n]{0,120}>|\bTODO\b|\bTBD\b|（待填）|待填")
@@ -482,15 +491,37 @@ def _unresolved_citations(workspace: Path) -> int:
     return count
 
 
+def _manuscript_text(path: Path) -> str:
+    """Manuscript text in any container this pipeline writes."""
+    if path.suffix.lower() != ".docx":
+        return path.read_text(encoding="utf-8", errors="replace")
+    try:
+        import importlib.util
+
+        module_path = Path(__file__).resolve().parent / "assemble_manuscript_docx.py"
+        spec = importlib.util.spec_from_file_location("paper_workflow_assembler", module_path)
+        if spec is None or spec.loader is None:
+            return ""
+        module = importlib.util.module_from_spec(spec)
+        sys.dont_write_bytecode = True
+        spec.loader.exec_module(module)
+        return module.docx_text(path)
+    except Exception:
+        return ""
+
+
 def _author_line(workspace: Path) -> str:
-    for rel in MANUSCRIPT_CANDIDATES:
-        p = workspace / rel
-        if not p.exists():
-            continue
-        text = p.read_text(encoding="utf-8", errors="replace")
-        m = re.search(r"\\author\s*\{([^}]*)\}", text, re.DOTALL)
-        if m:
-            return m.group(1)
+    """The byline of the shipped manuscript, whatever format it is written in."""
+    for stage in MANUSCRIPT_STAGES:
+        for suffix in MANUSCRIPT_SUFFIXES:
+            path = workspace / stage / f"main{suffix}"
+            if not path.exists():
+                continue
+            text = _manuscript_text(path)
+            for pattern in _AUTHOR_PATTERNS:
+                m = pattern.search(text)
+                if m:
+                    return m.group(1)
     return ""
 
 
@@ -715,6 +746,15 @@ def _selftest() -> int:
             "\\author{Wang Lei \\and ChatGPT}\n", encoding="utf-8")
         assert any("B1" in m for lvl, m in run(ws) if lvl == FAIL), run(ws)
         (ws / "07_dehumanize" / "main.tex").write_text("\\author{Wang Lei}\n", encoding="utf-8")
+        assert not [m for lvl, m in run(ws) if lvl == FAIL], run(ws)
+        # The default track authors Markdown, where the byline is YAML front
+        # matter or a 「作者：」 line. B1 must hold there too.
+        (ws / "07_dehumanize" / "main.tex").unlink()
+        (ws / "07_dehumanize" / "main.md").write_text(
+            "# 数字金融与企业创新\n\n作者：王雷、ChatGPT\n", encoding="utf-8")
+        assert any("B1" in m for lvl, m in run(ws) if lvl == FAIL), run(ws)
+        (ws / "07_dehumanize" / "main.md").write_text(
+            "---\nauthor: 王雷\n---\n\n# 数字金融与企业创新\n", encoding="utf-8")
         assert not [m for lvl, m in run(ws) if lvl == FAIL], run(ws)
         # unresolved citations in the log -> B7 (legend rows must not count)
         (ws / REL_CITATION_LOG).write_text(

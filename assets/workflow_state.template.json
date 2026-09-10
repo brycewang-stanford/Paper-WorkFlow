@@ -49,9 +49,9 @@
     "last_check": ""
   },
   "manuscript": {
-    "format": "latex",
-    "body_file": "05_draft/main.tex",
-    "deliverable": "tex",
+    "format": "markdown",
+    "body_file": "05_draft/main.md",
+    "deliverable": "docx",
     "deliverable_docx": "09_submission/main.docx",
     "docx_status": "pending",
     "converter": "",

@@ -418,9 +418,9 @@ pack 对应的最低证据包是否齐全。意见写 `03_analysis/results_audit
 **目的**：从表图产出一份结构完整的初稿，格式按 Stage 0 定下的 `manuscript.format` 走。
 
 **先确认写作格式**（Stage 0 已问定，这里只核对，不重开会）：`workflow_state.json.manuscript.format`
-是 `latex` 还是 `markdown`。**目标交付是 Word 就写 `markdown`**——Markdown → `.docx` 是高保真转换，
-LaTeX → `.docx` 是有损转换；中文期刊、学位论文、以及任何要合作者在 Word 里改稿的场景都属于前者。
-目标是 arXiv / 英文经济学刊的 LaTeX 投稿系统才写 `latex`。选定后整条 Stage 5–9 链路都用同一 basename
+**缺省是 `markdown`**（交付 `09_submission/main.docx`）。中文期刊、学位论文、以及任何要合作者在 Word
+里改稿的场景都走缺省——Markdown → `.docx` 是高保真转换，LaTeX → `.docx` 是有损转换。
+只有目标是 arXiv / 英文经济学刊的 LaTeX 投稿系统才切 `latex`，**并把理由记进 `decisions`**。选定后整条 Stage 5–9 链路都用同一 basename
 （`main.tex` 或 `main.md`），`manuscript.body_file` 记住它；中途改格式等于重排一次全文，代价记 `decisions`。
 
 **execute**

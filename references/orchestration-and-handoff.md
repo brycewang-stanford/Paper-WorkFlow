@@ -128,13 +128,16 @@ the only unaudited one: the conversion that touches every number, table and
 citation ran outside the gate battery. v14 makes the format a **declared decision
 at Stage 0** and the `.docx` a **first-class, gated deliverable**. Fields:
 
-- `format` — `latex` or `markdown`, chosen at Stage 0 intake. It decides
-  `body_file`'s extension for every stage in the manuscript chain. Word-bound runs
-  should author in `markdown`: Markdown → `.docx` is a high-fidelity conversion,
-  LaTeX → `.docx` is a lossy one.
+- `format` — `markdown` (**the default**) or `latex`, confirmed at Stage 0 intake.
+  It decides `body_file`'s extension for every stage in the manuscript chain. The
+  default is the Word track because that is what these venues receive — Chinese
+  journal submission systems, thesis offices, and co-authors marking up a draft —
+  and because Markdown → `.docx` is a high-fidelity conversion while
+  LaTeX → `.docx` is a lossy one. `latex` is an opt-in recorded in `decisions`,
+  the same discipline `table_style` uses for a non-three-line table.
 - `body_file` — the Stage 5 draft path (`05_draft/main.tex` or `05_draft/main.md`);
   later stages mirror the same basename in their own directory.
-- `deliverable` — `tex`, `docx`, or `both`: what Stage 9 owes.
+- `deliverable` — `docx` (**the default**), `tex`, or `both`: what Stage 9 owes.
 - `deliverable_docx` → `09_submission/main.docx`, written by
   [`scripts/assemble_manuscript_docx.py`](../scripts/assemble_manuscript_docx.py).
 - `docx_status` — `pending` → `assembled` → `verified`, or `not-required` when the

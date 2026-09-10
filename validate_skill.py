@@ -272,8 +272,17 @@ def load_template() -> dict:
     ]:
         if key not in manuscript:
             fail(f"manuscript missing key: {key}")
-    if manuscript.get("format") not in {"latex", "markdown"}:
-        fail("manuscript.format must default to 'latex' or 'markdown'")
+    # The vocabulary is {latex, markdown}; the *default* is markdown, because the
+    # deliverable most of this skill's users submit is Word and LaTeX -> .docx is
+    # the lossy direction. A template that ships `latex` has flipped the default
+    # back by accident, which no other check would notice.
+    if manuscript.get("format") != "markdown":
+        fail("manuscript.format must default to 'markdown' (Word is the default deliverable; "
+             "latex is the recorded opt-in)")
+    if manuscript.get("deliverable") != "docx":
+        fail("manuscript.deliverable must default to 'docx'")
+    if manuscript.get("body_file") != "05_draft/main.md":
+        fail("manuscript.body_file must default to 05_draft/main.md (the markdown track)")
     if manuscript.get("docx_status") != "pending":
         fail("manuscript.docx_status must default to 'pending'")
     if not isinstance(manuscript.get("unresolved_markers"), list):
