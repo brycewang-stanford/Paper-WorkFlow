@@ -174,7 +174,7 @@ def run_gate(gate: Gate, workspace: Path, *, verbose: bool) -> dict:
         "returncode": proc.returncode,
         "output": (proc.stdout + proc.stderr).strip(),
     }
-    if verbose or not ok:
+    if verbose:
         print(f"\n--- {gate[0]} {' '.join(a for a in gate[1] if a != WS)} ---")
         print(result["output"] or "(no output)")
     return result
@@ -201,9 +201,9 @@ def applicable_gates(upto: str | None = None) -> list[Gate]:
 
 def current_stage(workspace: Path) -> str | None:
     """The furthest stage the state file marks `done`."""
-    state_path = workspace / "workflow_state.json"
+    state_path = workspace / "00_meta" / "workflow_state.json"
     if not state_path.exists():
-        state_path = workspace / "00_meta" / "workflow_state.json"
+        state_path = workspace / "workflow_state.json"
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
     except Exception:
@@ -231,7 +231,7 @@ def render(results: list[dict], header: str, as_json: bool) -> int:
     failed = [r for r in results if not r["ok"]]
     if as_json:
         print(json.dumps({"header": header, "ok": not failed,
-                          "gates": [{k: v for k, v in r.items() if k != "output"} for r in results]},
+                          "gates": results},
                          ensure_ascii=False, indent=2))
         return 1 if failed else 0
     print()
@@ -242,6 +242,8 @@ def render(results: list[dict], header: str, as_json: bool) -> int:
         flags = " ".join(a for a in r["argv"] if a != WS)
         print(f"  [{mark}] {r['script']}{(' ' + flags) if flags else ''}")
         print(f"         {r['why']}")
+        if not r["ok"]:
+            print(r.get("output", ""))
     print("=" * max(len(header), 60))
     if failed:
         print(f"RESULT: {len(failed)}/{len(results)} gate(s) failed -> do not advance")
@@ -254,13 +256,9 @@ def render(results: list[dict], header: str, as_json: bool) -> int:
 # commands                                                                     #
 # --------------------------------------------------------------------------- #
 def cmd_enter(stage: str, workspace: Path, as_json: bool, verbose: bool) -> int:
-    if stage not in PRECONDITION_STAGES:
-        known = ", ".join(PRECONDITION_STAGES)
-        print(f"Stage {stage} declares no entry preconditions (stages with them: {known})")
-        return 0
     gate: Gate = ("scripts/check_workspace_gates.py", [WS, "--preconditions", stage],
                   f"may Stage {stage} start? checked before the work, not after")
-    return render([run_gate(gate, workspace, verbose=verbose)],
+    return render([run_gate(gate, workspace, verbose=verbose and not as_json)],
                   f"Paper-WorkFlow · Stage {stage} entry preconditions", as_json)
 
 
@@ -269,15 +267,61 @@ def cmd_exit(stage: str, workspace: Path, as_json: bool, verbose: bool) -> int:
     if not gates:
         print(f"unknown stage: {stage} (known: {', '.join(STAGE_ORDER)})", file=sys.stderr)
         return 2
-    results = [run_gate(g, workspace, verbose=verbose) for g in gates]
+    results = [run_gate(g, workspace, verbose=verbose and not as_json) for g in gates]
+    results.append(stage_completion(stage, workspace))
+    if stage == "9":
+        results.append(run_gate(("scripts/check_workspace_gates.py", [WS, "--require-complete"],
+                                 "submission is complete"), workspace, verbose=False))
     return render(results, f"Paper-WorkFlow · Stage {stage} exit gates", as_json)
 
 
+def stage_completion(stage: str, workspace: Path) -> dict:
+    """A passed exit requires completed work, not just absence of contradictions."""
+    state_path = workspace / "00_meta/workflow_state.json"
+    issues = []
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        if not isinstance(state, dict):
+            raise ValueError("state must be an object")
+    except (ValueError, OSError) as exc:
+        state = {}
+        issues.append(str(exc))
+    gates = {"1L": ["literature_base"], "2_5": ["design_lock"],
+             "3": ["method_gate"], "4": ["table_style"],
+             "7": ["quality_gate", "manuscript_numbers"]}.get(stage, [])
+    for name in gates:
+        block = state.get(name, {})
+        status = block.get("status") if isinstance(block, dict) else None
+        ready = status in {"pass", "passed", "locked", "ready", "verified"}
+        if name == "design_lock" and status == "retrospective":
+            from check_preregistration import retrospective_ready
+            ready = retrospective_ready(workspace, state)
+        if not ready:
+            issues.append(f"{name} is {status!r}, not completed")
+    files = {"1": ["01_proposal/proposal.md"],
+             "1L": ["01_proposal/lit/corpus.md", "01_proposal/lit/lit_matrix.md"],
+             "2": ["02_data/sample_audit.md", "02_data/codebook.md"],
+             "5": ["05_draft/main"], "6": ["06_polish/main"],
+             "7": ["07_dehumanize/main"], "8": ["08_review/main"]}.get(stage, [])
+    for rel in files:
+        if rel.endswith("/main"):
+            rel += ".tex" if state.get("manuscript", {}).get("format") == "latex" else ".md"
+        path = workspace / rel
+        if not path.is_file() or not path.stat().st_size:
+            issues.append(f"missing or empty stage output: {rel}")
+    return {"script": "scripts/pw.py", "argv": ["completion", stage],
+            "why": "stage work exists and required gate decisions are complete",
+            "ok": not issues, "returncode": int(bool(issues)), "output": "\n".join(issues)}
+
+
 def cmd_check(workspace: Path, as_json: bool, verbose: bool, upto: str | None) -> int:
-    stage = upto or current_stage(workspace)
+    if upto is not None and upto not in STAGE_ORDER:
+        print(f"unknown stage: {upto}", file=sys.stderr)
+        return 2
+    stage = upto or current_stage(workspace) or "0"
     gates = applicable_gates(stage)
     label = f"up to Stage {stage}" if stage else "all stages"
-    results = [run_gate(g, workspace, verbose=verbose) for g in gates]
+    results = [run_gate(g, workspace, verbose=verbose and not as_json) for g in gates]
     return render(results, f"Paper-WorkFlow · run-time gates ({label})", as_json)
 
 
@@ -295,7 +339,9 @@ def cmd_final(workspace: Path, as_json: bool, verbose: bool) -> int:
             continue
         seen.add(key)
         ordered.append(gate)
-    results = [run_gate(g, workspace, verbose=verbose) for g in ordered]
+    ordered.append(("scripts/check_workspace_gates.py", [WS, "--require-complete"],
+                    "all submission gates are complete, not merely non-contradictory"))
+    results = [run_gate(g, workspace, verbose=verbose and not as_json) for g in ordered]
     return render(results, "Paper-WorkFlow · submission-final gate sweep", as_json)
 
 

@@ -7,14 +7,15 @@ The single most common way an empirical result is quietly wrong is specification
 search: try many specs, keep the one with stars, then write the introduction as if
 that spec were planned all along (HARKing). Orchestra's `AI-Research-SKILLs` gestures
 at this with "git-as-pre-registration", but it is prose the agent self-grades. This
-checker makes the lock *decidable*.
+checker validates the plan record, not the analyst's historical exposure.
+An explicit retrospective route discloses already-seen results without claiming
+preregistration; no local boolean or commit string proves prior registration.
 
 The invariant it enforces is simple and load-bearing:
 
   - the primary specification must be locked (committed) BEFORE the main results
     exist on disk; a workspace that has `03_analysis/results/main_results.json` but
-    an `UNLOCKED` pre-registration, or `locked_before_estimation: no`, is the exact
-    researcher-degrees-of-freedom violation we refuse to launder;
+    an `UNLOCKED` pre-registration, or `locked_before_estimation: no`, requires either repair of a prospective record or a complete retrospective disclosure;
   - at least one confirmatory hypothesis is registered, fully (no placeholders);
   - the confirmatory/exploratory split and a deviations log are present, so anything
     not pre-registered is forced to be labelled exploratory rather than dressed up.
@@ -126,6 +127,20 @@ def validate_prereg(text: str, has_results: bool) -> list[tuple[str, str]]:
     """Pure validation. Returns (level, message) findings; FAIL means hard violation."""
     out: list[tuple[str, str]] = []
     sections = _split_sections(text)
+    fields = _parse_fields(_find_section(sections, "Lock Status") or "")
+    mode = fields.get("analysis_mode", "prospective").lower()
+    retrospective = mode == "retrospective"
+    if mode not in {"prospective", "retrospective"}:
+        out.append((FAIL, f"unknown analysis_mode: {mode}"))
+    if retrospective:
+        for field in ("prior_results_seen", "analysis_history", "prospective_validation"):
+            if _is_placeholder(fields.get(field, "")):
+                out.append((FAIL, f"retrospective record requires {field}"))
+        if fields.get("locked_before_estimation", "").lower() not in {"no", "false", "否"}:
+            out.append((FAIL, "retrospective analysis must declare locked_before_estimation: no"))
+        split = _find_section(sections, "Confirmatory vs Exploratory") or ""
+        if not re.search(r"(?im)^-\s*E\d+\s*:\s*\S.+", split) or _is_placeholder(split):
+            out.append((FAIL, "retrospective record requires a filled E-row describing exploratory analyses"))
 
     for sec in REQUIRED_SECTIONS:
         if _find_section(sections, sec) is None:
@@ -146,7 +161,7 @@ def validate_prereg(text: str, has_results: bool) -> list[tuple[str, str]]:
         is_unlocked = locked_val in _UNLOCKED or _is_placeholder(fields.get("locked", ""))
         if locked_before and locked_before not in _YES and locked_before not in {"no", "n", "false", "否"}:
             out.append((WARN, f"locked_before_estimation has an unexpected value: {locked_before!r}"))
-        if has_results:
+        if has_results and not retrospective:
             if is_unlocked:
                 out.append((FAIL, "main results exist but pre-registration is UNLOCKED "
                                   "(researcher-degrees-of-freedom violation)"))
@@ -161,11 +176,13 @@ def validate_prereg(text: str, has_results: bool) -> list[tuple[str, str]]:
     if conf_body is not None:
         rows = _table_data_rows(conf_body)
         filled = [r for r in rows if any(not _is_placeholder(c) for c in r)]
-        if not filled:
+        if retrospective and rows:
+            out.append((FAIL, "retrospective analysis cannot register confirmatory H-rows after seeing results"))
+        if not filled and not retrospective:
             out.append((FAIL, "no confirmatory hypothesis registered (Confirmatory Hypotheses table is empty/placeholder)"))
         for i, r in enumerate(filled, 1):
             if any(_is_placeholder(c) for c in r):
-                out.append((WARN, f"confirmatory hypothesis row {i} has an unfilled cell"))
+                out.append((FAIL, f"confirmatory hypothesis row {i} has an unfilled cell"))
 
     spec_body = _find_section(sections, "Primary Specification Lock")
     if spec_body is not None:
@@ -174,8 +191,25 @@ def validate_prereg(text: str, has_results: bool) -> list[tuple[str, str]]:
                 out.append((WARN, f"Primary Specification Lock does not mention '{needle}'"))
 
     if not any(lvl == FAIL for lvl, _ in out):
-        out.append((OKAY, "pre-registration structurally complete and lock invariant satisfied"))
+        out.append((OKAY, "retrospective disclosure structurally complete; no preregistration claimed"
+                    if retrospective else "plan structurally complete; timing is a declaration, not independently proven"))
     return out
+
+
+def retrospective_ready(workspace: Path, state: dict) -> bool:
+    """An explicit disclosed retrospective route, never an alias for a prior lock."""
+    lock = state.get("design_lock", {})
+    if not isinstance(lock, dict) or lock.get("status") != "retrospective":
+        return False
+    if lock.get("locked_before_estimation") is not False or lock.get("confirmatory_count") != 0:
+        return False
+    path = workspace / REL_PREREG
+    if not path.is_file():
+        return False
+    text = path.read_text(encoding="utf-8")
+    fields = _parse_fields(_find_section(_split_sections(text), "Lock Status") or "")
+    return (fields.get("analysis_mode") == "retrospective"
+            and not any(level == FAIL for level, _ in validate_prereg(text, True)))
 
 
 def run(workspace: Path) -> list[tuple[str, str]]:
@@ -186,7 +220,22 @@ def run(workspace: Path) -> list[tuple[str, str]]:
             return [(FAIL, f"main results exist but no pre-registration at {REL_PREREG} "
                            "(estimation ran without a locked plan)")]
         return [(INFO, f"no {REL_PREREG} yet and no results — nothing to check")]
-    return validate_prereg(prereg.read_text(encoding="utf-8"), has_results)
+    text = prereg.read_text(encoding="utf-8")
+    findings = validate_prereg(text, has_results)
+    state_path = workspace / "00_meta/workflow_state.json"
+    if state_path.is_file():
+        try:
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            if not isinstance(state, dict):
+                raise ValueError("state must be an object")
+        except (ValueError, OSError) as exc:
+            return findings + [(FAIL, f"cannot validate design state: {exc}")]
+        fields = _parse_fields(_find_section(_split_sections(text), "Lock Status") or "")
+        lock = state.get("design_lock", {})
+        if fields.get("analysis_mode") == "retrospective" or (isinstance(lock, dict) and lock.get("status") == "retrospective"):
+            if not retrospective_ready(workspace, state):
+                findings.append((FAIL, "retrospective state and disclosure disagree or are incomplete"))
+    return findings
 
 
 def render(findings: list[tuple[str, str]]) -> str:
@@ -196,7 +245,7 @@ def render(findings: list[tuple[str, str]]) -> str:
     lines.append("=" * 60)
     fails = [m for lvl, m in findings if lvl == FAIL]
     lines.append(f"RESULT: {len(fails)} hard violation(s) -> pre-registration NOT verified"
-                 if fails else "RESULT: pre-registration lock verified")
+                 if fails else "RESULT: analysis-plan checks passed; historical timing requires provenance review")
     return "\n".join(lines)
 
 
@@ -248,6 +297,18 @@ def _selftest() -> int:
     assert any("Deviations from Plan" in m
                for lvl, m in validate_prereg(missing_sec, has_results=False) if lvl == FAIL)
 
+    retrospective = empty_conf.replace("locked_before_estimation: yes", "locked_before_estimation: no")
+    retrospective = retrospective.replace("## Lock Status", """## Lock Status
+- analysis_mode: retrospective
+- prior_results_seen: user supplied wage regression tables at intake
+- analysis_history: original specification choices are unknown; preserve supplied tables and rerun all declared variants
+- prospective_validation: none available; all current-data tests are exploratory""")
+    assert not any(lvl == FAIL for lvl, _ in validate_prereg(retrospective, True))
+    for bad in (retrospective.replace("locked_before_estimation: no", "locked_before_estimation: yes"),
+                retrospective.replace("- E1:", "- Missing:"),
+                retrospective.replace("prior_results_seen:", "undocumented:")):
+        assert any(lvl == FAIL for lvl, _ in validate_prereg(bad, True))
+
     # workspace mode: results but no prereg file at all -> hard violation
     with tempfile.TemporaryDirectory(prefix="prereg-selftest-") as tmp:
         ws = Path(tmp)
@@ -258,6 +319,16 @@ def _selftest() -> int:
         (ws / "00_meta").mkdir(parents=True)
         (ws / "00_meta" / "preregistration.md").write_text(good, encoding="utf-8")
         assert not [m for lvl, m in run(ws) if lvl == FAIL], "good locked prereg with results must pass"
+        (ws / REL_PREREG).write_text(retrospective, encoding="utf-8")
+        state = {"design_lock": {"status": "retrospective", "locked_before_estimation": False,
+                                  "confirmatory_count": 0}}
+        (ws / "00_meta/workflow_state.json").write_text(json.dumps(state), encoding="utf-8")
+        assert retrospective_ready(ws, state)
+        assert not any(lvl == FAIL for lvl, _ in run(ws))
+        state["design_lock"]["locked_before_estimation"] = True
+        (ws / "00_meta/workflow_state.json").write_text(json.dumps(state), encoding="utf-8")
+        assert not retrospective_ready(ws, state)
+        assert any(lvl == FAIL for lvl, _ in run(ws))
         # empty workspace -> INFO, no fail
         assert not any(lvl == FAIL for lvl, _ in run(Path(tmp) / "nope" if False else ws.parent))
 

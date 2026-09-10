@@ -44,6 +44,12 @@ jobs:
       - name: Install gate dependencies (notebook execution check)
         run: pip install -r requirements-dev.txt
 
+      - name: Install Pandoc for full DOCX acceptance coverage
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Require data-to-DOCX acceptance with Pandoc
+        run: python3 evals/run_acceptance.py --require-pandoc
+
       - name: Run validate_skill.py (full executable-gate battery)
         run: python3 validate_skill.py
 

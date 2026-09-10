@@ -178,51 +178,31 @@ Stage 5 写 related work 时"文献综述薄弱"再找一遍、Stage 9 `referenc
 
 ---
 
-## Stage 2.5 · 设计锁定（数据到手之后、第一个估计之前）
+## Stage 2.5 · 设计锁定与分析时序披露
 
-**目的**：在**还不知道答案的时候**把主设定钉死。
+**目的**：把事前计划与已见结果后的探索明确分开，遵守
+[`design-transparency.md`](design-transparency.md) §2.1 的两条路线。
 
-这一步的位置就是它的全部价值。`templates/preregistration.md` 和
-`scripts/check_preregistration.py` 一直都在，但如果预注册是在 Stage 3 跑完、看过系数之后
-才补写的，它就只是一份「我找到了什么」的流水账：闸门可以零成本满足，
-`design_risk_ledger.md` 里的 **specification search** 一栏没有任何可比基线，
-稳健性矩阵与"试了 40 个设定挑了带星的那个"在证据上无法区分。
+**plan**：核查已有 proposal、样本审计和研究者已接触的结果；问的是真实历史，不要求用户补造历史。
+`python3 scripts/check_workspace_gates.py <workspace> --preconditions 2_5` 检查当前阶段输入；
+正式预注册可在采集数据前完成，不必等到此阶段。
 
-**plan**
-- 入口检查：`python3 scripts/check_workspace_gates.py <workspace> --preconditions 2_5`
-  （要求 `01_proposal/proposal.md` 与 `02_data/sample_audit.md` 都在——**数据必须已到手**，
-  否则锁的是空想；但**主结果必须还不存在**，否则锁的是结果）。
-- 加载 [`design-transparency.md`](design-transparency.md) §2（预分析计划）、§2.1（可执行预注册锁）、
-  §3（功效与 MDE）、§6（研究者自由度披露），以及 [`inference-and-uncertainty.md`](inference-and-uncertainty.md)
-  §1（聚类层级要在锁里就定死，不能看完 p 值再改）。
+**execute**：实例化 [`templates/preregistration.md`](../templates/preregistration.md)。新研究锁定主估计量、
+样本、控制、固定效应、聚类、多重检验、主次 outcome 和计划稳健性，写真实时间及版本。
+已有结果用 `analysis_mode: retrospective`，披露 prior_results_seen / analysis_history /
+prospective_validation，确认性表不填 H-row，探索性节填 E-row。
+写 `workflow_state.json.design_lock`：前瞻为 `status=locked`、`locked_before_estimation=true`；
+回溯为 `status=retrospective`、`locked_before_estimation=false`、`confirmatory_count=0`。
 
-**execute（主代理本体——锁是人类决策点；锁之前派一个 §S2_5 审阅 subagent 挑「锁不住」的地方，
-见 [`subagent-templates.md`](subagent-templates.md) §S2_5）**
-1. 从 [`templates/preregistration.md`](../templates/preregistration.md) 实例化
-   `00_meta/preregistration.md`，填满五节：**Lock Status** / **Confirmatory Hypotheses** /
-   **Primary Specification Lock** / **Confirmatory vs Exploratory** / **Deviations from Plan**。
-2. 主设定必须写到**可执行的粒度**：主估计量、样本限制、固定效应、控制变量集、
-   聚类层级、多重检验方案、outcome 清单（含次序）、异质性维度（预先指定，事后再想的一律 exploratory）。
-3. **报 MDE**：按 design-transparency §2 给出当前样本能探测到的最小效应。空结果只有在
-   MDE 已知时才是信息；否则"不显著"什么都不说明。
-4. **锁**：`locked_before_estimation: yes`，`lock_commit` 填 commit hash
-   （git-as-preregistration）；无 git 时填时间戳 + 文件内容 hash。
-5. 校验：`python3 scripts/check_preregistration.py <workspace>`。
-6. 写状态：`workflow_state.json.design_lock` 填 `status=locked`、
-   `locked_before_estimation=true`、`lock_commit`、`primary_design`、`confirmatory_count`。
+按实际设计做 MDE / 功效计算，记录假设；解释空结果依据估计值与置信区间，MDE 不是置信上界。
+可用独立 reviewer 审查设定；未人工确认的自动计划如实标记，不冒称用户签字或外部预注册。
 
-**闸门**：`design_lock.status != locked` 时 **Stage 3 不得开始**，Method Gate 也不得 `PASS`
-（由 `check_workspace_gates.py` 的 `method_gate:design_lock` 机械拦截）。
-反向同样是硬违规：主结果已在盘上而锁是事后补的 → `design_lock:timing` 直接 FAIL。
+**review**：运行 `python3 scripts/check_preregistration.py <workspace>` 和
+`python3 scripts/pw.py exit 2.5 <workspace>`。脚本不能证明分析者此前没看过结果，历史时序仍需证据审阅。
 
-**锁之后怎么改**：允许偏离，**不允许不登记**。任何对主设定的改动写进
-`preregistration.md` 的 Deviations 表 + `design_lock.deviations`：改了什么、为什么、
-对 claim 强度的影响。登记过的偏离仍可进主结果；未登记的一律降级为 exploratory，
-并在 `evidence_ledger.md` 里按 exploratory 措辞封顶。
-
-**失败回退**：设计还没想清楚就锁不了 → 回 Stage 1 把识别策略定下来，不要用"先跑跑看"
-代替设计。`全自动`档位下同样不得跳过：无人值守时按 proposal 的识别策略自动生成锁，
-并在摘要卡显著标注"锁由自动生成，未经人工确认"。
+**revise / 失败回退**：主设定未明确就补足设计；所有偏离写入 Deviations 和 design_lock.deviations。
+已有结果走披露路线，不回溯造锁；未知搜索历史属于需要披露的局限。识别失败时按风险后果降级研究主张，
+不能反复换模型追求显著。缺材料的讨论稿可以交付，Method Gate 保持未通过。
 
 ---
 
@@ -237,9 +217,8 @@ Stage 5 写 related work 时"文献综述薄弱"再找一遍、Stage 9 `referenc
 python3 scripts/check_workspace_gates.py <workspace> --preconditions 3
 ```
 
-要求 `design_lock.status=locked` + `00_meta/preregistration.md` + `02_data/sample_audit.md` +
-`03_analysis/design_register.md` 草稿齐备。**没锁不许估计**——这里退回去只丢一个阶段，
-等 Method Gate 才发现要丢三个。
+要求有效事前锁或完整回溯披露，以及 `00_meta/preregistration.md`、`02_data/sample_audit.md`、
+`03_analysis/design_register.md`。两条时序路线均不得跳过识别与推断检查。
 
 **冻结复现环境（估计跑通的当天，不是收尾）**：第一批估计能跑出来，就立刻按
 [`computational-reproducibility.md`](computational-reproducibility.md) §1（环境固定阶梯）与 §2（确定性）写

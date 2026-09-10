@@ -159,3 +159,16 @@ flight on the core files.
 Add a scenario to `scenarios.json` with a distinctive (case-sensitive)
 `routing_anchors` list and a `gate_card_keyword`. Keep anchors specific enough
 not to false-positive on common words. Re-run `--selftest` after any change.
+
+## Executed data-to-DOCX acceptance
+
+`python3 evals/run_acceptance.py --require-pandoc` executes a synthetic survey dataset in a fresh workspace,
+checks OLS/HC2 against independent difference-in-means algebra, reruns from raw data, and builds real DOCX files.
+Positive cases include Markdown lists, math, footnotes, citations and exactly one bibliography. Negative cases include
+missing exhibits, unknown citations, changed sources/tables/output, invalid stage entry, unfinished submission,
+and contradictory retrospective claims. Failed conversions must preserve the previous document and state.
+
+Without `--require-pandoc`, unavailable Pandoc is explicitly reported as skipped; CI requires it. Use `--output`
+with a new directory to retain an inspectable workspace. The fixture is labeled synthetic in the data result and
+manuscript and deliberately leaves scientific gates pending. It validates software integration; it does not measure
+an LLM's autonomous research quality, substantive validity, or publication success. Frozen scenario splits remain unchanged.

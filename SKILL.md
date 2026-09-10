@@ -1,34 +1,24 @@
 ---
 name: paper-workflow
 description: >
-  经管 / 社科实证论文全流程 meta-orchestrator：把选题、设计、数据、估计、方法闸门、
-  表图、写作、去 AI 味、质量门、修订、投稿与复盘编排成 Stage 0–9 可断点续跑流水线。
-  本 skill 不重复实现子能力，而是按阶段调用既有 skill 或并行 subagent，并在 Stage 3–4
-  路由 Python/StatsPAI、Stata、R 三种分析后端，Stage 9 交付**一份含正文+表+图+参考文献的
-  Word 全文定稿**（`09_submission/main.docx`，另可出 `.tex`）。触发：/paper-workflow、
-  帮我写一篇实证论文、从选题到投稿、端到端 empirical paper、从数据到 docx 论文全文、
-  出一份 Word 版全文、已有 proposal/数据/初稿要推进到投稿，或明确要求用 Stata / R/fixest /
-  Python-StatsPAI 完整复现。
-
-  Parent-invoked with any trigger above: jump straight to Stage 0 Setup
-  without re-asking.
+  将社科实证研究从 idea、proposal、数据或已有结果推进到可复现分析和完整论文 DOCX。
+  支持研究设计、数据审计、估计、表图、写作与修订，以及按需准备投稿包；按证据完成阶段，
+  不承诺显著结果或录用。触发：/paper-workflow、从想法到论文、从数据到 docx、推进已有实证稿件。
 allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, WebSearch, WebFetch, NotebookEdit
-argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目标期刊(可选)]"
 ---
 
 # Paper-WorkFlow — 经管 / 社科实证论文全流程总编排器
 
 ## Overview
 
-本 skill 只做总编排：把一篇实证论文拆成 **Stage 0–9 + Method Gate + Draft Quality Gate**，
-用 `Skill` 调既有 skill、用 `Agent` 派并行 subagent；主代理只管规划、路由、状态、审阅和交付。
+本 skill 按 **Stage 0–9 + Method Gate + Draft Quality Gate** 组织社科实证研究。
+优先调用可用子 skill；缺少外部技能库或 Agent 时，按本仓库 references 由主代理直接执行。
+方法、数据权限与统计软件仍须真实可用；不能以补齐模板替代研究证据。
 
-两条纪律贯穿全程：① 子代理写盘，只回 ≤10 行状态摘要，主代理不吞大文件；② 用
-`workflow_state.json`、stage passport、handoff 和快照保证固定顺序、断点续跑与交互档位。
-
-> **能调用就不要重写。** `skills/67-econfin-workflow-toolkit/` 已覆盖全流程；本编排器只负责把
-> 47 个 skill 按正确顺序、上下文和人类决策点串起来。调用表与逐阶段手册按需读
-> [`references/skill-map.md`](references/skill-map.md) 与 [`references/stage-playbook.md`](references/stage-playbook.md)。
+`workflow_state.json`、stage passport 和 handoff 保存状态与文件指针。调用映射见
+[`references/skill-map.md`](references/skill-map.md)，当前阶段操作见
+[`references/stage-playbook.md`](references/stage-playbook.md)，独立安装路径见
+[`references/runtime-fallbacks.md`](references/runtime-fallbacks.md)。只加载当前阶段需要的部分。
 
 ---
 
@@ -56,11 +46,11 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目�
 >
 > **1L 与 2.5 是前置阶段**（带父阶段数字前缀，主干不变），各守一件必须发生在父阶段结束**之前**
 > 的事：**文献语料要在查新打分之前建好**，否则分数无可复核依据、related work 与引用终审各找各的；
-> **主设定要在第一个估计值存在之前锁死**，否则预注册只是「我找到了什么」的流水账。均由机械闸门守住。
+> **新研究在首次估计前固定主设定**；已有结果只能诚实登记回溯分析，不能补造预注册。机械闸门检查记录一致性，历史先后还要审阅时间戳与原始记录。
 
 > **双硬闸门 = 方法闸门 + 初稿质量门。** Stage 3 结束先过 **Method Gate**、Stage 7 结束再过
-> **Draft Quality Gate**，两者细则见下两节。**任何闸门未达标都按回退指令重做**，绝不把
-> 「流程跑完」当成「研究可信」。
+> **Draft Quality Gate**，两者细则见下两节。**闸门未达标先判断是可修复错误、真实识别失败还是材料不可得**，不得反复换样本、模型来追求显著；可交付明确标注局限的研究草稿，
+> 绝不把「流程跑完」当成「研究可信」。
 
 ---
 
@@ -76,16 +66,17 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目�
    [`references/workspace-and-state.md`](references/workspace-and-state.md)；交付物优先用 [`templates/`](templates/)。
 4. **写 Stage 0 账本**：`00_meta/entry_routing.md` 记录入口、材料、假设、人类决策分支；
    `00_meta/stage_passport.md` 和 `workflow_state.json.orchestration` 记录 handoff / 断点恢复指针。
-5. **一次问清七件套**：交互档位（`全自动` / `阶段确认` 推荐 / `全程交互`）、**严格度档位 scope**
-   （`draft` / `working-paper` / `submission` 缺省）、目标期刊、语言、分析后端（`python-statspai` 推荐 /
-   `stata` / `r`）、表格格式（默认三线表）、**正文格式 + 交付物**（`manuscript.format` 默认
-   `markdown`、`manuscript.deliverable` 默认 `docx`——中文期刊、学位论文与合作者改稿都收 Word，
-   且 Markdown → `.docx` 高保真、LaTeX → `.docx` 有损）。只在目标刊只收 LaTeX 投稿系统时才切
-   `latex`，理由记 `decisions`；必须在 Stage 5 之前定，改格式=重排全文。路由表见
-   [`analysis-backends.md`](references/analysis-backends.md) §4.2。**交互档位管多久停一次问人，scope 管完成的标准是什么，
-   两者正交**：`draft` 只欠方法闸门，`submission` 欠全部六道；scope 只定完成契约，**不放松**任何
-   已声明 `pass` 的闸门的证据验证。参数足够或要求无人值守时自动填保守缺省，写入 `00_meta/intake.md`、
-   `00_meta/analysis_backend.md`、`workflow_state.json.decisions`。
+5. **从已有材料补齐 intake**：只询问会改变研究问题、数据访问、关键设计或交付物的缺失信息；
+   不重问已经授权的步骤。可推断的选项记录为默认值：语言随用户、三线表、DOCX 对应
+   `manuscript.format=markdown`；scope 按用户要初稿 / 工作论文 / 投稿取
+   `draft` / `working-paper` / `submission`。目标期刊可待定，不自动限定 AER 或经济学。
+   交互档位为 `全自动` / `阶段确认` / `全程交互`；明确委托端到端执行时沿用授权，
+   用户没选阶段确认就不强制每阶段停下。分析后端尊重用户，未指定时选择实际可运行且适合设计者，
+   Python/StatsPAI、Stata、R 的能力和缺口写入 `00_meta/analysis_backend.md`。
+   正文格式 + 交付物、scope、采用的假设写入 `00_meta/intake.md` 和状态。
+   scope 只决定完成标准，不放松任何已声明 `pass` 的闸门；路由细节见
+   [`analysis-backends.md`](references/analysis-backends.md) §4.2。
+
 6. **初始化状态**：`workflow_state.json` 从 [`assets/workflow_state.template.json`](assets/workflow_state.template.json)
    复制，填 `project` / `orchestration` / `analysis_backend`；Stage 状态用
    `pending|in_progress|done|skipped`；`empirical_audit`、`method_gate`、`evidence_governance`、
@@ -99,28 +90,28 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目�
 
 ## 多代理 + 上下文保护协议（贯穿所有阶段）
 
-主代理上下文是**最稀缺资源**：任何「重读大文件、跑长代码、扫一堆文献」的脏活都**派给 subagent（`Agent`）或子 skill**，主代理只持有指针与状态。硬规则：
+在运行环境允许且任务适合时并行处理独立任务；没有 Agent 或不允许委派时由主代理串行执行，
+不将工具缺失当成研究失败。每阶段执行 `plan → execute → review → revise`，审阅与产出分开。
 
-1. **子代理自己写盘，只回传状态摘要**：给每个 subagent 显式指定**输入 / 输出文件**，要求它处理完立即写盘、只回 ≤10 行摘要（做了什么 / 写到哪 / 关键数字 / 是否通过 / 下一步）。**严禁把完整产出回传主代理。**
-2. **为子代理放行 Read + Write + Bash**（必要时含 Skill），让它独立闭环。
-3. **能并行就并行**：同阶段内彼此独立的任务（多路文献检索、多个稳健性、多个候选期刊、多份机制检验）一次性并行派发（每批 ≤10；选题漏斗与文献检索沿用 `PARALLEL_BATCH_SIZE=5`）；有依赖的串行。
-4. **每阶段是一个微循环** `plan → execute → review → revise`；重活阶段（1L 文献、1 选题、3 估计、6 打磨、8 评审）尤其要派**独立 critic subagent** 做对抗式审阅再修订。
-5. **子 skill 调用**：轻量且需主线上下文的（如 `paper-style` 顺着同一份主稿）直接在主代理调；重量可隔离的（多路文献扫描、批量稳健性）派 subagent，并在其 prompt 里**强制按下节「子 skill 调用协议」加载**，绝不许凭记忆脑补。
-6. **日志**：每阶段把「调用了哪些 skill / 派了哪些 agent / 产出哪些文件 / 关键决策」追加到 `logs/stage_<N>.md`，并同步 `00_meta/stage_passport.md` 与 `00_meta/pipeline_status.md`。
-7. **交接**：阶段切换 / 长暂停 / 上下文变薄 / 并行 agent 接手前，在 `00_meta/handoff/` 写 handoff card 并把路径写入 `workflow_state.json.orchestration.latest_handoff`；下一位 agent 先刷新现实再继续。
+- 子代理有明确输入 / 输出路径，自己写盘，只回 ≤10 行状态摘要；不回传整篇文献或全文。
+- 主代理核验实际产物，不凭摘要设置 `pass`；需要独立 critic 时使用可用的独立审阅者，若只有自审，
+  在质量评分和最终报告明确记录，不能虚称独立评审。批次不超过运行环境并发限制。
+- 子 skill 必须读实际 SKILL.md，传已发现的绝对路径；不预设主仓库位置或工具名可调用。
+- 日志追加至 `logs/stage_<N>.md`；阶段切换 / 长暂停时更新 `00_meta/stage_passport.md`、
+  `00_meta/pipeline_status.md` 与 `00_meta/handoff/`，续跑先刷新证据。
 
 ---
 
 ## 子 skill 调用协议（怎么把被编排的 skill 真正跑起来）
 
-子 skill 是**仓库内的文件夹**，不保证在运行时注册为可被 `Skill` 工具直接触发。**权威细节（注册名
+子 skill 是**当前安装环境中可发现的文件夹**，不保证在运行时注册为可被 `Skill` 工具直接触发。**权威细节（注册名
 对照表、输出路径重定向）见 [`references/skill-map.md`](references/skill-map.md) §0**；每次调用按此优先级：
 
 1. **优先 `Skill` 工具**：`Skill(skill="<注册名>", args=...)`。**注册名 = 子 skill `SKILL.md` 的 `name:`
    字段，不一定等于文件夹名**（大小写/改名差异表见 skill-map §0.1）——用注册名，别用文件夹名猜。
-2. **报「not found」立刻退回 `Read` 内联执行**（稳路径，永远可用）：`Read` 该 SKILL.md 正文当本步操作
+2. **报「not found」先检查文件，再退回 `Read` 内联执行**（文件存在时的稳路径）：`Read` 该 SKILL.md 正文当本步操作
    手册逐步执行；重量步骤把「`Read` 这个 SKILL.md 并按它执行」写进 subagent 的 prompt。**不要反复重试，
-   也不要凭记忆脑补子 skill 的逻辑**。
+   也不要凭记忆脑补子 skill 的逻辑**。文件也不存在时，按 runtime-fallbacks 的独立运行表执行本仓库规范。
 3. **`econfin-idea-finder` 与 `journal-digest` 在其 SKILL.md 里硬编码了仓库外 Windows 输出路径，调用时必须改写**到工作区内（候选→`01_proposal/candidates/`、期刊摘要→`01_proposal/journal_digest.md`）；细节见 skill-map §0.2，模板见 [`references/subagent-templates.md`](references/subagent-templates.md)。
 
 > **派 subagent 调子 skill 时，SKILL.md 路径必须是仓库内完整路径**——subagent 的工作目录可能与主
@@ -144,7 +135,7 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目�
 2. **入口检查（先跑，再干活）**：`python3 scripts/pw.py enter <N> <workspace>`。返回非零就**别开工**——阶段闸门是做完之后才发现问题，前置条件是同一批事实在开工之前检查，回退只丢一个决定而非一个阶段的工作量。
 3. **置 `in_progress`** → 读 [`references/stage-playbook.md`](references/stage-playbook.md) 对应章节 → 按其 plan→execute→review→revise 跑（该用 `Skill` 用 `Skill`、该派 `Agent` 派 `Agent`，全程守上面的上下文保护协议）。
 4. **冲突 / 退化检查**（沿用 `paper-pipeline`）：每阶段前后 `Glob` 一次 `*冲突副本*` / `*conflicted copy*`，发现就停下让用户定夺哪份为准；每阶段末把关键产物快照进 `backups/after_stage<N>/` 作为回滚路径。工具 / 网络 / MCP / 统计软件不可用时按 [`runtime-fallbacks.md`](references/runtime-fallbacks.md) 退化并记录（见下「运行时退化必须披露」）。
-5. **阶段闸门**：先跑 `python3 scripts/pw.py exit <N> <workspace>`（该阶段欠哪些 checker 由 [`pw.py`](scripts/pw.py) 的 stage→gate 表定死，别凭记忆挑），全绿才置 `done` → 按交互档位决定是否暂停——`全自动` 直进下一阶段；`阶段确认`（缺省）输出**摘要卡**（产出清单 + 关键数字 + 红旗 + 下阶段计划）等放行；`全程交互` 再确认一次。遇**硬阻断**不要硬往下走——按 playbook「失败回退」分支处理，并在摘要卡里**显著标红**说明发生了什么、采取了什么回退。
+5. **阶段闸门**：先跑 `python3 scripts/pw.py exit <N> <workspace>`（该阶段欠哪些 checker 由 [`pw.py`](scripts/pw.py) 的 stage→gate 表定死，别凭记忆挑），全绿才置 `done` → 按交互档位决定是否暂停——`全自动` 直进下一阶段；已选择 `阶段确认` 时输出**摘要卡**（产出清单 + 关键数字 + 红旗 + 下阶段计划）等放行；`全程交互` 再确认一次。遇**硬阻断**不要硬往下走——按 playbook「失败回退」分支处理，并在摘要卡里**显著标红**说明发生了什么、采取了什么回退。
 
 ---
 
@@ -153,7 +144,9 @@ argument-hint: "[研究方向 | proposal.md | 数据路径 | 初稿目录] [目�
 Stage 3 的目标不是「跑出显著系数」，而是把识别设计、估计量、诊断证据、设计风险与稳健性矩阵落成**可审计产物**。
 进入前按上表「Stage 3 估计」「Stage 3/5/8 深化」两行加载对应 references，逐项完成并落盘：
 
-0. **设计锁前置**（Stage 2.5）：`design_lock.status=locked` 且 `locked_before_estimation=true`，**否则不得开始估计、也不得 `PASS`**；锁后偏离登记 deviations，未登记的降级 exploratory。第一批估计跑通即冻结复现环境（`00_meta/repro_environment.md` + master script 骨架），**不是收尾才补**。
+0. **分析时序前置**（Stage 2.5）：新研究在估计前锁定计划；已看过结果的研究走 `design_lock.status=retrospective`，
+   `locked_before_estimation=false`、`confirmatory_count=0`，披露既往分析与探索性检验；不得补造事前锁。
+   两路均须通过 `check_preregistration.py`，细节见 [`design-transparency.md`](references/design-transparency.md) §2.1。第一批估计跑通即冻结复现环境（`00_meta/repro_environment.md` + master script 骨架），**不是收尾才补**。
 1. **设计注册** `03_analysis/design_register.md`：estimand、处理定义、比较组、识别假设、主 / 替代估计量、失败回退。
 2. **样本审计** `02_data/sample_audit.md`：estimation sample、treated/control 数、treatment timing、missingness/balance/overlap、cluster level 与变量构造对齐 estimand。
 3. **最低证据包**：按设计分支补齐必需 artifact（逐卡见 [`design-gate-cards.md`](references/design-gate-cards.md)）。推断口径按 `inference-and-uncertainty.md` 定死并写 `03_analysis/inference_report.md`；有机制主张按 `mechanism-and-channels.md` 分类、把中介移出主设定、证据落 `03_analysis/mechanism/`。
@@ -170,7 +163,7 @@ Stage 3 的目标不是「跑出显著系数」，而是把识别设计、估计
 
 ## 初稿质量门（Draft Quality Gate）—— 把「高质量」从口号变成可验收的闸门
 
-Stage 7 结束、Stage 8 开始前**强制插入**：不靠主代理自我感觉，而是派一个独立「顶刊 AE」critic subagent，按
+Stage 7 结束、Stage 8 开始前执行质量审阅：优先由适合学科的独立 critic 审阅；环境不支持时按同一标准自审并披露。按
 [`references/quality-rubric.md`](references/quality-rubric.md) 的 7 维评分卡给当前初稿打分（派发模板见
 [`subagent-templates.md`](references/subagent-templates.md) §QG）：
 

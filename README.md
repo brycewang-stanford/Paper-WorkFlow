@@ -8,9 +8,9 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-41%2F41_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-42%2F42_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
-![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
+![State](https://img.shields.io/badge/state-schema_v14-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
@@ -53,9 +53,28 @@
 | **你可以从哪里开始** | 不只是一句话 idea。已有 proposal、干净数据、回归结果、`main.tex` 或审稿意见，都可从对应阶段接入。 |
 | **它不承诺什么** | “端到端”指覆盖研究链条，不保证数据一定可得、结果显著、识别假设通过、质量门放行或论文录用；失败也必须形成可审计记录。 |
 
-完整运行推荐使用含 47 个被编排子 skill 的[母仓库](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)。Stage 9 还可选接入 [Awesome Journal Skills（AJS）](https://github.com/brycewang-stanford/Awesome-Journal-Skills)，调用已安装的目标期刊 skill 做 fit、house style 与投稿材料预检；AJS 不计入 47 个内置 skill，也不会替代官网规则或研究硬闸门。单独 clone 本仓库可以运行 CI、自检、模板和演示，但研究任务仍需要相应子 skill、数据权限、文献检索能力，以及所选 Python/StatsPAI、Stata 或 R 后端。作者始终对数据合规、识别有效性、事实引用和最终投稿负责。
+完整运行推荐使用含 47 个被编排子 skill 的[母仓库](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)。Stage 9 还可选接入 [Awesome Journal Skills（AJS）](https://github.com/brycewang-stanford/Awesome-Journal-Skills)，调用已安装的目标期刊 skill 做 fit、house style 与投稿材料预检；AJS 不计入 47 个内置 skill，也不会替代官网规则或研究硬闸门。单独 clone 本仓库也可按内置 references 由主代理执行研究步骤；外部子 skill 是扩展。真实数据权限、文献检索能力与适用的 Python/StatsPAI、Stata 或 R 后端仍须具备。作者始终对数据合规、识别有效性、事实引用和最终投稿负责。
 
 ---
+
+## 从 idea 或数据到 Word
+
+```text
+使用这个仓库的 paper-workflow。研究问题是……，已有材料在……。
+请自主推进到中文论文 DOCX；先审计数据和识别设计，保留原始数据及完整分析代码。
+已有结果如实标为回溯分析，不能补造预注册、引用或显著发现。
+交付正文、表图、参考文献、复现命令和未解决问题；缺少关键信息时只问必要问题。
+```
+
+入口是 idea 时先核对文献、数据可得性和设计；有原始数据时先审计样本与变量；已有结果时先恢复证据链。
+外部技能不可用时走[独立运行路线](references/runtime-fallbacks.md)，不要卡在安装目录。
+生成的 DOCX 与达到投稿标准是两件可分别验证的事：`pw check` 检查现状，`pw exit N` 检查阶段完成，
+`pw final` 要求全部投稿义务完成。任何数据不足或识别失败都须在交付中说明。
+
+维护者可运行 `/path/to/python evals/run_acceptance.py --require-pandoc`：从合成原始数据真实估计，
+用独立数值计算核对，生成并检查 DOCX，还验证失效引用、陈旧文件、回溯披露和未完成投稿的拒绝行为。
+这是软件链路验收，不能当成论文质量或录用率评估。详细说明见 [使用指南](docs/USAGE-zh.md)。
+
 
 ## 一图看懂
 

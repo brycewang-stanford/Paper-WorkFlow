@@ -56,6 +56,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
+from check_preregistration import retrospective_ready
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
@@ -198,14 +199,19 @@ def check_preconditions(workspace: Path, state: dict, stage: str) -> Report:
         fail_summary="unmet precondition(s) -> this stage must NOT start yet",
         pass_summary="preconditions met -> the stage may start",
     )
-    key = str(stage).strip().lower().replace(".", "_").replace("-", "_")
+    key = str(stage).strip().upper().replace(".", "_").replace("-", "_")
     if key not in STAGE_PRECONDITIONS:
         known = ", ".join(sorted(STAGE_PRECONDITIONS))
-        rep.add(INFO, f"stage:{stage}", f"no preconditions declared for this stage (known: {known})")
+        level = INFO if key in {"0", "1", "6"} else FAIL
+        rep.add(level, f"stage:{stage}", f"no preconditions declared for this stage (known: {known})")
         return rep
 
     for label, kind, target in STAGE_PRECONDITIONS[key]:
         if kind == "file":
+            if target.endswith("main.tex"):
+                fmt = state.get("manuscript", {}).get("format")
+                if fmt == "markdown" or (not fmt and not _exists(workspace, target)):
+                    target = target[:-4] + ".md"
             if _exists(workspace, target):
                 rep.add(OKAY, f"pre:{target}", label)
             else:
@@ -213,7 +219,7 @@ def check_preconditions(workspace: Path, state: dict, stage: str) -> Report:
         else:
             block = state.get(target)
             status = _norm(block.get("status")) if isinstance(block, dict) else "absent"
-            if status in _READY_STATES:
+            if status in _READY_STATES or (target == "design_lock" and retrospective_ready(workspace, state)):
                 rep.add(OKAY, f"pre:{target}", f"{label} (status={status})")
             else:
                 rep.add(FAIL, f"pre:{target}", f"{target}.status={status} — {label}")
@@ -433,6 +439,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
     # what was found. The one fact that makes it decidable is whether the primary
     # specification was fixed while the answer was still unknown.
     lock_status = _norm(design_lock.get("status"))
+    retrospective_ok = retrospective_ready(workspace, state)
     if "design_lock" in state:
         prereg = _gate_artifact(design_lock, "preregistration", "00_meta/preregistration.md")
         results_exist = _exists(workspace, "03_analysis/results/main_results.json")
@@ -450,6 +457,10 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 rep.add(OKAY, "design_lock", f"locked before estimation: {prereg}")
             if isinstance(design_lock.get("confirmatory_count"), int) and design_lock["confirmatory_count"] < 1:
                 rep.add(WARN, "design_lock:hypotheses", "locked with zero confirmatory hypotheses registered")
+        elif retrospective_ok:
+            rep.add(OKAY, "design_lock", "retrospective analysis disclosed; no prior lock claimed")
+        elif lock_status == "retrospective":
+            rep.add(FAIL, "design_lock:retrospective", "retrospective state/disclosure incomplete or contradictory")
         elif results_exist:
             rep.add(
                 FAIL,
@@ -513,7 +524,7 @@ def check_state(workspace: Path, state: dict, reconcile: bool) -> Report:
                 f"status=pass but design_risk.status={design_risk.get('status', 'absent')} "
                 "(design-risk ledger must pass before Method Gate can pass)",
             )
-        if "design_lock" in state and lock_status not in {"locked", "pass", "passed"}:
+        if "design_lock" in state and lock_status not in {"locked", "pass", "passed"} and not retrospective_ok:
             rep.add(
                 FAIL,
                 "method_gate:design_lock",
@@ -703,7 +714,8 @@ def _reconcile_numbers(workspace: Path, rep: Report) -> None:
         )
 
 
-def run(workspace: Path, reconcile: bool, preconditions: str | None = None) -> Report:
+def run(workspace: Path, reconcile: bool, preconditions: str | None = None,
+        require_complete: bool = False) -> Report:
     state_path = workspace / "00_meta" / "workflow_state.json"
     rep = Report()
     if not state_path.exists():
@@ -714,9 +726,22 @@ def run(workspace: Path, reconcile: bool, preconditions: str | None = None) -> R
     except json.JSONDecodeError as exc:
         rep.add(FAIL, "workspace", f"workflow_state.json is not valid JSON: {exc}")
         return rep
+    if not isinstance(state, dict):
+        rep.add(FAIL, "workspace", "workflow_state.json must be an object")
+        return rep
     if preconditions is not None:
         return check_preconditions(workspace, state, preconditions)
-    return check_state(workspace, state, reconcile)
+    rep = check_state(workspace, state, reconcile)
+    if require_complete:
+        # A consistent pending workspace is valid work in progress, never a
+        # completed submission. Completion always owes submission scope, even
+        # if the workspace was initially created as a draft.
+        for name in SCOPE_REQUIRED_GATES["submission"]:
+            block = state.get(name)
+            status = _norm(block.get("status")) if isinstance(block, dict) else "absent"
+            if status not in _READY_STATES:
+                rep.add(FAIL, "completion:" + name, f"submission requires {name}; status={status}")
+    return rep
 
 
 def _selftest() -> int:
@@ -1058,7 +1083,13 @@ def _selftest() -> int:
         assert not run(pre, reconcile=False, preconditions="3").failures, \
             "Stage 3 preconditions should be met once the lock is taken"
         # an unknown stage is informational, never a failure
-        assert not run(pre, reconcile=False, preconditions="42").failures
+        assert run(pre, reconcile=False, preconditions="42").failures
+        assert run(pre, reconcile=False, preconditions="1L").failures
+        touch(pre, "00_meta/entry_routing.md")
+        assert not run(pre, reconcile=False, preconditions="1l").failures
+        touch(pre, "06_polish/main.md")
+        assert not run(pre, reconcile=False, preconditions="7").failures
+        assert run(pre, reconcile=False, require_complete=True).failures
 
         # --- scope tiers ------------------------------------------------------
         scoped = root / "scoped"
@@ -1093,6 +1124,8 @@ def main() -> int:
     parser.add_argument("--reconcile", action="store_true", help="also heuristically check result numbers vs exhibits")
     parser.add_argument("--preconditions", metavar="STAGE",
                         help="check whether STAGE (e.g. 3, 2_5, 1L) may start, instead of auditing gates")
+    parser.add_argument("--require-complete", action="store_true",
+                        help="require all submission gates; pending is not complete")
     parser.add_argument("--selftest", action="store_true", help="verify this checker on synthetic workspaces")
     args = parser.parse_args()
 
@@ -1102,7 +1135,8 @@ def main() -> int:
         parser.error("workspace path is required (or pass --selftest)")
 
     rep = run(Path(args.workspace).expanduser().resolve(),
-              reconcile=args.reconcile, preconditions=args.preconditions)
+              reconcile=args.reconcile, preconditions=args.preconditions,
+              require_complete=args.require_complete)
     if args.json:
         print(json.dumps(rep.to_dict(), ensure_ascii=False, indent=2))
     else:

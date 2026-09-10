@@ -8,9 +8,9 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-41%2F41_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-42%2F42_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
-![State](https://img.shields.io/badge/state-schema_v12-4F46E5?style=flat&labelColor=0D1117)
+![State](https://img.shields.io/badge/state-schema_v14-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
 ![Runs on](https://img.shields.io/badge/runs_on-Claude_%C2%B7_Codex_%C2%B7_Cursor_%C2%B7_Gemini-4F46E5?style=flat&labelColor=0D1117&logo=anthropic&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-4F46E5?style=flat&labelColor=0D1117)
@@ -47,6 +47,23 @@
 
 The old 30-page PDF lecture has been folded into this README. The durable content is now maintained as text: the eight-stage teaching map, the 47-skill map, the DiD teaching checklist, the exhibit standards, and the writing/review/submission path. The PDF file itself is no longer part of the package.
 
+## From an idea or data to Word
+
+Ask the agent to use this repository, identify the research question and supplied materials, and produce a complete
+DOCX with exhibits, references, executed analysis code, reproduction commands, and explicit remaining gaps.
+Idea entry starts with literature, data feasibility, and design; raw-data entry starts with sample and measurement audits;
+existing-result entry rebuilds the evidence chain and uses an honest retrospective disclosure instead of backdated preregistration.
+
+External child skills are optional enhancements. A standalone checkout can follow the
+[built-in execution route](references/runtime-fallbacks.md) with the main agent. Actual data access, literature evidence,
+and an appropriate statistical backend remain necessary. `pw check` audits the current state; `pw exit N` requires
+stage work to be complete; `pw final` requires every submission obligation. A built document is not proof of submission readiness.
+
+Maintainers can run `python3 evals/run_acceptance.py --require-pandoc` to execute synthetic raw data through estimation,
+independent numerical verification, exhibits, and DOCX, including negative cases for stale files, unresolved citations,
+retrospective contradictions, and incomplete submissions. This tests software integration, not manuscript quality or acceptance rates.
+
+
 ## 30-Second Fit Check
 
 | Confirm first | What it means |
@@ -55,7 +72,7 @@ The old 30-page PDF lecture has been folded into this README. The durable conten
 | **Where you can start** | Not only from a one-line idea. A proposal, cleaned dataset, regression results, `main.tex`, or reviewer comments can enter at the matching stage. |
 | **What it does not promise** | “End to end” describes workflow coverage. It does not guarantee data access, statistical significance, valid identification, gate passage, or publication; failures must remain auditable. |
 
-For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. Stage 9 can also use [Awesome Journal Skills (AJS)](https://github.com/brycewang-stanford/Awesome-Journal-Skills) as an optional adapter for journal-specific fit, house style, and submission preflight. AJS is not included in the 47 built-in skills and never replaces official journal rules or the research gates. A standalone clone can run this repository's CI, self-checks, templates, and demos, but a research run still needs the relevant sub-skills, data access, literature-search capability, and the selected Python/StatsPAI, Stata, or R backend. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
+For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. Stage 9 can also use [Awesome Journal Skills (AJS)](https://github.com/brycewang-stanford/Awesome-Journal-Skills) as an optional adapter for journal-specific fit, house style, and submission preflight. AJS is not included in the 47 built-in skills and never replaces official journal rules or the research gates. A standalone clone can execute the built-in references with the main agent; external sub-skills are optional enhancements. Data access, literature-search capability, and an appropriate Python/StatsPAI, Stata, or R backend are still required. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
 
 ## Mental Model
 
@@ -223,7 +240,7 @@ The skill ships through two entry points; the **parent repository is recommended
 # Recommended: clone the parent repo (this directory is skills/69-Paper-WorkFlow/, a submodule)
 git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills.git
 
-# Or: orchestrator only (standalone repo — the CI badge above points here; sub-skills provided separately)
+# Or: orchestrator only (standalone repo — the CI badge above points here; sub-skills are optional enhancements)
 git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 ```
 

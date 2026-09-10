@@ -61,6 +61,12 @@ MAINT = "Maintenance gate (verifies this skill package)"
 # runs bare. Keep this ordered the way the report should read.
 REGISTRY: list[dict] = [
     {
+        "path": "evals/run_acceptance.py",
+        "argv": [],
+        "layer": MAINT,
+        "enforces": "Executes synthetic raw data to estimates and DOCX, independent numerical oracle, rebuild parity, conversion failure preservation, freshness drift, retrospective routing, and incomplete-final rejection. Pandoc coverage is reported separately.",
+    },
+    {
         "path": "scripts/check_workspace_gates.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,

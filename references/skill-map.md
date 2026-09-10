@@ -19,13 +19,13 @@
 `69-Paper-WorkFlow` 是母仓库 [`Auto-Empirical-Research-Skills`](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills)
 的一个 **submodule**，子 skill 都在母仓库的 `skills/` 下。它们是**仓库内的文件夹**，不一定在用户运行时
 里**注册**为可被 `Skill` 工具直接触发的 skill（母仓库根目录没有统一的 marketplace/plugin 清单）。
-**因此运行本编排器前提是母仓库已 checkout**（`67/`、`66/` 等可达）；下文 `Read` 回退路径都相对母仓库
-根目录。调用子 skill 有**两条路径**，编排器按下面的优先级择一：
+母仓库是可选能力扩展；先检查当前安装环境是否能找到相应 skill。下文 `Read` 路径只在母仓库存在时成立，
+独立 clone 时按 [`runtime-fallbacks.md`](runtime-fallbacks.md) 的独立运行表执行，不强制安装外部库。调用子 skill 有**两条路径**，编排器按下面的优先级择一：
 
 1. **`Skill` 工具（快路径，仅当该 skill 已注册时可用）**：`Skill(skill="<注册名>", args=...)`。
    注册名是该 skill `SKILL.md` 前言里的 `name:` 字段，**不一定等于文件夹名**（见下表的大小写/改名
    差异）。若 `Skill` 调用报「skill not found」，立刻退回路径 2，不要反复试。
-2. **`Read` + 内联执行（稳路径，永远可用）**：`Read skills/67-econfin-workflow-toolkit/<folder>/SKILL.md`
+2. **`Read` + 内联执行（已确认文件存在时的稳路径）**：`Read skills/67-econfin-workflow-toolkit/<folder>/SKILL.md`
    把它的正文读进来，**当作本步的操作手册逐步执行**（轻量步骤在主代理里跑；重量步骤把「读这个
    SKILL.md 并按它执行」写进 subagent 的 prompt，由 subagent `Read` 后执行）。子 skill 自带的
    `references/`、`assets/` 也按其 SKILL.md 指引按需 `Read`。

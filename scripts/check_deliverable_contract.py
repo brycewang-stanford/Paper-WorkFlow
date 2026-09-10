@@ -40,6 +40,7 @@ Exit code is non-zero iff a hard violation is found.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -57,6 +58,8 @@ from assemble_manuscript_docx import (  # noqa: E402  (path set above by design)
     find_source,
     parse_body,
     scan_unresolved,
+    assembly_inputs,
+    declared_format,
 )
 
 FAIL = "FAIL"
@@ -120,7 +123,7 @@ def load_state(workspace: Path) -> dict:
 
 def expected_exhibits(workspace: Path) -> tuple[int, int, str]:
     """(tables, figures, source) the manuscript body asks for."""
-    source = find_source(workspace)
+    source = find_source(workspace, declared_format(load_state(workspace)))
     if source is None:
         return 0, 0, ""
     blocks = parse_body(source)
@@ -165,7 +168,7 @@ def evaluate(workspace: Path, *, strict: bool = False) -> Report:
     state = load_state(workspace)
     manuscript = state.get("manuscript") if isinstance(state.get("manuscript"), dict) else {}
     if not manuscript:
-        rep.add(INFO, "state",
+        rep.add(FAIL if strict else INFO, "state",
                 "no manuscript block in workflow_state.json (schema < 14) — "
                 "deliverable contract not yet declared")
         return rep
@@ -194,6 +197,9 @@ def evaluate(workspace: Path, *, strict: bool = False) -> Report:
 
     rel = str(manuscript.get("deliverable_docx") or "09_submission/main.docx")
     path = workspace / rel
+    if not path.resolve().is_relative_to(workspace.resolve()):
+        rep.add(FAIL, "deliverable:path", "deliverable must be inside the workspace")
+        return rep
 
     want_tables, want_figures, source = expected_exhibits(workspace)
     if source:
@@ -218,6 +224,27 @@ def evaluate(workspace: Path, *, strict: bool = False) -> Report:
 
     tables, figures = count_docx_exhibits(path)
     text = docx_text(path)
+
+    actual_source = find_source(workspace, declared_format(state))
+    if actual_source is None:
+        rep.add(FAIL if strict else WARN, "source", "no manuscript source available to verify completeness")
+    inputs = manuscript.get("assembly_inputs")
+    if isinstance(inputs, dict) and inputs and actual_source:
+        try:
+            current = assembly_inputs(workspace, actual_source, manuscript)
+        except (OSError, ValueError) as exc:
+            rep.add(FAIL, "freshness:inputs", str(exc))
+        else:
+            if current != inputs:
+                rep.add(FAIL, "freshness:inputs", "source, exhibit, bibliography or style changed; reassemble the DOCX")
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest != manuscript.get("assembled_docx_sha256"):
+            rep.add(FAIL, "freshness:output", "DOCX changed since assembly; reconcile edits with the source and reassemble")
+    else:
+        rep.add(FAIL if strict else WARN, "freshness:inputs", "no conversion input manifest; reassemble before verification")
+    declared_markers = manuscript.get("unresolved_markers")
+    if isinstance(declared_markers, list) and declared_markers:
+        rep.add(FAIL, "conversion:unresolved", "; ".join(map(str, declared_markers)))
 
     rep.add(OKAY, "deliverable", f"{rel}: {tables} table(s), {figures} figure(s), {len(text)} chars of text")
 
@@ -391,8 +418,15 @@ def selftest() -> None:
     # 4. A leftover unresolved marker blocks the gate.
     with tempfile.TemporaryDirectory(prefix="pw-deliv-unres-") as tmp:
         ws = _workspace(Path(tmp), state=_base_state())
-        (ws / "04_results" / "table2.tex").unlink()
         assembler.run(ws, converter="builtin")
+        docx = ws / "09_submission/main.docx"
+        with zipfile.ZipFile(docx) as archive:
+            parts = {name: archive.read(name) for name in archive.namelist()}
+        parts["word/document.xml"] = parts["word/document.xml"].replace(
+            b"</w:body>", b"<w:p><w:r><w:t>[UNRESOLVED TABLE]</w:t></w:r></w:p></w:body>")
+        with zipfile.ZipFile(docx, "w", zipfile.ZIP_DEFLATED) as archive:
+            for name, data in parts.items():
+                archive.writestr(name, data)
         rep = evaluate(ws)
         check(FAIL in _levels(rep, "unresolved"),
               "an [UNRESOLVED …] marker in the .docx did not fail the gate")

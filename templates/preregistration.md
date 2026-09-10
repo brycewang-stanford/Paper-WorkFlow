@@ -5,7 +5,8 @@
 > seeing which one gives stars). Instantiate it at the end of Stage 1 (design) or the
 > very start of Stage 3 (estimation), commit it, then run
 > `python3 scripts/check_preregistration.py <workspace>`. The Method Gate will not
-> PASS while this is `UNLOCKED` or while main results exist without a prior lock.
+> PASS without either a prospective lock or an explicitly disclosed retrospective record.
+> Existing-result entry: follow references/design-transparency.md §2.1; never backdate a plan.
 >
 > Confirmatory ≠ exploratory. Anything not registered below is **exploratory** and
 > must be labelled as such in the manuscript. Honest exploration is welcome; it just
@@ -15,9 +16,24 @@
 
 - locked: <YYYY-MM-DD HH:MM Asia/Shanghai | UNLOCKED>
 - lock_commit: <git short sha at lock time | n/a>
-- locked_before_estimation: <yes | no>   <!-- must be `yes`: lock precedes main_results.json -->
+- locked_before_estimation: <yes | no>   <!-- yes for prospective; no for disclosed retrospective analysis -->
 - analyst: <name / agent id>
 - primary_design: <DiD | IV | RDD | SC | event-study | panel-FE | OLS | ...>
+
+## Existing-result mode (optional)
+
+For an existing-result study, add these fields to Lock Status, remove H-rows from the next table,
+and list the actual E-analyses under Confirmatory vs Exploratory. Keep the two state/file records consistent:
+
+```text
+- analysis_mode: retrospective
+- prior_results_seen: describe earlier exposure and provenance
+- analysis_history: describe previous analysis choices, unknown history, and remediation
+- prospective_validation: describe independent future validation, or explicitly state none
+```
+
+Use `design_lock.status=retrospective`, `locked_before_estimation=false`, `confirmatory_count=0`.
+This is disclosure, not preregistration; the current record cannot authenticate historical timing.
 
 ## Confirmatory Hypotheses (registered before outcomes are seen)
 
@@ -43,7 +59,8 @@ but do not replace the primary.
 
 - Confirmatory analyses are exactly the H-rows above. Their wording in the paper may
   claim a pre-planned test.
-- Every other result is **exploratory** and must be worded as descriptive / suggestive.
+- Every other result is **exploratory**. Disclose its timing; causal wording separately requires
+  a defensible identification design and corresponding evidence in the Method Gate.
 - Exploratory analyses (registered post-hoc, for transparency):
   - E1: <what, and why it is exploratory>
 

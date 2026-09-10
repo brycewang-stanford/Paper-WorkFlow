@@ -205,7 +205,8 @@ Stata `rwolf2` / `wyoung` / `qqvalue`；R `multcomp` / 自算 sharpened q-values
 - **报置信区间 + 点估计**，星标可保留但不是主角；让读者看到效应的**幅度与精度**，而不是只看过没过 0.05。
 - **报效应的经济量级**（占均值/标准差几成、政策口径下意味着什么）——与质量门维度④「解读克制度」直接挂钩。
 - **不写「marginally significant / 接近显著」**当作支持证据；不显著就如实说不显著，必要时配 §3 的
-  [`design-transparency.md`](design-transparency.md) MDE：「我们能排除大于 X 的效应」。
+  [`design-transparency.md`](design-transparency.md) 的功效与精度说明。MDE 是设计的检测能力；
+  「能排除大于 X 的效应」必须依据对应置信区间上界或预设界值的等效性检验，不能把 MDE 当作上界。
 - **p 值用精确值或区间**（如 p=0.03、p<0.01），不要只有星标。
 - **主推断口径在表注里写清**：SE 类型、聚类层级与 cluster 数、是否 bootstrap/RI、是否多重检验校正。
   表注是 reviewer 判断推断可信度的第一落点。

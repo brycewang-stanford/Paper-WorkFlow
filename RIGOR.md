@@ -1,6 +1,6 @@
 # RIGOR.md — gate-coverage report
 
-**Rigor checkers selftest: PASSING — 41/41 green.**
+**Rigor checkers selftest: PASSING — 42/42 green.**
 
 Paper-WorkFlow's differentiator is that research rigor is *executable*, not advisory. Every load-bearing invariant — about a paper run, and about this skill package itself — is enforced by a script with a built-in selftest. This report runs each checker's selftest and records the verdict. A failure here is a non-zero exit, not a soft warning. Regenerate with `python3 scripts/generate_rigor_report.py`; verify freshness in CI with `--check`.
 
@@ -37,6 +37,7 @@ The master gate `validate_skill.py` chains every leaf checker below (plus asset,
 
 | Checker | Result | Enforced invariant |
 |---|:--:|---|
+| [`evals/run_acceptance.py`](evals/run_acceptance.py) | ✅ pass | Executes synthetic raw data to estimates and DOCX, independent numerical oracle, rebuild parity, conversion failure preservation, freshness drift, retrospective routing, and incomplete-final rejection. Pandoc coverage is reported separately. |
 | [`scripts/check_gate_integration.py`](scripts/check_gate_integration.py) | ✅ pass | End-to-end: a real workspace init flowed through real templates is accepted by the gate checkers as a coherent whole. |
 | [`scripts/check_stage_scenario.py`](scripts/check_stage_scenario.py) | ✅ pass | Stage 0-9 golden-path scenario: a completed workspace must have per-stage logs, handoffs, key artifacts, final handoff recovery, a green workspace-gate card with table-result reconciliation, and a filled final delivery report. |
 | [`scripts/check_stage_adversarial.py`](scripts/check_stage_adversarial.py) | ✅ pass | Adversarial Stage 0-9 scenarios: common corruptions of a completed workspace (missing artifacts, stale handoffs, broken reset coverage, unreconciled tables, non-final citations, and gate-order regressions) or unfilled final reports must be rejected. |
@@ -66,4 +67,4 @@ python3 scripts/generate_rigor_report.py        # regenerate this file
 python3 scripts/generate_rigor_report.py --check # CI: fail if stale
 ```
 
-_Generated 2026-09-02 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.
+_Generated 2026-09-11 by `scripts/generate_rigor_report.py`. The body is deterministic apart from this line.

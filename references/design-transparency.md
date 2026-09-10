@@ -79,36 +79,32 @@
 
 ## 2.1 可执行预注册锁（executable lock）——把「先定方案」变成机械闸门
 
-PAP 的全部价值在于**时间戳**：方案锁定在看结果之前。但散文承诺可被事后悄悄改写，因此本 skill 用一个
-**可执行的锁**把这条不变量做成 `exit 1`，而不是靠自觉。这正是相对 Orchestra「git 即预注册（纯散文自评）」
-的差异化——我们让它**可被脚本判定**。
+Stage 2.5 保存**分析计划及其真实时序**。新研究先确定样本、变量、估计量和推断口径再估计；
+已有结果或已接触结果数据的研究必须披露先验信息，不能把今天写的方案标成昨日预注册。
+正式预注册也可早于收集数据，不能要求所有研究都等到拿到数据后才登记。
 
-**锁在流水线里的位置：Stage 2.5，数据到手之后、第一个估计之前。**
-这不是一个可以顺手挪动的实现细节，而是这把锁能不能成立的全部前提：
+两条可执行路线使用同一份 `00_meta/preregistration.md`，均保留 Primary Specification Lock、
+Confirmatory vs Exploratory、Deviations from Plan。没有外部预注册并不自动证明研究无效；
+是否有因果识别依据和是否事前指定是两个不同维度，分别审计。
 
-- **不能更早**（Stage 1/2 之前）：数据还没到手，锁的是空想——变量能不能构造、样本有多大、
-  聚类层级是什么都还不知道，写出来的主设定第一次跑就得改，锁形同虚设。
-- **不能更晚**（Stage 3 之后）：主结果已在盘上，锁退化成「我找到了什么」的流水账。
-  闸门可以零成本满足，`design_risk_ledger.md` 的 **specification search** 一栏没有可比基线，
-  「预先指定的稳健性矩阵」与「试了 40 个设定挑了带星的那个」在证据上无法区分。
+| 入口 | `workflow_state.json.design_lock` | 计划内容 |
+|---|---|---|
+| 新研究，未见当前分析结果 | `status=locked`、`locked_before_estimation=true` | Lock Status 记录真实时间、版本与已接触的数据；至少一条完整 H-row；锁后偏离登记 |
+| 已有结果、已有初稿，或已知结果的观察性分析 | `status=retrospective`、`locked_before_estimation=false`、`confirmatory_count=0` | Lock Status 加 `analysis_mode: retrospective`；确认性假设表保留表头但不填 H-row；在探索性节逐条记录 E1 等分析 |
 
-所以流水线把它单列为 **Stage 2.5**（见 [`stage-playbook.md`](stage-playbook.md)），
-由 `workflow_state.json.design_lock` 记录，并由两条机械闸门守住：
-`check_workspace_gates.py --preconditions 3` 让**没锁就不许开始估计**，
-`method_gate:design_lock` 让**没锁就不许 Method Gate 通过**。
+回溯路线还必须填写 `prior_results_seen`（谁、何时、见过什么）、`analysis_history`（既往设定搜索，
+未知就明确哪些未知及补救）、`prospective_validation`（独立新样本验证计划，或明确没有）。
+`locked` 写当前记录时间而不是虚构的过去时间；`locked_before_estimation: no`。
+全部已有结果按回溯/探索性分析披露。以后真的对未见过的新样本做确认性检验，单独建立前瞻计划与证据，
+不能用本次回溯记录追认过去的检验。原始结果、分析代码、版本和偏离日志都保留。
 
-1. **实例化** `templates/preregistration.md` → 工作区 `00_meta/preregistration.md`（与其它治理锁同住 00_meta）。
-   填 Lock Status（`locked` 时间戳、`lock_commit`、`locked_before_estimation: yes`、analyst、primary_design）、
-   至少一条 **Confirmatory Hypotheses**（含 Y/estimand/主设定/预测符号）、Primary Specification Lock（含聚类、
-   多重检验方案）、Confirmatory vs Exploratory 与 Deviations from Plan。
-2. **锁定**：在跑出 `03_analysis/results/main_results.json` **之前**提交，记下 `lock_commit`。
-3. **校验**：`python3 scripts/check_preregistration.py <workspace>`。硬不变量——**有主结果却没锁、或
-   `locked_before_estimation` 非 yes，即研究者自由度违规，直接 FAIL**；未锁但还没有结果只是 INFO（未完成不算违规）。
+运行 `python3 scripts/check_preregistration.py <workspace>`。Stage 3 的入口和 Method Gate 同时检查
+事前锁或完整回溯记录；仅把状态改成 `retrospective` 而不披露、填写 H-row 冒称确认性、
+或两份记录中的时序矛盾都会失败。识别、推断、选择性报告、样本和稳健性标准两条路线一致。
 
-> **与 Method Gate 的硬挂钩**：DiD/IV/RDD 等确认性主张要写成「预先指定的检验」，前提是它在
-> `00_meta/preregistration.md` 锁内；**任何不在锁内的主结果一律降级为 exploratory（描述性/提示性措辞）**。
-> 锁未通过（`check_preregistration.py` 返回非零）→ 选择性报告风险未关 → Method Gate 不得 `PASS`
-> （记入 `03_analysis/design_risk_ledger.md` 的 specification_search / 选择性报告行）。
+**验证边界**：脚本检查本地记录和状态是否相容，不能凭一个 `true`、Git SHA 或文件修改时间证明
+研究者此前没看过结果。对“预注册”的主张须审阅外部注册记录或可核查历史版本；不具备该证据时
+只能说“本地计划记录”，不能说“已验证的事前注册”。参考 [COS 预注册说明](https://www.cos.io/initiatives/prereg)。
 
 ---
 
@@ -118,8 +114,10 @@ PAP 的全部价值在于**时间戳**：方案锁定在看结果之前。但散
 功效不足？答案就是报告 **MDE（minimum detectable effect）**：在给定样本、方差、80% 功效下，本设计能可靠
 侦测到的最小效应。
 
-- **空/精确零结果**：在结果段写「我们能排除大于 X 的效应」（X = MDE），把「没找到」变成「找到了一个有
-  信息量的上界」。
+- **空结果与精度**：同时报告估计量、置信区间、显著性水平和设计阶段的 MDE。MDE 是在指定功效下
+  能检测的效应，不是结果的置信上界。只有置信区间或基于预设实质性阈值的等效性检验支持时，
+  才能写“排除大于 X 的效应”。区间宽时应说证据不精确。定义见
+  [J-PAL 功效计算指南](https://www.povertyactionlab.org/resource/power-calculations)。
 - **报 MDE 而非事后功效**：事后用观测效应算的 power 不可靠；MDE 是**事前**设计量，才有意义。
 - **DiD/事件研究**：MDE 思路延伸到「预趋势能侦测多大的违背」（见 §4）。
 

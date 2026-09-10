@@ -642,6 +642,7 @@ CHECKER_RUNS: list[tuple[str, list[list[str]]]] = [
     # gate: generate_rigor_report --check runs its selftest below.
     ("scripts/check_defense_deck.py", []),
     ("evals/score_skill.py", [["--selftest"]]),
+    ("evals/run_acceptance.py", []),  # executed once by the RIGOR generator
     ("evals/check_complexity_budget.py", [["--selftest"], []]),
     ("evals/check_replication_accuracy.py", [["--selftest"]]),
     # DGP truths for the five simulation replication cases must match the

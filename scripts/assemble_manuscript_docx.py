@@ -26,8 +26,8 @@ Two converters, and the run records which one it used
                ``--reference-doc`` template, and inline math properly.
   ``builtin``  a dependency-free writer that emits `word/document.xml` into a zip
                with the standard library alone -- same discipline as
-               `make_three_line_tables.py`, so the deliverable can still be built
-               on a machine with no pandoc and no python-docx.
+               `make_three_line_tables.py`, for simple prose and tables on a machine with no pandoc or python-docx.
+               Unresolved citations and mathematical notation require Pandoc.
 
 The builtin writer emits tables **already in three-line form** (heavy top rule,
 light header rule, heavy bottom rule, no vertical rules, no shading), so the
@@ -38,7 +38,7 @@ What it refuses to do quietly
 -----------------------------
 An exhibit include that resolves to nothing, a figure that exists only as a
 `.pdf` this writer cannot rasterise, a `\ref{}` with no target: each is recorded
-in `manuscript.unresolved_markers` and printed. A conversion that silently drops
+in the failure report. The previous DOCX and state remain untouched. A conversion that silently drops
 a table is the failure mode this whole layer exists to prevent, so the assembler
 counts what it placed (`exhibits_embedded` / `figures_embedded`) and
 `check_deliverable_contract.py` is what passes or fails on the result.
@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import re
@@ -157,7 +158,7 @@ def _candidate_paths(workspace: Path, target: str, suffixes: tuple[str, ...]) ->
     seen: set[Path] = set()
     unique = []
     for path in out:
-        if path in seen:
+        if path in seen or not path.resolve().is_relative_to(workspace.resolve()):
             continue
         seen.add(path)
         unique.append(path)
@@ -297,9 +298,7 @@ _TEX_HEADINGS = {
 }
 _TEX_INLINE = [
     (re.compile(r"\\(?:textbf|textit|emph|texttt|underline)\{([^{}]*)\}"), r"\1"),
-    (re.compile(r"\\(?:citep|citet|cite|citeauthor|citeyear)\s*(?:\[[^\]]*\])?\{([^{}]*)\}"), r"(\1)"),
     (re.compile(r"\\(?:label|index)\{[^{}]*\}"), ""),
-    (re.compile(r"\\(?:ref|eqref|autoref|pageref)\{([^{}]*)\}"), r"\1"),
     (re.compile(r"\\%"), "%"),
     (re.compile(r"\\&"), "&"),
     (re.compile(r"\\(?:newpage|clearpage|maketitle|centering|noindent|bigskip|medskip|smallskip)\b"), ""),
@@ -408,7 +407,7 @@ def parse_markdown_body(text: str) -> list[Block]:
         line = lines[i]
         stripped = line.strip()
         heading = re.match(r"^(#{1,6})\s+(.*)$", stripped)
-        image = re.match(r"^!\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)\s*$", stripped)
+        image = re.match(r"^!\[([^\]]*)\]\((<[^>]+>|[^)\s]+)(?:\s+\"[^\"]*\")?\)\s*$", stripped)
         include = re.match(r"^\{\{\s*(?:include|table|exhibit)\s*:\s*([^}]+?)\s*\}\}\s*$", stripped)
         if heading:
             flush()
@@ -417,7 +416,7 @@ def parse_markdown_body(text: str) -> list[Block]:
             continue
         if image:
             flush()
-            blocks.append(Block("include_figure", target=image.group(2), caption=image.group(1).strip()))
+            blocks.append(Block("include_figure", target=image.group(2).strip("<>"), caption=image.group(1).strip()))
             i += 1
             continue
         if include:
@@ -775,6 +774,10 @@ def assemble_builtin(workspace: Path, source: Path, out_path: Path) -> Assembly:
                 result.notes.append(f"bibliography <- {bib.relative_to(workspace)} (appended)")
 
     write_docx(out_path, "".join(body), media)
+    result.unresolved.extend(scan_unresolved(docx_text(out_path)))
+    raw = source.read_text(encoding="utf-8")
+    if re.search(r"(?<!\\)\$[^$]+\$|\\\[|\\begin\{(?:equation|align)", raw):
+        result.unresolved.append("builtin cannot render mathematical notation; use pandoc")
     return result
 
 
@@ -786,7 +789,8 @@ def _md_escape(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def blocks_to_markdown(workspace: Path, blocks: list[Block], result: Assembly) -> str:
+def blocks_to_markdown(workspace: Path, blocks: list[Block], result: Assembly,
+                       append_bibliography: bool = True) -> str:
     """Serialise the parsed body to Markdown with **every exhibit already inlined**.
 
     Handing the raw manuscript to pandoc does not work: pandoc's LaTeX reader
@@ -810,7 +814,7 @@ def blocks_to_markdown(workspace: Path, blocks: list[Block], result: Assembly) -
         head = padded[0]
         out.append("| " + " | ".join(_md_escape(c) for c in head) + " |")
         out.append("|" + "---|" * width)
-        for row in padded[header_rows:] if header_rows <= len(padded) else padded[1:]:
+        for row in padded[1:]:
             out.append("| " + " | ".join(_md_escape(c) for c in row) + " |")
         out.append("")
 
@@ -860,7 +864,7 @@ def blocks_to_markdown(workspace: Path, blocks: list[Block], result: Assembly) -
                 out.append(line + "\n")
             result.notes.append(f"bibliography <- {bib.relative_to(workspace)}")
 
-    if not any(b.kind == "bibliography" for b in blocks):
+    if append_bibliography and not any(b.kind == "bibliography" for b in blocks):
         bib = find_bib(workspace)
         if bib is not None:
             lines = format_bibliography(bib)
@@ -871,13 +875,63 @@ def blocks_to_markdown(workspace: Path, blocks: list[Block], result: Assembly) -
     return "\n".join(out)
 
 
+def resolved_markdown(workspace: Path, source: Path, result: Assembly) -> str:
+    """Expand only workspace exhibits; leave native Markdown to Pandoc.
+
+    Paragraph flattening destroys lists, footnotes, YAML metadata and display
+    math. Transforming only our include extension preserves these structures.
+    """
+    lines = source.read_text(encoding="utf-8").splitlines(keepends=True)
+    out = []
+    fence = None
+    for line in lines:
+        match = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if match:
+            token = match.group(1)
+            if fence is None:
+                fence = token
+            elif token[0] == fence[0] and len(token) >= len(fence):
+                fence = None
+            out.append(line)
+            continue
+        blocks = parse_markdown_body(line) if fence is None else []
+        if len(blocks) == 1 and blocks[0].kind == "include_table":
+            out.append(blocks_to_markdown(workspace, blocks, result, False) + "\n")
+        elif len(blocks) == 1 and blocks[0].kind == "include_figure":
+            block = blocks[0]
+            path = resolve_image(workspace, block.target)
+            if path is None:
+                result.unresolved.append(f"figure unresolved: {block.target}")
+                out.append(f"[UNRESOLVED FIGURE: {block.target}]\n")
+            else:
+                out.append(f"![{block.caption}](<{path.resolve().as_posix()}>)\n")
+                result.figures += 1
+        else:
+            out.append(line)
+    # Inline pipe tables are passed through, but still included in the count.
+    result.exhibits += sum(b.kind == "table" for b in parse_body(source))
+    return "".join(out)
+
+
 def assemble_pandoc(workspace: Path, source: Path, out_path: Path,
                     reference_docx: str = "", csl: str = "") -> Assembly:
     """Convert via pandoc from a fully-resolved Markdown intermediate."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     result = Assembly()
     blocks = parse_body(source)
-    markdown = blocks_to_markdown(workspace, blocks, result)
+    bib = find_bib(workspace)
+    if source.suffix == ".md":
+        markdown = resolved_markdown(workspace, source, result)
+    else:
+        blocks = [b for b in blocks if b.kind != "bibliography"]
+        markdown = blocks_to_markdown(workspace, blocks, result, False)
+        # Preserve citation keys until citeproc resolves them; never print bare
+        # BibTeX keys as if they were formatted author/year citations.
+        markdown = re.sub(r"\\(?:citep|citet|cite)\{([^{}]+)\}",
+                          lambda m: "[" + "; ".join("@" + k.strip() for k in m[1].split(",")) + "]", markdown)
+
+    if bib is not None and not re.search(r"(?<!\w)@[A-Za-z0-9_]", markdown):
+        markdown = "---\nnocite: '@*'\n---\n\n" + markdown
 
     with tempfile.TemporaryDirectory(prefix="pw-pandoc-") as tmp:
         intermediate = Path(tmp) / "manuscript.md"
@@ -885,15 +939,18 @@ def assemble_pandoc(workspace: Path, source: Path, out_path: Path,
         cmd = ["pandoc", str(intermediate), "-o", str(out_path), "--from", "markdown",
                "--resource-path", ":".join([str(workspace), str(workspace / "04_results"),
                                             str(source.parent)])]
+        if bib is not None:
+            cmd += ["--citeproc", "--bibliography", str(bib),
+                    "--metadata", "reference-section-title:参考文献 / References"]
         if csl:
-            bib = find_bib(workspace)
-            if bib is not None:
-                cmd += ["--citeproc", "--bibliography", str(bib), "--csl", csl]
+            cmd += ["--csl", str((workspace / csl).resolve())]
         if reference_docx:
-            cmd += ["--reference-doc", reference_docx]
+            cmd += ["--reference-doc", str((workspace / reference_docx).resolve())]
         proc = subprocess.run(cmd, capture_output=True, text=True)
         if proc.returncode != 0:
             raise RuntimeError((proc.stderr or proc.stdout).strip() or "pandoc failed")
+        if proc.stderr.strip():
+            result.unresolved.append("pandoc warning requires review: " + proc.stderr.strip())
 
     # Trust the file, not the intent: count what landed, and treat any exhibit
     # that went missing in conversion as a hard unresolved marker.
@@ -922,6 +979,7 @@ _UNRESOLVED_PATTERNS = [
     (re.compile(r"\[EMPTY TABLE[^\]]*\]"), "empty exhibit"),
     (re.compile(r"\{\{\s*(?:include|table|exhibit)\s*:"), "unresolved Markdown include"),
     (re.compile(r"(?<![\w?])\?\?(?![\w?])"), "broken cross-reference (??)"),
+    (re.compile(r"(?<![\w/])@[A-Za-z_][\w:.-]*"), "unresolved Pandoc citation"),
 ]
 
 
@@ -953,7 +1011,7 @@ def count_docx_exhibits(path: Path) -> tuple[int, int]:
         return 0, 0
     tables = len(re.findall(r"<w:tbl(?:\s|>)", xml))
     drawings = len(re.findall(r"<w:drawing(?:\s|>)", xml))
-    return tables, max(drawings, len(media))
+    return tables, drawings
 
 
 def scan_unresolved(text: str) -> list[str]:
@@ -963,6 +1021,27 @@ def scan_unresolved(text: str) -> list[str]:
         if hits:
             out.append(f"{label} x{len(hits)}")
     return out
+
+
+def assembly_inputs(workspace: Path, source: Path, manuscript: dict) -> dict[str, str]:
+    """Fingerprint actual conversion inputs so stale Word files cannot pass."""
+    paths = {source}
+    for block in parse_body(source):
+        path = None
+        if block.kind == "include_table":
+            path = resolve_exhibit(workspace, block.target)
+        elif block.kind == "include_figure":
+            path = resolve_image(workspace, block.target)
+        if path is not None:
+            paths.add(path)
+    bib = find_bib(workspace)
+    if bib:
+        paths.add(bib)
+    for key in ("reference_docx", "csl"):
+        if manuscript.get(key):
+            paths.add(workspace / manuscript[key])
+    return {str(p.resolve().relative_to(workspace.resolve())): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(paths) if p.is_file()}
 
 
 # --------------------------------------------------------------------------- #
@@ -986,7 +1065,11 @@ def update_state(workspace: Path, *, converter: str, out_path: Path,
     manuscript["exhibits_embedded"] = result.exhibits
     manuscript["figures_embedded"] = result.figures
     manuscript["unresolved_markers"] = result.unresolved
-    manuscript.setdefault("body_file", str(source.relative_to(workspace)))
+    manuscript["body_file"] = str(source.relative_to(workspace))
+    manuscript["assembly_inputs"] = assembly_inputs(workspace, source, manuscript)
+    manuscript["assembled_docx_sha256"] = hashlib.sha256(out_path.read_bytes()).hexdigest()
+    from datetime import datetime, timezone
+    manuscript["last_assembly"] = datetime.now(timezone.utc).isoformat()
     path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return True
 
@@ -1021,6 +1104,16 @@ def normalise_tables(workspace: Path, out_path: Path, manuscript: dict,
 
 def run(workspace: Path, *, converter: str = "auto", out: str = "",
         write_state: bool = True) -> dict:
+    workspace = workspace.resolve()
+    for state_path in (workspace / "00_meta/workflow_state.json", workspace / "workflow_state.json"):
+        if state_path.is_file():
+            try:
+                raw_state = json.loads(state_path.read_text(encoding="utf-8"))
+                if not isinstance(raw_state, dict):
+                    raise ValueError("expected an object")
+            except ValueError as exc:
+                return {"ok": False, "error": f"invalid workflow state: {exc}"}
+            break
     state = load_state(workspace)
     manuscript = state.get("manuscript", {}) if isinstance(state.get("manuscript"), dict) else {}
     fmt = declared_format(state)
@@ -1031,7 +1124,18 @@ def run(workspace: Path, *, converter: str = "auto", out: str = "",
                 + " … (Stage 5 has not produced a draft yet)"}
 
     rel_out = out or str(manuscript.get("deliverable_docx") or "09_submission/main.docx")
-    out_path = workspace / rel_out
+    out_path = (workspace / rel_out).resolve()
+    if not out_path.is_relative_to(workspace) or out_path.suffix.lower() != ".docx":
+        return {"ok": False, "error": "output must be a .docx inside the workspace"}
+    for key in ("reference_docx", "csl"):
+        if manuscript.get(key):
+            path = (workspace / manuscript[key]).resolve()
+            if not path.is_relative_to(workspace) or not path.is_file():
+                return {"ok": False, "error": f"{key} must name an existing file inside the workspace"}
+    try:
+        input_snapshot = assembly_inputs(workspace, source, manuscript)
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "error": f"cannot fingerprint workspace inputs: {exc}"}
 
     chosen = converter
     if chosen == "auto":
@@ -1040,19 +1144,27 @@ def run(workspace: Path, *, converter: str = "auto", out: str = "",
         return {"ok": False, "error": "pandoc requested but not on PATH; rerun with "
                                       "--converter builtin (see references/runtime-fallbacks.md)"}
 
-    if chosen == "pandoc":
+    # Build off to the side: errors must not overwrite the last usable draft.
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".pw-assembly-", dir=out_path.parent) as tmp:
+        candidate = Path(tmp) / "main.docx"
         try:
-            result = assemble_pandoc(workspace, source, out_path,
-                                     str(manuscript.get("reference_docx") or ""),
-                                     str(manuscript.get("csl") or ""))
-        except RuntimeError as exc:
-            result = assemble_builtin(workspace, source, out_path)
-            chosen = "builtin"
-            result.notes.append(f"pandoc failed, fell back to builtin: {exc}")
-    else:
-        result = assemble_builtin(workspace, source, out_path)
-
-    normalise_tables(workspace, out_path, manuscript, result)
+            if chosen == "pandoc":
+                result = assemble_pandoc(workspace, source, candidate,
+                                         str(manuscript.get("reference_docx") or ""),
+                                         str(manuscript.get("csl") or ""))
+            else:
+                result = assemble_builtin(workspace, source, candidate)
+            normalise_tables(workspace, candidate, manuscript, result)
+        except (RuntimeError, OSError, ValueError) as exc:
+            return {"ok": False, "error": f"conversion failed; prior output preserved: {exc}"}
+        if result.unresolved:
+            return {"ok": False, "error": "unresolved conversion; prior output preserved",
+                    "unresolved_markers": result.unresolved, "exhibits_embedded": result.exhibits,
+                    "figures_embedded": result.figures, "notes": result.notes}
+        if assembly_inputs(workspace, source, manuscript) != input_snapshot:
+            return {"ok": False, "error": "inputs changed during conversion; prior output preserved"}
+        candidate.replace(out_path)
 
     state_written = update_state(workspace, converter=chosen, out_path=out_path,
                                  result=result, source=source) if write_state else False
@@ -1239,8 +1351,8 @@ def selftest() -> None:
             failures.append("a missing exhibit include was not reported as unresolved")
         if result["exhibits_embedded"] != 0:
             failures.append("a missing exhibit was counted as embedded")
-        if "UNRESOLVED" not in docx_text(ws / result["output"]):
-            failures.append("the .docx does not carry a visible unresolved marker")
+        if result["ok"] or (ws / "09_submission/main.docx").exists():
+            failures.append("a failed conversion published an incomplete .docx")
 
     # No manuscript yet is a clean refusal, not a crash or an empty file.
     with tempfile.TemporaryDirectory(prefix="pw-assemble-empty-") as tmp:

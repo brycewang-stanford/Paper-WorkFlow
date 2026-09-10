@@ -30,7 +30,7 @@ Paper-WorkFlow 是一个**总编排器（meta-orchestrator）**，不是一个�
 # skills/69-Paper-WorkFlow/ 子模块）
 git clone --recurse-submodules https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills.git
 
-# 或：只要编排器本体（子 skill 需另行提供）
+# 或：独立安装，按内置 references 执行（子 skill 可选扩展）
 git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 ```
 
@@ -49,9 +49,9 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 
 ---
 
-## 三、开跑前，它会一次性问你六件事
+## 三、开跑前补齐必要信息
 
-理解这六项，你就能在第一条 prompt 里直接写全，省掉一轮问答。
+可在第一条 prompt 中提供以下偏好；能从材料推断的直接记录，不强制逐项提问。
 
 | # | 选项 | 取值 | 建议 |
 |---|---|---|---|
@@ -61,6 +61,7 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 | 4 | **稿件语言** | 中文 / 英文 | 与分析后端无关 |
 | 5 | **分析后端** | `python-statspai`（默认）/ `stata` / `r` | 手上有 `.dta` 且团队用 Stata 就选 `stata` |
 | 6 | **表格格式** | 默认三线表 | 一般不用改 |
+| 7 | **正文与交付物** | 默认 Markdown → DOCX；可指定 LaTeX | 遵循用户要求，保留转换与版面检查证据 |
 
 **交互档位和 scope 是正交的两个旋钮**：
 
@@ -79,6 +80,15 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 
 ---
 
+默认按材料与委托范围继续工作，不把可逆步骤变成审批流程。明确要求阶段确认时才在约定节点暂停。
+只有 idea 但缺数据时，先交付研究方案与可执行分析计划；不能填入想象的实证结果。已有结果时，
+按 [回溯披露规范](../references/design-transparency.md) 说明哪些是看过结果后决定的，不补造预注册。
+
+Word 交付须运行组装器、严格交付检查，并逐页看渲染结果。源文件变更会使旧 DOCX 的 freshness 检查失败；
+将 Word 手工修订合并回源稿后重建。完整命令和能力限制见
+[全文交付契约](../references/analysis-backends.md)。
+
+
 ## 四、你带什么进来，就从哪一站上车
 
 不用每次从头跑。它会根据你手上已有的材料自动选入口：
@@ -88,8 +98,8 @@ git clone https://github.com/brycewang-stanford/Paper-WorkFlow.git
 | 一句话想法 / 一个研究方向 | Stage 1 · 完整选题漏斗 |
 | 一份成形 proposal（X→M→Y、识别策略、样本） | Stage 2 · 直接取数 |
 | 已清洗数据 + 设计 | Stage 3 · 直接估计 |
-| 已有回归结果 / 表图 | Stage 5 · 直接写初稿 |
-| 一份 `main.tex` 初稿 | Stage 6 · 直接进打磨流水线 |
+| 已有回归结果 / 表图 | 审计证据链及回溯披露后进入 Stage 5 |
+| 一份 `main.md` / `main.tex` 初稿 | Stage 6 · 直接进打磨流水线 |
 | 初稿 + 审稿意见 | Stage 8 · 按意见修订 |
 | 一份成稿要投稿 | Stage 9 · 选刊 + 投稿包 |
 

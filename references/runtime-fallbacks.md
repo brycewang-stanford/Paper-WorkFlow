@@ -31,13 +31,36 @@
 | Stata 不可用 | 若 Stata 是用户指定主后端，先记录 blocked；可用 Python/R 等价实现做 fallback 或 secondary validation | Stata 版本缺失、替代包 | 关键 artifact 缺失则 Method Gate `NOT PASS` |
 | R/Python 包缺失 | 建安装脚本；若不能安装，用同类包或另一后端但保留差异说明 | 包名、版本、替代 | 数字不可复核时不得放行 |
 | LaTeX / PDF 工具缺失 | 生成 `.tex`、`.md`、`.docx` 替代；投稿前补 PDF render | 缺失命令 | 写作可继续，submission checklist 不可过 |
-| pandoc 缺失（Word 交付路径） | `assemble_manuscript_docx.py` 自动落到内置 stdlib 写入器，把 `manuscript.converter` 记成 `builtin`；保真度差异（citeproc、目标刊 `--reference-doc` 模板、行内公式）写进 `decisions` | 缺失命令、降级的转换能力 | `check_deliverable_contract.py` 照常跑——**降级的是转换器，不是闸门**；表图齐、无未解析标记即可 `verified` |
+| pandoc 缺失（Word 交付路径） | `assemble_manuscript_docx.py` 自动落到内置 stdlib 写入器，把 `manuscript.converter` 记成 `builtin`；保真度差异（citeproc、目标刊 `--reference-doc` 模板、行内公式）写进 `decisions` | 缺失命令、降级的转换能力 | `check_deliverable_contract.py` 照常跑——**降级的是转换器，不是闸门**；还须确认引用、数学表达和格式被正确保留；有未解析内容时构建失败并保留旧稿；结构检查通过不代表逐页视觉审阅通过 |
 | 图只有 `.pdf`、没有 `.png` | 由绘图后端补出 `.png`（`graph export` / `savefig` / `ggsave`）；内置写入器无法把 PDF 塞进 `.docx` | 缺失的位图、受影响图号 | 组装器记 unresolved marker，`check_deliverable_contract.py` 判 `exhibits:figures` 红——Word 稿不得少图 |
 | 受限数据不可访问 | 用公开样例/合成数据跑代码结构；真实估计标 blocked | 数据访问限制 | 主结果不可声称真实；复现 `not_ready` |
 | 目标期刊政策页不可访问 | 用本文件官方入口 + 已知模板先占位；投稿前刷新 | policy URL blocked | Stage 9 checklist 未完成 |
 | AJS 未安装 / 无精确期刊 skill / 调用失败 | 写 `09_submission/ajs/adapter_report.md` 标 `not_installed` / `no_exact_match` / `failed`，继续 `paper-submission` + 官网核验 + `reference-verify` | 发现方式、候选 pack、错误与降级原因 | AJS 本身不阻断；官网规则未核则 Stage 9 仍不得 `ready` |
 
 ---
+
+## 2.1 独立安装也能执行的路线
+
+只 clone 本仓库时，不要求 `67/` 工具箱存在。先发现真实可用的工具和技能；不存在就记录，
+按下表读取当前阶段手册、使用可验证的本地代码完成任务。没有 Agent 时主代理串行执行。
+
+| 阶段 | 本仓库执行依据 | 必须得到的证据 |
+|---|---|---|
+| idea → 可行研究问题 | `literature-and-positioning.md`、`stage-playbook.md` Stage 1 | 从用户约束列少量可比较问题；文献检索记录、数据可得性、分析单位、可估计量与识别威胁；不以“新颖度自评分”代替查新 |
+| data → 可审计样本 | `measurement-and-data-quality.md`、`data-governance.md` | 保留 raw；实际运行导入/合并/清洗脚本；审计主键、合并倍增、时间单位、缺失和流失；codebook 与样本流量对齐 |
+| 设计 → 估计 | `design-gate-cards.md`、`inference-and-uncertainty.md` | 按设计选真实统计包；报告系数、标准误/区间、N、聚类数、模型与样本 ID、诊断及运行命令；不能用默认 OLS 代替所有设计 |
+| 结果 → 表图 → 正文 | `analysis-backends.md`、`writing-craft.md`、`integrity-and-claim-audit.md` | 同一结果对象生成表图与数字；正文主张连到 evidence ledger，空结果照实写；无证据不能补出发现 |
+| 修订 → DOCX | `stage-playbook.md` Stage 6–9、`analysis-backends.md` §4.2 | 数字/引用复核；全文组装；结构与 freshness 检查；实际逐页渲染审阅；报告审核方式与剩余问题 |
+
+只有 idea 而数据尚不可得时，交付可执行 proposal、数据获取与分析计划，以及明确缺数据的草稿；
+不把模拟结果写成实证发现。有数据但无法建立可信识别时，按用户目的改为描述性/预测性研究并说明范围，
+不继续换模型寻找显著性。描述性估计要定义总体/抽样权重；预测研究要按时间/实体划分验证集、防止泄漏；
+它们不需要虚构处理组。社会学、教育学、政治学等使用各自构念、测量和投稿规范，不自动套 AER 标准。
+
+`pw check` 检查现有状态一致性；`pw exit N` 要求该阶段工作完成；`pw final` 要求所有投稿义务完成。
+可在方法受阻时生成标明“未完成研究”的 DOCX 供讨论，但相关 gate 保持 pending/not_pass，
+最终报告清楚区分“文件已生成”“内容已审阅”“研究达到投稿标准”。
+
 
 ## 3. 记录格式
 
