@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-label="Paper-WorkFlow animated pipeline: Stage 0 to 9 with Method Gate and Draft Quality Gate">
+<title>Paper-WorkFlow pipeline</title>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B1020"/><stop offset="1" stop-color="#151A33"/></linearGradient>
+<linearGradient id="trail" x1="0" x2="1"><stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
+<radialGradient id="tok"><stop offset="0" stop-color="#fff"/><stop offset=".35" stop-color="#A5F3FC"/><stop offset="1" stop-color="#22D3EE" stop-opacity="0"/></radialGradient>
+<filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<style>
+text{font-family:Inter,ui-sans-serif,-apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+.n rect{fill:#1A2040;stroke:#2E3768;stroke-width:1.5}
+.n{animation:lit 12.0s linear infinite}
+.num{fill:#818CF8;font-size:11px;font-weight:700;letter-spacing:.08em}
+.nm{fill:#E5E7EB;font-size:16px;font-weight:650}
+.sb{fill:#8B93B8;font-size:10.5px}
+@keyframes lit{0%{filter:none}1%{filter:drop-shadow(0 0 10px #22D3EE)}8%{filter:drop-shadow(0 0 4px #6366F1)}100%{filter:none}}
+.n rect{animation:fill 12.0s linear infinite;animation-delay:inherit}
+@keyframes fill{0%{stroke:#2E3768}1%{stroke:#22D3EE;fill:#1E2A55}10%{stroke:#4F46E5;fill:#1A2040}100%{stroke:#2E3768}}
+.g path{fill:#0F172A;stroke:#F59E0B;stroke-width:2}
+.g{animation:gate 12.0s linear infinite}
+.g .gk{fill:#0F172A;font-size:16px;font-weight:800}
+@keyframes gate{0%{opacity:.95}0.5%{filter:drop-shadow(0 0 14px #34D399)}9%{filter:none}}
+.g path{animation:gp 12.0s linear infinite;animation-delay:inherit}
+@keyframes gp{0%{fill:#0F172A;stroke:#F59E0B}0.5%{fill:#34D399;stroke:#34D399}12%{fill:#34D399;stroke:#34D399}20%{fill:#0F172A;stroke:#F59E0B}}
+.g text{animation:gt 12.0s linear infinite;animation-delay:inherit}
+@keyframes gt{0%{fill:#0F172A}0.5%{fill:#052E1C}20%{fill:#0F172A}}
+.gl{fill:#F59E0B;font-size:11px;font-weight:700;letter-spacing:.12em}
+.lr{opacity:0;animation:row 12.0s linear infinite}
+@keyframes row{0%{opacity:0}1%{opacity:1}30%{opacity:1}34%{opacity:0}100%{opacity:0}}
+.led{fill:#A5B4FC;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px}
+.title{fill:#F3F4F6;font-size:18px;font-weight:700}
+.cap{fill:#8B93B8;font-size:12px}
+.track{fill:none;stroke:#252C55;stroke-width:3}
+.flow{fill:none;stroke:url(#trail);stroke-width:3;stroke-dasharray:2150;stroke-dashoffset:2150;animation:draw 12.0s linear infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+.loop{fill:none;stroke:#F472B6;stroke-width:1.6;stroke-dasharray:5 6;animation:dash 1.2s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-22}}
+.lt{fill:#F472B6;font-size:11px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<rect width="1200" height="430" rx="22" fill="url(#bg)"/>
+<text x="40" y="44" class="title">Paper-WorkFlow · one auditable run</text>
+<text x="40" y="64" class="cap">idea, data or existing results in → evidence-gated stages → full-text DOCX + replication package out</text>
+<text x="1160" y="44" text-anchor="end" class="gl">2 HARD GATES · 43 EXECUTABLE CHECKS</text>
+<path class="track" d="M110 120 H1090 V310 H110"/>
+<path class="flow" d="M110 120 H1090 V310 H110"/>
+<path class="loop" d="M306 344 C306 384, 894 384, 894 344"/>
+<text x="600" y="397" text-anchor="middle" class="lt">referee comments → revise → re-run gates</text>
+<text x="404" y="268" text-anchor="middle" class="gl">DRAFT GATE</text>
+<g class="n" style="animation-delay:0.0s"><rect x="40" y="86" width="140" height="68" rx="14"/>
+<text x="58" y="112" class="num">0</text><text x="58" y="133" class="nm">Intake</text><text x="58" y="147" class="sb">route entry</text></g><g class="n" style="animation-delay:1.094s"><rect x="236" y="86" width="140" height="68" rx="14"/>
+<text x="254" y="112" class="num">1</text><text x="254" y="133" class="nm">Design</text><text x="254" y="147" class="sb">question · estimand</text></g><g class="n" style="animation-delay:2.188s"><rect x="432" y="86" width="140" height="68" rx="14"/>
+<text x="450" y="112" class="num">1L</text><text x="450" y="133" class="nm">Literature</text><text x="450" y="147" class="sb">corpus first</text></g><g class="n" style="animation-delay:3.282s"><rect x="628" y="86" width="140" height="68" rx="14"/>
+<text x="646" y="112" class="num">2</text><text x="646" y="133" class="nm">Data</text><text x="646" y="147" class="sb">sample audit</text></g><g class="n" style="animation-delay:4.376s"><rect x="824" y="86" width="140" height="68" rx="14"/>
+<text x="842" y="112" class="num">2.5</text><text x="842" y="133" class="nm">Lock</text><text x="842" y="147" class="sb">prereg / retro</text></g><g class="n" style="animation-delay:5.47s"><rect x="1020" y="86" width="140" height="68" rx="14"/>
+<text x="1038" y="112" class="num">3</text><text x="1038" y="133" class="nm">Estimate</text><text x="1038" y="147" class="sb">+ spec ledger</text></g><g class="n" style="animation-delay:6.53s"><rect x="1020" y="276" width="140" height="68" rx="14"/>
+<text x="1038" y="302" class="num">4</text><text x="1038" y="323" class="nm">Exhibits</text><text x="1038" y="337" class="sb">three-line tables</text></g><g class="n" style="animation-delay:7.624s"><rect x="824" y="276" width="140" height="68" rx="14"/>
+<text x="842" y="302" class="num">5</text><text x="842" y="323" class="nm">Draft</text><text x="842" y="337" class="sb">numbers traced</text></g><g class="n" style="animation-delay:8.718s"><rect x="628" y="276" width="140" height="68" rx="14"/>
+<text x="646" y="302" class="num">6</text><text x="646" y="323" class="nm">Structure</text><text x="646" y="337" class="sb">argument</text></g><g class="n" style="animation-delay:9.812s"><rect x="432" y="276" width="140" height="68" rx="14"/>
+<text x="450" y="302" class="num">7</text><text x="450" y="323" class="nm">De-AI</text><text x="450" y="337" class="sb">zero number drift</text></g><g class="n" style="animation-delay:10.906s"><rect x="236" y="276" width="140" height="68" rx="14"/>
+<text x="254" y="302" class="num">8</text><text x="254" y="323" class="nm">Review</text><text x="254" y="337" class="sb">mock referees</text></g><g class="n" style="animation-delay:11.85s"><rect x="40" y="276" width="140" height="68" rx="14"/>
+<text x="58" y="302" class="num">9</text><text x="58" y="323" class="nm">Submit</text><text x="58" y="337" class="sb">DOCX + package</text></g>
+<g class="g" style="animation-delay:6.0s"><path d="M1090 193 L1112 215 L1090 237 L1068 215 Z"/><text x="1090" y="220" text-anchor="middle" class="gk">✓</text></g>
+<text x="1060" y="220" text-anchor="end" class="gl">METHOD GATE</text><g class="g" style="animation-delay:10.359s"><path d="M404 288 L426 310 L404 332 L382 310 Z"/><text x="404" y="315" text-anchor="middle" class="gk">✓</text></g>
+<text x="0" y="315" text-anchor="start" class="gl"></text>
+<g class="lr" style="animation-delay:3.87s"><text x="760" y="186" class="led" xml:space="preserve">s01  H1  prereg   p=.012  ★</text></g><g class="lr" style="animation-delay:4.22s"><text x="760" y="199" class="led" xml:space="preserve">s02  H1  robust   p=.031</text></g><g class="lr" style="animation-delay:4.57s"><text x="760" y="212" class="led" xml:space="preserve">s03  H1  explor   p=.208</text></g><g class="lr" style="animation-delay:4.92s"><text x="760" y="225" class="led" xml:space="preserve">specifications_run: 3  ✓</text></g>
+<circle r="16" fill="url(#tok)" filter="url(#glow)"><animateMotion dur="12.0s" repeatCount="indefinite" path="M110 120 H1090 V310 H110" calcMode="linear"/></circle>
+<text x="40" y="420" class="cap">workflow_state.json · stage passports · evidence ledger · spec-search ledger — every claim traces to a file</text>
+</svg>

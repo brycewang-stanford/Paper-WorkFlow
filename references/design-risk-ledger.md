@@ -122,3 +122,60 @@ SUTVA 不是默认成立。若处理可能通过地理、网络、市场或一�
 - 外部效度边界空白，cover letter 却写成一般政策结论。
 - 主结果来自后验 specification search，正文却声称是预先指定。
 - 溢出/干涉可能很强，却把对照组污染当作普通 measurement noise。
+
+
+## Specification-Search Ledger (agent forking paths)
+
+A preregistration lock records which path was planned. It does not record how many
+other paths an agent walked before the write-up picked one. Agents make that number
+cheap to inflate: hundreds of regressions per hour, each a legitimate-looking choice of
+sample, control set, clustering level, or estimator. This is the garden of forking paths
+(Gelman & Loken 2013) at machine speed, and the literature on published z-statistics
+(Brodeur et al. 2016, 2020) shows where it ends: bunching just above 1.96.
+
+### Rule
+
+Every estimate an agent runs in Stage 3 (and any re-run in Stage 4/8) appends one row to
+`03_analysis/spec_search_ledger.csv`:
+
+| column | meaning |
+|---|---|
+| `spec_id` | unique id, also the script/function name or hash that produced it |
+| `run_at` | ISO timestamp |
+| `hypothesis` | the confirmatory hypothesis id from `00_meta/preregistration.md` (H1, H2, ...) |
+| `origin` | `preregistered`, `robustness` (pre-declared perturbation), or `exploratory` |
+| `p_value` | p-value of the coefficient of interest |
+| `headline` | `yes` if the manuscript leads with this estimate |
+| `disclosed_exploratory` | `yes` if a non-preregistered headline is labelled exploratory in the text |
+
+`03_analysis/spec_search_disclosure.md` states `specifications_run: N`, and the manuscript
+reports the same N (Methods or appendix).
+
+### Gate
+
+`python3 scripts/check_spec_search_ledger.py <workspace>` runs at Stage 3 and Stage 9 exit
+(`pw exit 3`, `pw final`). It fails when results exist without a ledger, a row is
+incomplete, a searched spec is promoted to headline without disclosure, or the disclosed N
+differs from the ledger. It prints a Bonferroni bound for each headline over the
+non-preregistered search on the same hypothesis; a bound above 0.05 is a WARN for the
+author to report, not a verdict.
+
+### What to do with a large search
+
+- Report the full distribution: a specification curve (Simonsohn, Simmons & Nelson 2020)
+  or multiverse analysis (Steegen et al. 2016), not just the selected row.
+- For families of outcomes, report sharpened q-values (Anderson 2008) or Romano-Wolf
+  adjusted p-values.
+- For one key coefficient, report Oster (2019) bounds on selection on unobservables.
+- Never delete ledger rows. A null is evidence; a missing null is a forking path hidden.
+
+### References
+
+- Anderson, M. L. (2008). Multiple inference and gender differences in the effects of early intervention. *JASA*, 103(484), 1481-1495.
+- Brodeur, A., Lé, M., Sangnier, M., & Zylberberg, Y. (2016). Star Wars: The empirics strike back. *AEJ: Applied*, 8(1), 1-32.
+- Brodeur, A., Cook, N., & Heyes, A. (2020). Methods matter: p-hacking and publication bias in causal analysis in economics. *AER*, 110(11), 3634-3660.
+- Gelman, A., & Loken, E. (2013). The garden of forking paths. Working paper, Columbia University.
+- Oster, E. (2019). Unobservable selection and coefficient stability. *JBES*, 37(2), 187-204.
+- Simmons, J. P., Nelson, L. D., & Simonsohn, U. (2011). False-positive psychology. *Psychological Science*, 22(11), 1359-1366.
+- Simonsohn, U., Simmons, J. P., & Nelson, L. D. (2020). Specification curve analysis. *Nature Human Behaviour*, 4, 1208-1214.
+- Steegen, S., Tuerlinckx, F., Gelman, A., & Vanpaemel, W. (2016). Increasing transparency through a multiverse analysis. *Perspectives on Psychological Science*, 11(5), 702-712.

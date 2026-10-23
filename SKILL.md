@@ -48,6 +48,8 @@ allowed-tools: Skill, Agent, Read, Write, Edit, Glob, Grep, Bash, AskUserQuestio
 > 的事：**文献语料要在查新打分之前建好**，否则分数无可复核依据、related work 与引用终审各找各的；
 > **新研究在首次估计前固定主设定**；已有结果只能诚实登记回溯分析，不能补造预注册。机械闸门检查记录一致性，历史先后还要审阅时间戳与原始记录。
 
+> **设定搜索台账（Stage 3 起）**：Agent 每跑一个设定就向 `03_analysis/spec_search_ledger.csv` 追加一行，不得删行；`spec_search_disclosure.md` 写明 `specifications_run: N` 且与台账行数一致；未预注册的设定升为主结果必须标 `disclosed_exploratory`。由 `check_spec_search_ledger.py` 在 `pw exit 3` 与 `pw final` 校验，细则见 [`references/design-risk-ledger.md`](references/design-risk-ledger.md) 末节。
+
 > **双硬闸门 = 方法闸门 + 初稿质量门。** Stage 3 结束先过 **Method Gate**、Stage 7 结束再过
 > **Draft Quality Gate**，两者细则见下两节。**闸门未达标先判断是可修复错误、真实识别失败还是材料不可得**，不得反复换样本、模型来追求显著；可交付明确标注局限的研究草稿，
 > 绝不把「流程跑完」当成「研究可信」。

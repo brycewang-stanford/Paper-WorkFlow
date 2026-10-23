@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-42%2F42_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-43%2F43_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v14-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -77,6 +77,9 @@
 
 
 ## 一图看懂
+
+<p align="center"><img src="assets/workflow-flow.svg" alt="Paper-WorkFlow 动态流程图：从 Stage 0 走到 Stage 9，依次点亮方法闸门与初稿质量门，Stage 3 的每个设定都记入设定搜索台账" width="100%" /></p>
+
 
 一篇实证论文不是一段文字，而是一套工程：研究设计、数据 provenance、识别假设、估计脚本、表图、稿件、审稿回应和 replication package 必须互相咬合。
 Paper-WorkFlow 是这套工程的总编排器——它不亲自做每一步，而是在对的时点、用对的上下文、在对的人类决策点，把既有 skill、并行 subagent 和方法证据闸门串成一条完整 workflow。
@@ -199,6 +202,7 @@ PDF 讲义里的技能地图已经合并到当前 README：`Paper-WorkFlow` 自�
 
 | 研究级标准 | 管什么（reviewer 会盯的） | 在哪生效 | 标准文件 |
 |---|---|---|---|
+| 设定搜索台账 | Agent 跑过的每个设定都记一行；搜出来的设定不得悄悄升为主结果；正文披露实际跑了多少个设定，主结果 p 值附带按搜索规模校正的上界。Agent 让岔路变便宜，这一层让岔路可计数 | Stage 3 出口、Stage 9 终审 | [design-risk-ledger.md § Specification-Search Ledger](references/design-risk-ledger.md) + `03_analysis/spec_search_ledger.csv` |
 | 样本与 estimand 审计 | 样本流失、变量构造、missingness/balance/overlap、cluster/weights 是否支撑目标 estimand | Stage 2→3 · 方法闸门 | [`empirical-audit.md`](references/empirical-audit.md) |
 | 方法证据标准 | 识别设计注册、按方法的最低证据包、稳健性矩阵、复现脚本 | Stage 3 · 方法闸门 | [`research-grade-methods.md`](references/research-grade-methods.md) |
 | 设计风险总账 | OVB、选择、bad controls、spillover/SUTVA、external validity、attrition、specification search 和选择性报告是否逐项关闭或降级 | Stage 1/3/5/8 · 方法闸门/质量门 | [`design-risk-ledger.md`](references/design-risk-ledger.md) + `03_analysis/design_risk_ledger.md` |
@@ -473,6 +477,7 @@ Paper-WorkFlow/
 │   ├── check_cn_claim_audit.py       # 中文数据源/期刊 claim 台账（_verification_log/）审计闸门
 │   ├── check_review_scorecard.py     # Draft Quality Gate 评分卡 L1/L2 机械校验
 │   ├── check_preregistration.py      # 预注册锁与 exploratory 标注校验
+│   ├── check_spec_search_ledger.py   # Agent 设定搜索台账：岔路计数与披露
 │   ├── check_manuscript_numbers.py   # 稿件数字锚定 + Stage 6→7 改写零漂移 + Stage 8→9 排版零漂移闸门
 │   ├── assemble_manuscript_docx.py   # 正文+表+图+参考文献 → 一份 Word 全文定稿（pandoc 或零依赖内置写入器）
 │   ├── check_deliverable_contract.py # 全文交付闸门：.docx 存在、表图不少、无未解析标记、状态不得比实物绿
@@ -559,6 +564,7 @@ Paper-WorkFlow/
 │   ├── init_workspace.sh             # 一键铺出工作区骨架（拒绝覆盖已存在路径）
 │   ├── workflow_state.template.json  # 进度状态文件模板（v10：含 orchestration + pipeline_status + integrity_audit + design_risk + evidence_governance + empirical_audit + analysis_backend + method_gate + quality_gate + replication_pack）
 │   ├── workflow.svg                  # 全流程流水线示意图
+│   ├── workflow-flow.svg             # 动态流程图（README 动图）
 │   ├── did_table.tex                 # 演示 · DiD 基准回归表（OLS / TWFE）
 │   ├── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
 │   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg  # CoPaper.AI × Stanford REAP 品牌物料

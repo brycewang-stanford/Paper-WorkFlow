@@ -8,7 +8,7 @@
 
 ![Pipeline](https://img.shields.io/badge/pipeline-Stage_0%E2%80%939-4F46E5?style=flat&labelColor=0D1117)
 ![Gates](https://img.shields.io/badge/gates-method_%2B_draft_quality-4F46E5?style=flat&labelColor=0D1117)
-[![Rigor](https://img.shields.io/badge/rigor-42%2F42_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
+[![Rigor](https://img.shields.io/badge/rigor-43%2F43_executable_gates-16A34A?style=flat&labelColor=0D1117)](RIGOR.md)
 [![CI](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/brycewang-stanford/Paper-WorkFlow/actions/workflows/ci.yml)
 ![State](https://img.shields.io/badge/state-schema_v14-4F46E5?style=flat&labelColor=0D1117)
 ![Type](https://img.shields.io/badge/type-meta--orchestrator-4F46E5?style=flat&labelColor=0D1117)
@@ -75,6 +75,9 @@ retrospective contradictions, and incomplete submissions. This tests software in
 For a complete run, use the [parent repository](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), which contains the 47 orchestrated sub-skills. Stage 9 can also use [Awesome Journal Skills (AJS)](https://github.com/brycewang-stanford/Awesome-Journal-Skills) as an optional adapter for journal-specific fit, house style, and submission preflight. AJS is not included in the 47 built-in skills and never replaces official journal rules or the research gates. A standalone clone can execute the built-in references with the main agent; external sub-skills are optional enhancements. Data access, literature-search capability, and an appropriate Python/StatsPAI, Stata, or R backend are still required. Authors remain responsible for data compliance, identification validity, factual citations, and the submission decision.
 
 ## Mental Model
+
+<p align="center"><img src="assets/workflow-flow.svg" alt="Animated Paper-WorkFlow pipeline: a token travels Stage 0 to 9, lights the Method Gate and Draft Gate, and logs every specification in the spec-search ledger" width="100%" /></p>
+
 
 An empirical paper is not just prose. It is an auditable research system: design, data provenance, identification assumptions, estimation scripts, tables, figures, draft, reviewer response, and replication package must agree with each other.
 
@@ -201,6 +204,7 @@ Finishing stages is not enough. The workflow enforces explicit standards that re
 | Sample and estimand audit | Sample attrition, variable construction, missingness/balance/overlap, cluster/weights | Stage 2-3 Method Gate | [empirical-audit.md](references/empirical-audit.md) |
 | Method evidence | Identification registry, method-specific diagnostics, robustness matrix, reproducible scripts | Stage 3 Method Gate | [research-grade-methods.md](references/research-grade-methods.md) |
 | Design risk ledger | Whether OVB, selection, bad controls, spillovers/SUTVA, external validity, attrition, specification search, and selective reporting are closed or downgraded | Stages 1/3/5/8 Method Gate / Quality Gate | [design-risk-ledger.md](references/design-risk-ledger.md) + `03_analysis/design_risk_ledger.md` |
+| Specification-search ledger | Every specification an agent runs is logged; a searched spec cannot become the headline silently; the paper discloses how many specs were run, and headline p-values carry a search-adjusted bound. Agents make forking paths cheap; this makes them countable | Stage 3 exit, Stage 9 final | [design-risk-ledger.md § Specification-Search Ledger](references/design-risk-ledger.md) + `03_analysis/spec_search_ledger.csv` |
 | Claim governance | Whether each manuscript claim is backed by an estimand, result, robustness artifact, exhibit, and script, and whether wording stays within the design card's allowed strength | Stage 3-9 Method Gate / Quality Gate / final submission check | [design-gate-cards.md](references/design-gate-cards.md) + `00_meta/evidence_ledger.md` |
 | Claim integrity audit | Whether numbers, citations, causal wording, and forbidden wording in the manuscript are faithful to the evidence ledger, source text, and project estimates | Stage 7-8 / Stage 9 Quality Gate / final submission check | [integrity-and-claim-audit.md](references/integrity-and-claim-audit.md) + `00_meta/claim_integrity_audit.md` |
 | Citation and temporal integrity | Whether citations exist, match the intended source/version, avoid retracted results, and avoid look-ahead, vintage, or sample-period overreach | Stages 1/2/5/9 Quality Gate / final submission check | [citation-and-temporal-integrity.md](references/citation-and-temporal-integrity.md) + `00_meta/citation_integrity_log.md` |
@@ -405,6 +409,7 @@ Paper-WorkFlow/
 │   ├── check_cn_claim_audit.py
 │   ├── check_review_scorecard.py
 │   ├── check_preregistration.py
+│   ├── check_spec_search_ledger.py
 │   ├── check_manuscript_numbers.py
 │   ├── assemble_manuscript_docx.py
 │   ├── check_deliverable_contract.py
@@ -492,6 +497,7 @@ Paper-WorkFlow/
 │   ├── init_workspace.sh
 │   ├── workflow_state.template.json
 │   ├── workflow.svg
+│   ├── workflow-flow.svg
 │   ├── did_table.tex
 │   ├── fig_event_study.png · fig_raw_trends.png
 │   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg

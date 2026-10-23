@@ -257,6 +257,16 @@ REGISTRY: list[dict] = [
         ),
     },
     {
+        "path": "scripts/check_spec_search_ledger.py",
+        "argv": ["--selftest"],
+        "layer": RUNTIME,
+        "enforces": (
+            "Agent forking-path ledger: every specification run is logged, a searched "
+            "spec cannot become the headline silently, the disclosed search size equals "
+            "the ledger, and headline p-values get a search-adjusted bound."
+        ),
+    },
+    {
         "path": "scripts/check_review_scorecard.py",
         "argv": ["--selftest"],
         "layer": RUNTIME,
