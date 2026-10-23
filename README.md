@@ -30,7 +30,7 @@
 <table>
   <tr>
     <td align="center">
-      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="220" /></a>
+      <a href="https://github.com/brycewang-stanford/StatsPAI"><img src="assets/statspai-logo.png" alt="StatsPAI" width="300" /></a>
     </td>
     <td width="56"></td>
     <td align="center">
@@ -39,7 +39,7 @@
   </tr>
 </table>
 
-<sub><strong>Stanford REAP × CoPaper.AI</strong> · 面向实证研究的产学 AI 工具箱 · Paper-WorkFlow 是其中的论文总编排器</sub>
+<sub><strong>Stanford REAP × StatsPAI</strong> · 面向实证研究的产学 AI 工具箱 · Paper-WorkFlow 是其中的论文总编排器</sub>
 
 </div>
 
@@ -567,7 +567,7 @@ Paper-WorkFlow/
 │   ├── workflow-flow.svg             # 动态流程图（README 动图）
 │   ├── did_table.tex                 # 演示 · DiD 基准回归表（OLS / TWFE）
 │   ├── fig_event_study.png · fig_raw_trends.png   # 演示 · 事件研究 / 原始趋势图
-│   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg  # CoPaper.AI × Stanford REAP 品牌物料
+│   └── statspai-logo.png · copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg  # StatsPAI · CoPaper.AI · Stanford REAP 品牌物料
 ├── _verification_log/                # 中文数据源/期刊 claim 核验台账（check_cn_claim_audit 闸门数据）
 ├── worklogs/                         # 维护期 worklog（月度质量目标 + 周度 recap）
 │
@@ -669,7 +669,7 @@ Paper-WorkFlow 是 [Auto-Empirical-Research-Skills](https://github.com/brycewang
 <table>
   <tr>
     <td align="center">
-      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="200" /></a>
+      <a href="https://github.com/brycewang-stanford/StatsPAI"><img src="assets/statspai-logo.png" alt="StatsPAI" width="270" /></a>
     </td>
     <td width="40"></td>
     <td align="center">
@@ -678,7 +678,7 @@ Paper-WorkFlow 是 [Auto-Empirical-Research-Skills](https://github.com/brycewang
   </tr>
 </table>
 
-<sub><strong>Stanford REAP × CoPaper.AI</strong> · 面向实证研究的产学 AI 工具箱</sub>
+<sub><strong>Stanford REAP × StatsPAI</strong> · 面向实证研究的产学 AI 工具箱</sub>
 
 <br/>
 

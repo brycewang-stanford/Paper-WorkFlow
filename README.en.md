@@ -30,7 +30,7 @@
 <table>
   <tr>
     <td align="center">
-      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="220" /></a>
+      <a href="https://github.com/brycewang-stanford/StatsPAI"><img src="assets/statspai-logo.png" alt="StatsPAI" width="300" /></a>
     </td>
     <td width="56"></td>
     <td align="center">
@@ -39,7 +39,7 @@
   </tr>
 </table>
 
-<sub><strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research · Paper-WorkFlow is its manuscript-level orchestrator</sub>
+<sub><strong>Stanford REAP × StatsPAI</strong> · An academic–industrial AI toolkit for empirical research · Paper-WorkFlow is its manuscript-level orchestrator</sub>
 
 </div>
 
@@ -500,7 +500,7 @@ Paper-WorkFlow/
 │   ├── workflow-flow.svg
 │   ├── did_table.tex
 │   ├── fig_event_study.png · fig_raw_trends.png
-│   └── copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg
+│   └── statspai-logo.png · copaper-logo.png · stanford-reap-logo.png · copaper-qrcode.png · copaper-wechat.jpg
 ├── _verification_log/
 ├── worklogs/
 └── did_demo.ipynb
@@ -613,7 +613,7 @@ This package is released under the [MIT License](LICENSE). Child skills from mix
 <table>
   <tr>
     <td align="center">
-      <a href="https://copaper.ai"><img src="assets/copaper-logo.png" alt="CoPaper.AI" width="200" /></a>
+      <a href="https://github.com/brycewang-stanford/StatsPAI"><img src="assets/statspai-logo.png" alt="StatsPAI" width="270" /></a>
     </td>
     <td width="40"></td>
     <td align="center">
@@ -622,7 +622,7 @@ This package is released under the [MIT License](LICENSE). Child skills from mix
   </tr>
 </table>
 
-<sub><strong>Stanford REAP × CoPaper.AI</strong> · An academic–industrial AI toolkit for empirical research</sub>
+<sub><strong>Stanford REAP × StatsPAI</strong> · An academic–industrial AI toolkit for empirical research</sub>
 
 <br/>
 
